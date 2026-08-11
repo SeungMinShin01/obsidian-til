@@ -171,6 +171,14 @@ VSCode 코드를 분석할 때는 항상 이 순서를 지킵니다.
 - **원본 코드의 오류·오타는 기록하지 않습니다.** 학습에 필요한 일반 주의사항만 서술합니다
 - `bin/`, `.class`, `node_modules`, `assets/`(바이너리)는 읽지 않습니다
 
+## 8.5 GitHub 백업 (obsidian-git 담당)
+
+- 원격: `github.com/SeungMinShin01/obsidian-til` (Public)
+- **자동**: obsidian-git이 30분마다 commit-and-sync (`vault backup: {{date}}`), 옵시디언 시작 시 pull
+- **작업 단위**: Claude는 작업을 마칠 때마다 의미 있는 메시지로 커밋을 남긴다 (예: `SQL day04 노트 추가`). 푸시는 가능하면 즉시, 아니면 다음 자동 동기화에 편승
+- 제외 목록은 `.gitignore` 참고 — `workspace.json` · `.smart-env/` · `.trash/` · `_규칙/sync-config.json`
+- 노션 미러(9항)와 독립적으로 동작한다. 노션은 보기용 거울, GitHub은 원본의 백업·이력
+
 ## 9. 노션 동기화 (Node.js Sync Engine 담당)
 
 - **방향: 옵시디언 → 노션 단방향**
