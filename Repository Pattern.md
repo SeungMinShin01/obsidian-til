@@ -1,7 +1,11 @@
 ---
 출처: 내가 작성
 작성일: 2026-08-11
-tags: [디자인패턴, repository, android, MVVM, DI]
+tags:
+  - 디자인패턴
+  - repository
+  - MVVM
+  - DI
 ---
 
 # Repository Pattern 분석
