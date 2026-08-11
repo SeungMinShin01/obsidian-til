@@ -31,92 +31,190 @@ Repository 모듈은 데이터 작업을 처리하고 여러 백엔드 API 사�
 
 2. Repository는 앱 데이터의 특정 부분에 관한 **단일 정보 소스(Single Source of Truth)** 역할을 해야 합니다. 네트워크 리소스와 오프라인 캐시 등 여러 데이터 소스로 작업할 때, Repository는 앱이 오프라인 상태일 때도 받아놓은 데이터를 사용할 수 있게 합니다. 캐싱의 경우 Room 라이브러리를 통해서 저장했다가 꺼내서 쓰기도 합니다.
 
-## 3. Repository Pattern 구현 (with Hilt)
+## 3. Repository Pattern 구현 (Java)
 
-> 언어는 **Kotlin**(안드로이드 공식 언어, Java 계승)이다. `@어노테이션` · 클래스 · 생성자 구조가 Java와 거의 대응되므로 [[Java day09 MVC 종합예제]] 를 만들었다면 읽을 수 있다.
-> 식당 지도 앱을 예로, "식당 데이터 담당 사서(Repository)를 만들어서 화면에 붙이는" 4단계다.
+> 원문은 안드로이드(Kotlin + Hilt) 예제였는데, 같은 구조를 **Java**로 옮겨서 정리한다.
+> 식당 지도 앱을 예로, "식당 데이터 담당 사서(Repository)를 만들어서 화면에 붙이는" 4단계다. [[Java day09 MVC 종합예제]] 에서 만든 구조의 다음 단계이기도 하다.
 
 ### 3-1. 약속과 실체를 나눈다 — interface / Impl
 
-```kotlin
-interface RestaurantRepository          // 약속: "식당 데이터를 준다"는 명세만 존재
+```java
+// 약속: "식당 데이터를 준다"는 명세만 존재. 내용이 없다
+public interface RestaurantRepository {
+    List<Restaurant> findAll();
+    Restaurant findByName(String name);
+}
+```
 
-@Singleton                              // 앱 전체에 1개만 만든다
-class RestaurantRepositoryImpl @Inject constructor(
-    private val restaurantDataSource: RestaurantDataSource,   // 식당 API 담당
-    private val mapDataSource: MapDataSource                  // 지도 API 담당
-) : RestaurantRepository {              // 약속의 실제 구현
+```java
+// 실체: 약속을 실제로 지키는 구현
+public class RestaurantRepositoryImpl implements RestaurantRepository {
+
+    private final RestaurantDataSource restaurantDataSource;  // 식당 API 담당
+    private final MapDataSource mapDataSource;                // 지도 API 담당
+
+    // 재료를 내가 new 하지 않고 생성자로 받는다 = 생성자 주입
+    public RestaurantRepositoryImpl(RestaurantDataSource rds, MapDataSource mds) {
+        this.restaurantDataSource = rds;
+        this.mapDataSource = mds;
+    }
+
+    @Override
+    public List<Restaurant> findAll() {
+        return restaurantDataSource.fetchAll();   // 어디서 가져오는지는 여기만 안다
+    }
+
+    @Override
+    public Restaurant findByName(String name) { ... }
+}
 ```
 
 읽는 법:
 
-- `interface RestaurantRepository` — Java의 인터페이스와 같다. "이런 기능을 제공하겠다"는 **약속만** 있고 내용이 없다
-- `RestaurantRepositoryImpl : RestaurantRepository` — Java의 `implements`. 콜론(`:`)이 그 역할이다
-- `@Inject constructor(...)` — "이 클래스를 만들 때 필요한 재료(DataSource 2개)는 **내가 new 하지 않고 받아온다**"는 선언. 이게 DI(의존성 주입)의 전부다 — `new`를 직접 안 쓰고 밖에서 넣어주는 것
-- `@Singleton` — [[Java day09 MVC 종합예제]] 에서 `getInstance()`로 직접 만들던 싱글톤을 어노테이션 한 줄로 대신한다
+- `interface` — "이런 기능을 제공하겠다"는 **약속만** 있고 구현이 없다. [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] 의 인터페이스 그대로
+- `implements` — 약속을 실제로 이행하는 실체
+- 생성자에서 DataSource를 **받는 것**(주입)이 핵심이다. 클래스 안에서 `new RestaurantDataSource()`를 해버리면 실체가 고정돼서 갈아끼울 수 없다
+- `private final` — 받은 재료를 바꿔치기할 수 없게 잠근다. [[Java day08 접근제한자와 static]] 의 `final` 성질
 
-> 왜 나누나? 나중에 ViewModel을 테스트할 때 진짜 Impl 대신 가짜(Fake)를 꽂기 위해서다. 아래 "쉽게 설명하면"의 interface 항목 참고.
+> 왜 나누나? 상위 계층을 테스트할 때 진짜 Impl 대신 가짜(Fake)를 꽂기 위해서다. 아래 "쉽게 설명하면"의 interface 항목 참고.
 
-### 3-2. 약속과 실체를 연결한다 — Hilt 모듈
+### 3-2. 약속과 실체를 연결한다 — 조립 담당자
 
-이제 Hilt(안드로이드의 DI 라이브러리)에게 "누가 `RestaurantRepository`를 달라고 하면 `RestaurantRepositoryImpl`을 줘라"라고 **연결 규칙을 등록**한다.
+"누가 `RestaurantRepository`를 달라고 하면 `RestaurantRepositoryImpl`을 줘라"는 연결을 **한 곳에서** 담당한다. 순수 Java로는 조립 클래스를 직접 만든다.
 
-```kotlin
-@Module                                  // "여기 연결 규칙이 있다"
-@InstallIn(SingletonComponent::class)    // 이 규칙을 앱 전역에서 쓴다
-abstract class RepositoryBindModule {
-    @Binds                               // 연결: Impl(실체) → interface(약속)
-    abstract fun bindFoodApiRepository(
-        restaurantRepositoryImpl: RestaurantRepositoryImpl   // 이걸 주면
-    ): RestaurantRepository                                  // 이 타입으로 받는다
+```java
+// 앱에서 조립을 담당하는 유일한 곳
+public class AppConfig {
+
+    // 싱글톤 — day09에서 getInstance()로 만들던 것과 같은 목적
+    private static final RestaurantRepository repository =
+            new RestaurantRepositoryImpl(
+                    new RestaurantDataSource(),
+                    new MapDataSource()
+            );
+
+    public static RestaurantRepository restaurantRepository() {
+        return repository;    // 반환 타입이 interface라는 게 포인트
+    }
 }
 ```
 
-한 문장으로: **"RestaurantRepository 주문이 들어오면 RestaurantRepositoryImpl로 배달해라."**
+한 문장으로: **"new는 여기서만 한다."**
 
-- `@Module` + `@InstallIn(SingletonComponent)` — 이 배달 규칙표를 앱 전역 범위에 게시한다
-- `@Binds` — 규칙표의 한 줄. 파라미터(Impl)가 반환 타입(interface)의 배달품이 된다
+- 반환 타입이 `RestaurantRepositoryImpl`(실체)이 아니라 `RestaurantRepository`(약속)이다 — 받아가는 쪽은 실체의 존재를 모른다
+- 실체를 `FakeRestaurantRepository`로 바꾸고 싶으면 **이 파일 한 곳만** 고친다
+- [[Java day10 상속과 다형성]] 의 업캐스팅이 정확히 이 자리에서 쓰인다: `RestaurantRepository r = new RestaurantRepositoryImpl(...)`
 
-직접 `new RestaurantRepositoryImpl(...)`을 쓰는 코드가 앱 어디에도 없다는 게 포인트다. 생성은 전부 Hilt가 규칙표를 보고 대신한다.
+### 3-3. 주문한다 — 상위 계층이 Repository를 받는다
 
-### 3-3. 주문한다 — ViewModel이 Repository를 받는다
+화면 로직을 담당하는 클래스(안드로이드의 ViewModel 자리, 콘솔 앱이면 Controller)도 실체가 아니라 약속을 받는다.
 
-```kotlin
-@HiltViewModel
-class MapViewModel @Inject constructor(
-    private val repository: RestaurantRepository    // 약속(interface) 타입으로 주문
-) : ViewModel() {
-```
+```java
+public class MapController {
 
-- ViewModel의 생성자가 `RestaurantRepository`(약속)를 달라고 요청한다
-- Hilt가 3-2의 규칙표를 보고 `RestaurantRepositoryImpl`(실체)을 만들어 넣어준다
-- **ViewModel 코드에는 Impl이라는 글자가 등장하지 않는다** — 그래서 나중에 실체를 바꿔도 이 파일은 그대로다
+    private final RestaurantRepository repository;   // 약속(interface) 타입으로 보관
 
-### 3-4. 화면에서 쓴다 — Fragment
+    public MapController(RestaurantRepository repository) {   // 생성자 주입
+        this.repository = repository;
+    }
 
-```kotlin
-@AndroidEntryPoint                       // "이 화면에서 Hilt 주입을 쓴다"
-class MapFragment : BaseFragment<FragmentMapBinding>() {
-
-    private val viewModel: MapViewModel by viewModels()   // 필요해질 때 생성(지연 초기화)
+    public void showRestaurants() {
+        List<Restaurant> list = repository.findAll();   // 출처는 모른 채 쓴다
+        // 화면 출력...
+    }
 }
 ```
 
-- `by viewModels()` — ViewModel을 처음 쓰는 순간에 만들어주는 지연 초기화. 이때 3-3의 주입이 연쇄적으로 일어난다
-- 결과: 화면 → ViewModel → Repository → DataSource 체인이 전부 자동 조립된 상태로 도착한다
+- **이 파일에 `Impl`이라는 글자가 등장하지 않는다** — 그래서 실체를 바꿔도 이 파일은 그대로다
+- [[Java day09 MVC 종합예제]] 의 `BoardController → BoardDAO` 연결과 같은 모양인데, 차이는 DAO를 `getInstance()`로 직접 부르는 대신 **생성자로 받는다**는 것. 직접 부르면 갈아끼우기가 안 되고, 받으면 된다
+
+### 3-4. 조립해서 실행한다 — main
+
+```java
+public class AppStart {
+    public static void main(String[] args) {
+        // 조립: AppConfig에서 완성품을 받아 Controller에 꽂는다
+        MapController controller =
+                new MapController(AppConfig.restaurantRepository());
+
+        controller.showRestaurants();
+    }
+}
+```
+
+테스트할 때는 같은 자리에 가짜를 꽂는다.
+
+```java
+// DB도 네트워크도 없이 Controller 로직만 검사할 수 있다
+MapController controller = new MapController(new FakeRestaurantRepository());
+```
 
 ### 3-5. 전체 흐름 한 줄 요약
 
 ```
-MapFragment ──(by viewModels)──▶ MapViewModel
-                                   └─ RestaurantRepository 주문
-                                        └─ Hilt 규칙표(@Binds) 확인
-                                             └─ RestaurantRepositoryImpl 생성
-                                                  ├─ RestaurantDataSource 주입
-                                                  └─ MapDataSource 주입
+AppStart(main)
+  └─ AppConfig ── new는 여기서만 ──▶ RestaurantRepositoryImpl
+  │                                     ├─ RestaurantDataSource
+  │                                     └─ MapDataSource
+  └─ MapController(약속 타입으로 받음) ──▶ repository.findAll()
+                                            (출처는 Impl만 안다)
 ```
 
-`new`가 한 번도 등장하지 않았다. **조립을 사람이 아니라 도구가 한다** — [[Java day09 MVC 종합예제]] 3-3에서 "지금 손으로 만든 싱글톤과 계층 연결을 스프링이 대신해 준다"고 했던 것의 안드로이드판이 정확히 이것이다(Spring의 `@Autowired` ≒ Hilt의 `@Inject`).
+이 "조립 담당(AppConfig)"을 사람이 직접 쓰는 대신 프레임워크가 대신해 주는 것이 **Spring의 `@Autowired`**, 안드로이드의 **Hilt `@Inject`**(원문의 Kotlin 예제)다. 어노테이션이 하는 일은 결국 3-2의 AppConfig를 자동 생성하는 것 — 손으로 먼저 만들어봤으면 프레임워크가 무엇을 대신해주는지 정확히 보인다. [[Java day09 MVC 종합예제]] 3-3의 결론과 같다.
+
+### 3-6. 같은 구조를 JS로
+
+JS에는 interface 문법이 없지만 **"같은 이름의 함수를 가진 객체"가 곧 약속**이다. 게시판 프로젝트( [[JS day14 게시판 CRUD]] )에 그대로 붙일 수 있는 형태로 쓰면:
+
+```javascript
+// 실체 1 — localStorage 버전 (지금 게시판이 쓰는 것)
+const localBoardRepository = {
+  findAll() {
+    return JSON.parse(localStorage.getItem("posts") ?? "[]");
+  },
+  save(post) {
+    const posts = this.findAll();
+    posts.push(post);
+    localStorage.setItem("posts", JSON.stringify(posts));
+  },
+};
+
+// 실체 2 — 서버 버전 (백엔드가 생기면)
+const apiBoardRepository = {
+  async findAll() {
+    const res = await fetch("/api/posts");
+    return res.json();
+  },
+  async save(post) {
+    await fetch("/api/posts", { method: "POST", body: JSON.stringify(post) });
+  },
+};
+```
+
+```javascript
+// 조립 담당 — Java의 AppConfig 자리. 갈아끼우는 곳은 여기 한 줄
+const boardRepository = localBoardRepository;   // ← apiBoardRepository로 교체 가능
+
+// 상위 계층 — 출처를 모른 채 쓴다 (Java의 Controller 자리)
+async function renderBoard() {
+  const posts = await boardRepository.findAll();   // localStorage인지 서버인지 모름
+  // 화면 그리기...
+}
+```
+
+- `findAll` / `save`라는 **메소드 이름의 일치**가 interface를 대신한다 (덕 타이핑)
+- 상위 계층이 `await`로 통일해서 부르면, 동기(localStorage)든 비동기(fetch)든 같은 코드로 동작한다
+- localStorage 게시판을 백엔드로 옮기는 날, 고치는 곳은 **조립 한 줄**이다 — [[JS day13 웹 스토리지와 인터벌]] 에서 "localStorage의 한계 때문에 백엔드가 필요하다"고 했던 그 전환을 이 구조가 무통증으로 만든다
+
+### 참고 — 원문(Kotlin + Hilt)과의 대응
+
+| Java (이 노트) | JS (3-6) | Kotlin + Hilt (원문) |
+| --- | --- | --- |
+| `interface` + `implements` | 메소드 이름 일치 (덕 타이핑) | `interface` + `:` (콜론) |
+| `AppConfig`에서 손조립 | `const boardRepository = ...` 한 줄 | `@Module` + `@Binds` 규칙표 |
+| `private static final` 싱글톤 | 모듈 스코프 객체 1개 | `@Singleton` |
+| 생성자 주입 | 변수 교체 | `@Inject constructor` (자동) |
+| `main`에서 조립 | 스크립트 최상단에서 조립 | `@AndroidEntryPoint` + `by viewModels()` |
 
 ---
 
