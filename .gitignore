@@ -1,0 +1,19 @@
+# Obsidian 작업 상태 (기기마다 다름, 계속 바뀜)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# 플러그인 캐시
+.smart-env/
+.obsidian/plugins/smart-connections/data.json
+
+# 휴지통
+.trash/
+
+# 동기화 설정 (노션 내부 ID 포함)
+_규칙/sync-config.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
