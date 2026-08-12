@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, python, 크롤�
 # crawler 분석
 
 대상: `crawler/redbutton.py` · `crawler/processCrawledData.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 보드게임 데이터를 손으로 입력하지 않으려고 만든 수집 파이프라인이다. 이 프로젝트에서 유일하게 Python이 들어간 구간이기도 하다.
 
@@ -62,4 +62,4 @@ ON DUPLICATE KEY UPDATE game_name_kr = VALUES(game_name_kr), ...
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[routes 분석 - 보드게임과 리뷰]] · [[전문용어 정리]] · [[Python 정리본 인덱스]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 보드게임과 리뷰]] · [[전문용어 정리]]

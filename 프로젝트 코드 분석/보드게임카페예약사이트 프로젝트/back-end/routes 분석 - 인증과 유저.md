@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, 인증]
 # routes 분석 - 인증과 유저
 
 대상: `routes/authRoutes.js` · `routes/usersRoutes.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## authRoutes.js — 가입과 로그인
 
@@ -60,4 +60,4 @@ router.get("/users", async (req, res) => {
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[routes 분석 - 고객지원과 관리자]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]] · [[SQL day03 DML과 조인]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 고객지원과 관리자]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]]

@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react, 인증]
 # components 분석 - Login과 Admin
 
 대상: `Login_Register/` 2개 · `Admin/` 7개
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## LoginForm.js — 로그인
 
@@ -70,4 +70,4 @@ export default function AdminRoute({ children }) {
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[routes 분석 - 인증과 유저]] · [[routes 분석 - 고객지원과 관리자]] · [[App과 공통 레이아웃 분석]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 인증과 유저]] · [[routes 분석 - 고객지원과 관리자]] · [[App과 공통 레이아웃 분석]] · [[전문용어 정리]]

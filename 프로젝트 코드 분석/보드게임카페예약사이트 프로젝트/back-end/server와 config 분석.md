@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, express, mysql]
 # server와 config 분석
 
 대상: `back-end/server.js` · `back-end/config/db.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## server.js — 진입점
 
@@ -63,4 +63,4 @@ module.exports = db;
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[routes 분석 - 인증과 유저]] · [[전문용어 정리]] · [[SQL day01 데이터베이스 기초]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 인증과 유저]] · [[전문용어 정리]]

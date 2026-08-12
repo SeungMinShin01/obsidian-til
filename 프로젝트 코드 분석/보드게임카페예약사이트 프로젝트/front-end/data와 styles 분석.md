@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, 데이터설계]
 # data와 styles 분석
 
 대상: `data/` 4개 · `public/data/rules.json` · `styles/GlobalStyle.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## data/ — 코드에서 분리한 정적 데이터
 
@@ -60,4 +60,4 @@ public/data/*.json → fetch   → 런타임 로드, 번들 크기와 무관
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[App과 공통 레이아웃 분석]] · [[components 분석 - BoardGame과 Rule]] · [[crawler 분석]] · [[전문용어 정리]] · [[JS day07 객체]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[App과 공통 레이아웃 분석]] · [[components 분석 - BoardGame과 Rule]] · [[crawler 분석]] · [[전문용어 정리]]

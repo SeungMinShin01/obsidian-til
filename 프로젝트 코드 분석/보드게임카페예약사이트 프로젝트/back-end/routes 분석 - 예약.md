@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, 예약, sql]
 # routes 분석 - 예약
 
 대상: `routes/reservations.js`(177줄) · `routes/availabilityRoutes.js` · `routes/myreservations.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 백엔드에서 가장 밀도 높은 구간이다. 동시성 문제를 처음으로 정면에서 만난 코드이기도 하다.
 
@@ -64,7 +64,7 @@ while (!roomAvailable) {
 > LIMIT 1
 > ```
 >
-> "빈 방 찾기"를 애플리케이션 반복문이 아니라 SQL의 **부정 조건 서브쿼리**로 옮기면 루프도, 낭비 조회도, 무한 루프 가능성도 사라진다. → [[SQL day03 DML과 조인]]
+> "빈 방 찾기"를 애플리케이션 반복문이 아니라 SQL의 **부정 조건 서브쿼리**로 옮기면 루프도, 낭비 조회도, 무한 루프 가능성도 사라진다. → SQL day03 DML과 조인
 
 ### 트랜잭션 부재
 
@@ -83,7 +83,7 @@ await db.query("INSERT INTO reservations ...");    // ② 삽입
 > // SELECT ... FOR UPDATE → INSERT → commit / 실패 시 rollback → release
 > ```
 >
-> 이 패턴이 **ACID**의 격리성(Isolation)을 코드로 쓰는 방법이다. 예약·결제·재고처럼 "확인하고 쓰는" 로직에는 예외 없이 필요하다. → [[SQL day01 데이터베이스 기초]]
+> 이 패턴이 **ACID**의 격리성(Isolation)을 코드로 쓰는 방법이다. 예약·결제·재고처럼 "확인하고 쓰는" 로직에는 예외 없이 필요하다. → SQL day01 데이터베이스 기초
 
 ## availabilityRoutes.js — 잔여 좌석 조회
 
@@ -107,4 +107,4 @@ WHERE r.user_id = ? AND r.is_deleted = 0
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[components 분석 - Reservation과 결제]] · [[hooks 분석]] · [[전문용어 정리]] · [[SQL day01 데이터베이스 기초]] · [[SQL day03 DML과 조인]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - Reservation과 결제]] · [[hooks 분석]] · [[전문용어 정리]]

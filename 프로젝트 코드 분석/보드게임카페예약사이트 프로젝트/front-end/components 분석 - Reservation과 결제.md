@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react, 결제]
 # components 분석 - Reservation과 결제
 
 대상: `Reservation/Reservation.js` · `Reservation/CalendarReservation.js` · `Reservation/ReservationStatusPage.js` · `pages/successpage.js` · `pages/FailPage.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## 전체 흐름
 
@@ -77,4 +77,4 @@ await axios.post("http://localhost:5000/api/reservations", reservationData);
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[routes 분석 - 예약]] · [[hooks 분석]] · [[전문용어 정리]] · [[JS day13 웹 스토리지와 인터벌]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 예약]] · [[hooks 분석]] · [[전문용어 정리]]

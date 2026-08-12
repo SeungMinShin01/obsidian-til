@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, express]
 # routes 분석 - 고객지원과 관리자
 
 대상: `routes/inquiryRoutes.js` · `routes/noticeRoutes.js` · `routes/adminRoutes.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## 라우트가 얇아진 지점
 
@@ -75,4 +75,4 @@ DELETE /api/admin/users/1
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[controllers와 models 분석]] · [[routes 분석 - 인증과 유저]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[controllers와 models 분석]] · [[routes 분석 - 인증과 유저]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]]

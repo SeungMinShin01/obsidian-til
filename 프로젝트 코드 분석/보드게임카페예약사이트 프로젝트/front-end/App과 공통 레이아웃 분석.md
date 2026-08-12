@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react, 라우팅
 # App과 공통 레이아웃 분석
 
 대상: `App.js` · `components/NavBar.js` · `styles/GlobalStyle.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## App.js — 라우팅 테이블
 
@@ -52,4 +52,4 @@ const isAdmin = localStorage.getItem("is_admin") === "1";
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[components 분석 - Login과 Admin]] · [[data와 styles 분석]] · [[전문용어 정리]] · [[CSS day10 카메라 강의 사이트]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - Login과 Admin]] · [[data와 styles 분석]] · [[전문용어 정리]]

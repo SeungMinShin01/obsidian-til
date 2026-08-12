@@ -145,16 +145,16 @@ SELECT mid, GROUP_CONCAT(bpname) 구매목록 FROM buy GROUP BY mid;
 
 | 오늘 배운 것 | 프로젝트에서 |
 | --- | --- |
-| `ORDER BY likes DESC LIMIT 3` | 인기 게임 TOP3 → [[routes 분석 - 보드게임과 리뷰]] |
-| `LIMIT ?, ?` 페이징 | 무한 스크롤의 서버 쪽 → [[routes 분석 - 보드게임과 리뷰]] |
-| `count(*)` | 관리자 대시보드 수치 4종 → [[controllers와 models 분석]] |
-| GROUP BY 집계 | 반복문 쿼리(N+1)를 한 방에 끝내는 해법 → [[routes 분석 - 예약]] |
+| `ORDER BY likes DESC LIMIT 3` | 인기 게임 TOP3 → routes 분석 - 보드게임과 리뷰 |
+| `LIMIT ?, ?` 페이징 | 무한 스크롤의 서버 쪽 → routes 분석 - 보드게임과 리뷰 |
+| `count(*)` | 관리자 대시보드 수치 4종 → controllers와 models 분석 |
+| GROUP BY 집계 | 반복문 쿼리(N+1)를 한 방에 끝내는 해법 → routes 분석 - 예약 |
 
-특히 마지막 — 30분 슬롯마다 `COUNT` 쿼리를 24번 돌린 코드는, 오늘 배운 GROUP BY로 1번에 끝낼 수 있습니다( [[공부할 코드 - SQL과 데이터]] 4번 연습).
+특히 마지막 — 30분 슬롯마다 `COUNT` 쿼리를 24번 돌린 코드는, 오늘 배운 GROUP BY로 1번에 끝낼 수 있습니다( 공부할 코드 - SQL과 데이터 4번 연습).
 
 ### 3-2. 오프셋 페이징의 한계
 
-`LIMIT 100000, 20`은 DB가 100,020행을 만들고 100,000개를 버립니다. 깊은 페이지일수록 느려지는 구조라, 대량 데이터에서는 커서 방식(`WHERE id < 마지막ID LIMIT 20`)으로 넘어갑니다 → [[전문용어 정리]] 페이지네이션 항목.
+`LIMIT 100000, 20`은 DB가 100,020행을 만들고 100,000개를 버립니다. 깊은 페이지일수록 느려지는 구조라, 대량 데이터에서는 커서 방식(`WHERE id < 마지막ID LIMIT 20`)으로 넘어갑니다 → 전문용어 정리 페이지네이션 항목.
 
 ### 3-3. 윈도우 함수 — 다음 단계
 
@@ -176,4 +176,4 @@ FROM buy;
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[routes 분석 - 보드게임과 리뷰]] · [[공부할 코드 - SQL과 데이터]] · [[Java day09 ArrayList]]
+[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[Java day09 ArrayList]]

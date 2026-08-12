@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react]
 # components 분석 - BoardGame과 Rule
 
 대상: `BoardGame/BoardGameList.js` · `BoardGame/BoardGameDetail.js` · `BoardGame/ReviewSection.js` · `Rule/rule.js` · `Rule/RuleDetailModal.js` · `pages/rulepages.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## BoardGameList — 목록 화면
 
@@ -32,7 +32,7 @@ export default function BoardGameDetail({ userId, game, onClose }) {
 
 `useBoardGameReview` 훅에서 리뷰 목록·내 리뷰·등록·삭제를 받아 그린다. 100자 제한을 프론트에서 검사하고, 등록/수정을 같은 폼으로 처리한다.
 
-> **피드백** — 글자 수 제한이 프론트에만 있다. API를 직접 치면 10,000자도 들어간다. 프론트 검사는 UX용, **최종 검증은 서버와 DB(`VARCHAR(100)`)**라는 이중화가 원칙이다. → [[SQL day02 테이블과 제약조건]]
+> **피드백** — 글자 수 제한이 프론트에만 있다. API를 직접 치면 10,000자도 들어간다. 프론트 검사는 UX용, **최종 검증은 서버와 DB(`VARCHAR(100)`)**라는 이중화가 원칙이다. → SQL day02 테이블과 제약조건
 
 ## Rule 계열 — 규칙 열람
 
@@ -49,4 +49,4 @@ rule.js (목록)  →  rulepages.js (개별 규칙 페이지)  →  RuleDetailMo
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[hooks 분석]] · [[routes 분석 - 보드게임과 리뷰]] · [[data와 styles 분석]] · [[전문용어 정리]] · [[JS day11 DOM 조작]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[hooks 분석]] · [[routes 분석 - 보드게임과 리뷰]] · [[data와 styles 분석]] · [[전문용어 정리]]

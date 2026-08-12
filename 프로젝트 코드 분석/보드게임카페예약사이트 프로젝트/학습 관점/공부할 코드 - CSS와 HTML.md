@@ -24,7 +24,7 @@ const HeaderImg = styled.img`
 
 ### 원리
 
-템플릿 리터럴 안의 내용물은 **그냥 CSS**입니다. 선택자·속성·미디어쿼리 전부 [[CSS MOC]] 에서 배운 그대로이고, 바뀐 것은 스코프 방식뿐입니다.
+템플릿 리터럴 안의 내용물은 **그냥 CSS**입니다. 선택자·속성·미디어쿼리 전부 CSS MOC 에서 배운 그대로이고, 바뀐 것은 스코프 방식뿐입니다.
 
 ```
 전통 CSS:            클래스 이름으로 스코프 (.header-img { ... }) — 이름 충돌 관리가 내 몫
@@ -37,7 +37,7 @@ styled-components:   컴포넌트로 스코프 — 클래스명을 라이브러�
 
 `BoardGame.css` 하나만 전통 방식으로 남아 있어서, 같은 프로젝트 안에서 두 방식을 비교할 수 있습니다. 클래스 명명(BEM 같은 규칙)이 필요한 쪽과 필요 없는 쪽의 차이를 직접 확인해보면 styled-components가 어떤 문제를 풀려고 나왔는지 명확해집니다.
 
-연결: [[CSS day05 첫 스타일링]] 선택자 · [[CSS MOC]]
+연결: CSS day05 첫 스타일링 선택자 · CSS MOC
 
 ## 2. 이미지 오버레이 — position 3종 세트의 실전형
 
@@ -57,7 +57,7 @@ const HeaderTextOverlay = styled.div`
 
 ### 원리
 
-[[CSS day14 position과 가상요소]] 에서 배운 것이 그대로 조합됐습니다.
+CSS day14 position과 가상요소 에서 배운 것이 그대로 조합됐습니다.
 
 1. 부모 `relative` — 자식 absolute의 기준 좌표계가 됨
 2. 자식 `absolute` + `top/left 50%` — 부모의 정중앙에 **왼쪽 위 모서리**가 옴
@@ -84,7 +84,7 @@ const Main = styled.main`
 
 props로 스타일을 분기하는 것이 styled-components의 동적 스타일링 방식입니다. `$` 접두사(transient prop)가 붙으면 styled-components가 그 prop을 **DOM 속성으로 내려보내지 않습니다.** `$` 없이 `fullWidth`라고 쓰면 `<main fullwidth="true">`처럼 HTML에 존재하지 않는 속성이 실제 DOM에 찍히고 콘솔 경고가 납니다.
 
-"컴포넌트 세계의 데이터"와 "HTML 세계의 속성"이 다른 층위라는 것 — [[HTML day02 문서 구조와 미디어]] 에서 배운 표준 속성 개념이 있어야 왜 경고가 나는지 이해되는 지점입니다.
+"컴포넌트 세계의 데이터"와 "HTML 세계의 속성"이 다른 층위라는 것 — HTML day02 문서 구조와 미디어 에서 배운 표준 속성 개념이 있어야 왜 경고가 나는지 이해되는 지점입니다.
 
 ### 활용
 
@@ -102,13 +102,13 @@ const GlobalStyle = createGlobalStyle`
 
 ### 원리
 
-브라우저 기본 스타일(마진·패딩·폰트)은 브라우저마다 달라서, 전부 0으로 밀고 시작하는 것이 **리셋**입니다. `box-sizing: border-box`는 width에 패딩·테두리를 포함시키는 계산법 — [[CSS day05 첫 스타일링]] 에서 배운 박스 모델의 실무 표준 설정입니다.
+브라우저 기본 스타일(마진·패딩·폰트)은 브라우저마다 달라서, 전부 0으로 밀고 시작하는 것이 **리셋**입니다. `box-sizing: border-box`는 width에 패딩·테두리를 포함시키는 계산법 — CSS day05 첫 스타일링 에서 배운 박스 모델의 실무 표준 설정입니다.
 
 전역(리셋·폰트)과 지역(컴포넌트 스타일)의 경계를 이 파일 하나로 지킨 구조가 배울 점입니다. 반대로 색·간격 값이 컴포넌트마다 리터럴로 흩어진 것( [[App과 공통 레이아웃 분석]] )은 전역으로 올렸어야 할 것이 지역에 남은 사례 — **"어느 층위의 관심사인가"** 를 판단하는 연습 소재로 좋습니다.
 
 ### 겹치는 기초
 
-[[CSS day06 선택자와 기본 속성]] 에서 배운 기본 속성들 위에 `@font-face` 웹폰트 적용이 얹힌 형태입니다. 차이는 위치뿐 — CSS 파일이 아니라 JS 안의 템플릿 리터럴.
+CSS day06 선택자와 기본 속성 에서 배운 기본 속성들 위에 `@font-face` 웹폰트 적용이 얹힌 형태입니다. 차이는 위치뿐 — CSS 파일이 아니라 JS 안의 템플릿 리터럴.
 
 ## 5. 폼 마크업 — placeholder는 label이 아니다
 
@@ -121,7 +121,7 @@ const GlobalStyle = createGlobalStyle`
 
 ### 원리
 
-[[HTML day04 폼과 테이블]] 에서 배운 폼 요소들이 styled로 감싸져 쓰였습니다. `name` 속성이 상태 키와 일치해서 `[e.target.name]` 계산된 속성명 핸들러( [[공부할 코드 - React 패턴]] )가 동작합니다 — **HTML 속성 설계가 JS 코드 구조를 결정**하는 사례입니다.
+HTML day04 폼과 테이블 에서 배운 폼 요소들이 styled로 감싸져 쓰였습니다. `name` 속성이 상태 키와 일치해서 `[e.target.name]` 계산된 속성명 핸들러( [[공부할 코드 - React 패턴]] )가 동작합니다 — **HTML 속성 설계가 JS 코드 구조를 결정**하는 사례입니다.
 
 아쉬운 점이 학습 포인트입니다: `<label>`이 없고 placeholder가 그 역할을 대신합니다. placeholder는 ① 입력을 시작하면 사라져서 "뭘 쓰는 중이었지"를 잃게 하고, ② 스크린리더가 label만큼 안정적으로 읽지 않으며, ③ 클릭 영역 확장(label 클릭 → input 포커스)도 없습니다.
 
@@ -146,10 +146,10 @@ const Grid = styled.div`
 `;
 ```
 
-[[CSS day08 flexbox]] 로 배운 배치가 "JSX 반복 렌더링과 만나는" 지점입니다. 카드 폭을 고정하고 `flex-wrap`으로 줄바꿈하는 방식인데, 개수·간격 계산은 `display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))`가 더 정확하게 처리합니다 — flexbox(1차원)와 grid(2차원)의 선택 기준을 이 화면들로 연습할 수 있습니다.
+CSS day08 flexbox 로 배운 배치가 "JSX 반복 렌더링과 만나는" 지점입니다. 카드 폭을 고정하고 `flex-wrap`으로 줄바꿈하는 방식인데, 개수·간격 계산은 `display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))`가 더 정확하게 처리합니다 — flexbox(1차원)와 grid(2차원)의 선택 기준을 이 화면들로 연습할 수 있습니다.
 
-연결: [[CSS day09 카페 키오스크]] 의 메뉴 그리드와 같은 문제 · [[CSS day11 커뮤니티와 예약 사이트]] 의 카드 배치
+연결: CSS day09 카페 키오스크 의 메뉴 그리드와 같은 문제 · CSS day11 커뮤니티와 예약 사이트 의 카드 배치
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트에서 배울 것]] · [[공부할 코드 - React 패턴]] · [[전문용어 정리]] · [[CSS MOC]] · [[HTML MOC]] · [[CSS day05 첫 스타일링]] · [[CSS day08 flexbox]] · [[CSS day14 position과 가상요소]] · [[HTML day04 폼과 테이블]]
+[[보드게임카페예약사이트 프로젝트에서 배울 것]] · [[공부할 코드 - React 패턴]] · [[전문용어 정리]]

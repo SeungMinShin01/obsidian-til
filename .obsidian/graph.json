@@ -5,7 +5,7 @@
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": true,
+  "collapse-color-groups": false,
   "colorGroups": [
     {
       "query": "path:\"JavaScript/\"",
@@ -18,7 +18,7 @@
       "query": "path:\"Java/\"",
       "color": {
         "a": 1,
-        "rgb": 15105570
+        "rgb": 15147850
       }
     },
     {
@@ -67,7 +67,7 @@
       "query": "path:\"프로젝트 코드 분석/\"",
       "color": {
         "a": 1,
-        "rgb": 15158332
+        "rgb": 14271684
       }
     },
     {
@@ -96,5 +96,5 @@
   "linkStrength": 1,
   "linkDistance": 250,
   "scale": 0.7132754945449266,
-  "close": true
+  "close": false
 }

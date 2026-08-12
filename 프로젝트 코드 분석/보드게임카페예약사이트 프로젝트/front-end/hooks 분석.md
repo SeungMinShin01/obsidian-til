@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react, hooks]
 # hooks 분석
 
 대상: `hooks/` 8개
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 이 프로젝트에서 가장 중요한 설계 결정이 이 폴더다. 화면(components)은 그리기만 하고, 상태와 통신은 전부 **커스텀 훅**으로 뺐다. 예전 React의 Container/Presentational 분리를 훅으로 구현한 형태다.
 
@@ -61,10 +61,10 @@ else                           url = "/api/games?page=...";
 
 - `useBoardGameReview`: 리뷰 목록·내 리뷰·등록·삭제를 한 훅에. `API_BASE_URL = "http://localhost:5000"` 하드코딩이 여기 있다 — 프록시 상대경로로 통일했어야 하는 지점.
 - `useCustomerSupport`: 공지 조회와 문의 등록. 문의자 이름을 `localStorage`의 `user_name`으로 미리 채운다.
-- `useCarousel`: `setInterval` 자동재생 + 마우스오버 일시정지. 클린업에서 인터벌을 정리한다 — [[JS day13 웹 스토리지와 인터벌]] 에서 다룬 패턴의 실전판.
+- `useCarousel`: `setInterval` 자동재생 + 마우스오버 일시정지. 클린업에서 인터벌을 정리한다 — JS day13 웹 스토리지와 인터벌 에서 다룬 패턴의 실전판.
 - `useImageSlider`: 인덱스 상태 + 썸네일 버퍼 계산.
 - `useRuleData`: `fetch("/data/rules.json")` — DB가 아니라 정적 파일을 데이터 소스로 쓴다. → [[data와 styles 분석]]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[components 분석 - BoardGame과 Rule]] · [[components 분석 - Reservation과 결제]] · [[전문용어 정리]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day11 DOM 조작]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - BoardGame과 Rule]] · [[components 분석 - Reservation과 결제]] · [[전문용어 정리]]

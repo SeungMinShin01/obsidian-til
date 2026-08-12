@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, sql]
 # routes 분석 - 보드게임과 리뷰
 
 대상: `routes/boardgames.js` · `routes/gamelikesRoutes.js` · `routes/reviewRoutes.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## boardgames.js — 목록·검색·필터·정렬
 
@@ -48,7 +48,7 @@ await db.query("UPDATE board_game SET likes = likes + 1 WHERE game_id = ?", [id]
 
 TOP3 조회는 `ORDER BY likes DESC LIMIT 3`. 단순하고 충분하다.
 
-> **피드백** — 확인-삽입-갱신 3단이 트랜잭션이 아니라서, 동시에 누르면 중복 검사를 둘 다 통과할 수 있다. `game_likes(user_id, game_id)`에 **UNIQUE 제약**을 걸면 DB가 최종 방어선이 되고, 코드는 중복 INSERT 에러를 409로 번역만 하면 된다. "애플리케이션 검사 + DB 제약"의 이중화가 정석이다. → [[SQL day02 테이블과 제약조건]]
+> **피드백** — 확인-삽입-갱신 3단이 트랜잭션이 아니라서, 동시에 누르면 중복 검사를 둘 다 통과할 수 있다. `game_likes(user_id, game_id)`에 **UNIQUE 제약**을 걸면 DB가 최종 방어선이 되고, 코드는 중복 INSERT 에러를 409로 번역만 하면 된다. "애플리케이션 검사 + DB 제약"의 이중화가 정석이다. → SQL day02 테이블과 제약조건
 > `likes` 컬럼 자체도 사실 `COUNT(game_likes)`로 유도 가능한 **비정규화** 값이다. 성능 때문에 두는 건 흔한 선택이지만, 어긋났을 때 재계산하는 보정 쿼리를 하나 마련해뒀어야 했다.
 
 ## reviewRoutes.js — 리뷰 CRUD
@@ -65,4 +65,4 @@ router.use((req, res, next) => { next(); });   // 빈 미들웨어
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[hooks 분석]] · [[components 분석 - BoardGame과 Rule]] · [[crawler 분석]] · [[전문용어 정리]] · [[SQL day02 테이블과 제약조건]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[hooks 분석]] · [[components 분석 - BoardGame과 Rule]] · [[crawler 분석]] · [[전문용어 정리]]

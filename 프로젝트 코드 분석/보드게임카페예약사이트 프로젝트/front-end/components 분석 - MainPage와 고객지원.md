@@ -8,7 +8,7 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react]
 # components 분석 - MainPage와 고객지원
 
 대상: `MainPage/` 6개 (MainPage · introduce · store · Beverage · ImageSliderSection · ImageSliderSimple) · `CustomerSupoort/CustomerSupport.js`
-상위: [[보드게임카페예약사이트 프로젝트 개요]]
+상위: [[보드게임카페예약사이트 프로젝트 MOC]]
 
 ## MainPage.js — 705줄의 얼굴
 
@@ -43,4 +43,4 @@ tags: [프로젝트, 일지, 보드게임카페예약사이트, react]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 개요]] · [[hooks 분석]] · [[routes 분석 - 고객지원과 관리자]] · [[data와 styles 분석]] · [[전문용어 정리]] · [[CSS day11 커뮤니티와 예약 사이트]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[hooks 분석]] · [[routes 분석 - 고객지원과 관리자]] · [[data와 styles 분석]] · [[전문용어 정리]]
