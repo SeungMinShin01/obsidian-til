@@ -17,7 +17,7 @@ day01 자료형 ─→ day02 타입변환 ─→ day03 연산자 ─→ day04 �
 day09 ArrayList ←─ day08 캡슐화 ←─ day07 메소드 ←─ day06 생성자 ←─ day05 클래스
       │
       ▼
-day10 상속·다형성
+day10 상속·다형성 ←─ day11 인터페이스
 ```
 
 | day | 노트 | 핵심 |
@@ -33,6 +33,7 @@ day10 상속·다형성
 | 09 | [[Java day09 ArrayList]] | 컬렉션, 제네릭, 가변 길이 |
 | 09 | [[Java day09 MVC 종합예제]] | **MVC 4계층, DTO·DAO, 싱글톤** |
 | 10 | [[Java day10 상속과 다형성]] | extends, 업·다운캐스팅, instanceof, 오버라이딩 |
+| 11 | [[Java day11 인터페이스]] | interface, implements, 추상메소드, 다중 구현 |
 
 ## 주제별 심화
 

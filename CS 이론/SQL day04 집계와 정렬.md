@@ -9,7 +9,7 @@ tags: [sql, day04, GROUP BY, 집계, 정렬, 페이징]
 
 > 실습 파일: `database/day04.sql` (member/buy 테이블 + GROUP BY·집계·정렬·LIMIT)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day03 DML과 조인]]
-> `day05.sql`은 day04와 동일한 파일입니다 — 다음 수업을 이어가기 위한 재실행용으로 보입니다.
+> `day05.sql`은 현재 빈 파일입니다 — 다음 수업(day05) 준비로 비워둔 상태. 내용이 채워지면 SQL day05 노트로 정리합니다.
 
 ## 1. 배운 내용
 
@@ -171,7 +171,7 @@ FROM buy;
 ## 실습 파일
 
 - `2026B_BE/src/database/day04.sql`
-- `2026B_BE/src/database/day05.sql` (day04와 동일)
+- `2026B_BE/src/database/day05.sql` (현재 빈 파일 — day05 수업 대기)
 - `2026B_BE/src/Note/DB.txt` (누적 요약 노트)
 
 ## 관련 노트

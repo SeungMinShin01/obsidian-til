@@ -8,7 +8,7 @@ tags: [java, day10, 상속, 다형성, 오버라이딩, 캐스팅]
 # Java day10 — 상속과 다형성
 
 > 실습 파일: `day10/exam/exam1.java`(상속·캐스팅), `exam2.java`(Object·instanceof), `exam3.java`(오버라이딩), `실습.java`(타이어 교체)
-> 허브: [[Java MOC]] · 이전: [[Java day09 ArrayList]]
+> 허브: [[Java MOC]] · 이전: [[Java day09 ArrayList]] · 다음: [[Java day11 인터페이스]]
 
 ## 1. 배운 내용
 
@@ -276,6 +276,29 @@ System.out.println(myCar.tire instanceof HankookTire);    // false — 지금 �
 
 `instanceof`는 **지금 실제로 들어있는 객체**를 기준으로 판단한다.
 
+### 1-10. 상태는 각자, 행위는 공유 — exam4 재실습
+
+타이어 예제를 차 두 대로 다시 돌려보면 인스턴스의 성질이 드러난다.
+
+```java
+Car myCar = new Car();      // @372f7a8d  ← 참조값이 서로 다르다
+Car yourCar = new Car();    // @2f92e0f4
+
+myCar.tire = new Tire();
+myCar.run();                // [일반]
+// yourCar.run();           // 오류! yourCar의 tire는 아직 null
+
+myCar.tire = new HankookTire();
+myCar.run();                // [한국] — myCar만 바뀌었다
+yourCar.tire = new Tire();
+yourCar.run();              // [일반] — yourCar는 영향 없다
+```
+
+- **멤버변수(`tire`)는 인스턴스마다 각각 생성된다** — 상태. 회원마다 '아이디'가 따로 있어야 하는 것과 같다
+- **메소드(`run()`)는 여러 인스턴스가 하나를 공유한다** — 행위. '로그인' 기능을 회원마다 따로 만들 필요가 없는 것과 같다
+- 대입 전의 멤버변수는 초기값이 없어서(null) 바로 쓰면 `this.tire is null` 오류가 난다 — **참조타입 멤버는 채우고 나서 쓴다**
+- 변수란 결국 **하나의 자료(값/인스턴스)를 저장/참조하는 것** — `myCar.tire`에 새 타이어를 대입하면 이전 참조가 교체된다
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. super — 부모를 가리키는 키워드
@@ -486,6 +509,7 @@ for (동물 a : 동물원) {
 - `2026B_BE/src/day10/exam/exam2.java` (Object, instanceof)
 - `2026B_BE/src/day10/exam/exam3.java` (오버로딩 vs 오버라이딩)
 - `2026B_BE/src/day10/exam/실습.java` (타이어 교체)
+- `2026B_BE/src/day10/exam/exam4.java` (차 두 대 — 상태는 각자, 행위는 공유)
 - `2026B_BE/src/day10/pracitce/practice10.java` (연습문제 6개)
 
 ## 관련 노트
