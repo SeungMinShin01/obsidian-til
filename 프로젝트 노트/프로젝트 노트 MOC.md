@@ -13,3 +13,4 @@ tags: [프로젝트노트, MOC, 허브]
 | 주제 | 핵심 |
 | --- | --- |
 | [[Spring Maven 환경설정]] | JDK·Maven 확인, Spring Initializr로 프로젝트 생성, pom.xml 구조 |
+| [[수집기 프로젝트 MOC]] | 채용공고 무인 수집 파이프라인 프로젝트의 허브 |
