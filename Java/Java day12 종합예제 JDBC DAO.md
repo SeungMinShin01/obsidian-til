@@ -119,6 +119,60 @@ public class BoardDto {
 - "자바는 저장소가 아니다"는 말이 DTO의 역할을 정확히 짚는다. 값을 오래 보관하는 곳은 DB이고, DTO는 그 한 줄을 **DB ↔ 자바 사이에서 실어 나르는 그릇**일 뿐이다 — [[Java day08 접근제한자와 static]] 에서 만든 DTO 개념이 DB와 짝지어지는 지점
 - `no` 는 [[SQL day02 테이블과 제약조건]] 의 `AUTO_INCREMENT` 로 DB가 매기므로, 저장할 때는 `content`·`writer` 만 채워 보내는 경우가 많다
 
+### 1-6. 등록(Create) 흐름을 실제로 잇기 — 배선 위에 첫 CRUD 얹기
+
+골격만 있던 계층에 첫 기능인 **등록(save)** 을 View→Controller→Dao 한 줄로 흘려보냈다. 통로만 세워 두었던 1-4에 이어, 이번에는 그 통로로 실제 자료가 흐른다.
+
+**① View — 메뉴 루프와 입력 예외 처리**
+
+```java
+public void run() {
+    while (true) {
+        try {
+            System.out.println("1.등록 2.전체조회 3.개별수정 4.개별삭제 선택:");
+            int ch = scan.nextInt();
+            if (ch == 1) { /* save() 호출 자리 */ }
+            else if (ch == 2) { }   // 조회
+            else if (ch == 3) { }   // 수정
+            else if (ch == 4) { }   // 삭제
+        } catch (InputMismatchException e) {
+            scan = new Scanner(System.in);   // 입력 객체를 새로 만들어 버퍼 비우기
+            System.out.println("[다시입력]" + e);
+        }
+    }
+}
+```
+
+- 메뉴를 `while(true)` 로 계속 띄우고, 숫자 대신 문자가 들어오면 `nextInt()` 가 `InputMismatchException` 을 던진다 — [[Java day12 예외 처리와 JDBC]] 1-3에서 정리한 그 예외가 메뉴 입력에서 바로 쓰인다
+- catch 안에서 `scan = new Scanner(System.in)` 으로 **입력 객체를 새로 만드는 게 핵심**이다. `nextInt()` 가 실패해도 잘못 들어온 토큰은 버퍼에 그대로 남아, 그 상태로 두면 다음 반복에서 같은 예외가 무한히 되풀이된다. 스캐너를 새로 열어 버퍼를 비워야 루프가 정상으로 돌아온다
+
+**② View.save() — 입력을 DTO로 묶어 컨트롤러에 넘기기**
+
+```java
+public void save() {
+    String 내용 = scan.next();
+    String 작성자 = scan.next();
+    BoardDto boardDto = new BoardDto(0, 내용, 작성자);  // no는 DB가 매기므로 0(미사용)
+    boolean result = bc.save(boardDto);
+    System.out.println(result ? ">등록성공" : ">등록실패");
+}
+```
+
+- 입력받은 값을 `BoardDto` 하나로 묶어 넘긴다. `no` 는 `AUTO_INCREMENT` 라 DB가 채우므로 자바에서는 아무 값(0)이나 넣는다 — 1-5에서 정리한 "저장할 때 no는 비워 보낸다"가 코드로 나타난 지점이다
+- 결과는 `boolean` 하나로 돌아온다. View는 성공/실패만 알면 되고, 실제 SQL은 Dao가 안에서 처리한다
+
+**③ Controller.save() — 통로 역할**
+
+```java
+public boolean save(BoardDto boardDto) {
+    return bd.save(boardDto);   // View가 준 dto를 Dao에 넘기고, 결과를 되돌려줌
+}
+```
+
+컨트롤러는 값을 바꾸지 않고 View↔Dao 사이를 잇기만 한다. MVC에서 컨트롤러의 자리를 가장 단순하게 보여주는 형태다.
+
+**④ Dao.save() — 실제 INSERT** 는 2-1에서 자세히 본다. 정리하면 등록 한 기능이 **View(입력·출력) → Controller(전달) → Dao(SQL 실행) → DB** 로 끝까지 이어졌고, 조회·수정·삭제도 같은 4단 통로를 그대로 재활용하면 된다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 자식 DAO가 부모의 conn을 이어받는 그림
@@ -164,9 +218,9 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ## 3. 더 나아가 알면 좋은 것
 
-### 3-1. 다음 단계 — CRUD 메소드 채우기
+### 3-1. 다음 단계 — 나머지 CRUD 채우기
 
-지금은 View→Controller→Dao 배선과 BaseDao 연결까지 세운 골격이다. 여기에 `save`·`findAll`·`update`·`delete` 를 붙이고, [[Java day12 예외 처리와 JDBC]] 의 `executeUpdate()`(변경)·`executeQuery()`+`ResultSet`(조회)을 각 메소드 안에 넣으면 [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 **진짜 DB 게시판**으로 완성된다.
+등록(save)까지는 View→Controller→Dao로 이어 붙였다(1-6). 남은 `findAll`·`update`·`delete` 도 같은 통로에 [[Java day12 예외 처리와 JDBC]] 의 `executeUpdate()`(변경)·`executeQuery()`+`ResultSet`(조회)을 넣으면 [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 **진짜 DB 게시판**으로 완성된다. 특히 전체조회(2번 메뉴)는 `executeQuery()`+`ResultSet` 으로 여러 줄을 `while(rs.next())` 로 훑어 `BoardDto` 리스트로 만드는 흐름이 이어질 자리다.
 
 ### 3-2. 연결 닫기와 커넥션 풀
 
