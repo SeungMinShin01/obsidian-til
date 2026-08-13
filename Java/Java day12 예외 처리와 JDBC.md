@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day12 — 예외 처리와 JDBC
 
 > 실습 파일: `day12/exam/exam1.java`(예외 처리), `exam2.java`(JDBC 연동·조회), `sample.sql`(DB 준비)
-> 허브: [[Java MOC]] · 이전: [[Java day11 종합예제 인터페이스 DAO]]
+> 허브: [[Java MOC]] · 이전: [[Java day11 종합예제 인터페이스 DAO]] · 다음: [[Java day12 종합예제 JDBC DAO]]
 
 ## 1. 배운 내용
 
@@ -235,4 +235,4 @@ JDBC의 핵심 타입이 전부 인터페이스라, MySQL 드라이버든 Oracle
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day05 클래스와 인스턴스]] · [[SQL day01 데이터베이스 기초]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day05 클래스와 인스턴스]] · [[SQL day01 데이터베이스 기초]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
