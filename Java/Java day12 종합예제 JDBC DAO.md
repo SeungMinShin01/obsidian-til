@@ -173,6 +173,63 @@ public boolean save(BoardDto boardDto) {
 
 **④ Dao.save() — 실제 INSERT** 는 2-1에서 자세히 본다. 정리하면 등록 한 기능이 **View(입력·출력) → Controller(전달) → Dao(SQL 실행) → DB** 로 끝까지 이어졌고, 조회·수정·삭제도 같은 4단 통로를 그대로 재활용하면 된다.
 
+### 1-7. 나머지 CRUD까지 — 조회·수정·삭제로 한 벌 완성
+
+등록에 이어 조회(Read)·수정(Update)·삭제(Delete)도 같은 View→Controller→Dao 통로에 그대로 얹어 CRUD 한 벌을 채웠다. 통로는 1-4에서 세웠고 1-6에서 등록을 흘려보냈으니, 나머지는 각 계층에 같은 모양의 메소드를 하나씩 더 붙이는 일이다. day09 콘솔 게시판이 메모리 ArrayList로 하던 CRUD가, 여기서는 저장 위치만 DB로 바뀌어 그대로 반복된다.
+
+**① 전체조회(Read) — executeQuery + ResultSet**
+
+```java
+// Dao
+public ArrayList<BoardDto> findAll() {
+    ArrayList<BoardDto> list = new ArrayList<>();
+    try {
+        String sql = "select * from board";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();          // 조회는 executeQuery
+        while (rs.next()) {                          // 레코드를 한 줄씩 이동
+            BoardDto dto = new BoardDto();
+            dto.setNo(rs.getInt("no"));             // rs.get타입("컬럼명")
+            dto.setContent(rs.getString("content"));
+            dto.setWriter(rs.getString("writer"));
+            list.add(dto);                           // 한 줄 = DTO 하나 → 리스트에 축적
+        }
+    } catch (SQLException e) { System.out.println(e); }
+    return list;
+}
+```
+
+- 등록·수정·삭제는 `executeUpdate()`(바뀐 레코드 수 int 반환)를 쓰지만, **조회만 `executeQuery()`** 로 결과 표(`ResultSet`)를 받는다 — [[Java day12 예외 처리와 JDBC]] 에서 정리한 두 실행 메소드의 구분이 여기서 갈린다
+- `ResultSet` 은 결과 표를 가리키는 커서다. `rs.next()` 가 다음 행으로 내려가며 더 없으면 false를 돌려주므로, `while(rs.next())` 한 줄로 전체 레코드를 훑는다. 각 행의 컬럼을 `rs.getInt`·`rs.getString` 으로 꺼내 `BoardDto` 하나로 옮기고, 그 DTO를 리스트에 쌓아 View까지 올려보낸다 — 1-5에서 정리한 "DTO는 DB 한 줄을 실어 나르는 그릇"이 조회에서 실제로 채워지는 지점이다
+- View는 받은 리스트를 `for (BoardDto dto : result)` 로 돌며 출력만 한다. [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 ArrayList를 훑던 자리가, 여기서는 DB에서 막 꺼내온 리스트로 바뀌었을 뿐 흐름은 같다
+
+**② 개별수정(Update) — where 절로 대상 한 줄 지정**
+
+```java
+String sql = "update board set content = ? where no = ?";
+ps.setString(1, boardDto.getContent());   // 바꿀 내용
+ps.setInt(2, boardDto.getNo());           // 어느 행을?
+int result = ps.executeUpdate();
+return result == 1;                        // 바뀐 레코드 수로 성공 판정
+```
+
+- 수정·삭제의 핵심은 **`where no = ?` 로 대상 한 줄을 지정**하는 것이다. where를 빠뜨리면 표 전체가 바뀌므로, 기본키(no)로 정확히 한 행만 겨냥한다 — [[SQL day03 DML과 조인]] 에서 배운 DML의 주의점이 코드로 이어진다
+- View의 update()는 수정할 번호와 내용을 받아 `new BoardDto(번호, 내용, null)` 로 묶어 넘긴다. writer는 이번 수정 대상이 아니라 `null` 로 둔다 — DTO의 필드 중 이번에 쓸 것만 채워 보내는 예다
+
+**③ 개별삭제(Delete) — dto 없이 식별자 하나만**
+
+```java
+public boolean delete(int no) {
+    String sql = "delete from board where no = ?";
+    PreparedStatement ps = conn.prepareStatement(sql);
+    ps.setInt(1, no);
+    return ps.executeUpdate() == 1;
+}
+```
+
+- 삭제는 어느 행을 지울지(no)만 있으면 되므로 DTO로 묶지 않고 `int no` 를 그대로 넘긴다. Controller·Dao의 매개변수도 `int no` 로, **필요한 만큼만 데이터를 흘려보내는** 형태다. 반대로 등록·수정은 값이 여러 개라 DTO로 묶는다 — 넘길 데이터의 개수가 DTO를 쓸지 말지를 가른다
+- 이렇게 등록·조회·수정·삭제가 모두 View(입출력) → Controller(전달) → Dao(SQL) → DB 로 이어져, [[Java day09 MVC 종합예제]] 의 메모리 콘솔 게시판이 값이 프로그램을 꺼도 남는 **DB 게시판**으로 완성됐다
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 자식 DAO가 부모의 conn을 이어받는 그림
@@ -218,9 +275,9 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ## 3. 더 나아가 알면 좋은 것
 
-### 3-1. 다음 단계 — 나머지 CRUD 채우기
+### 3-1. CRUD 그다음 — 반복 배관 코드 걷어내기
 
-등록(save)까지는 View→Controller→Dao로 이어 붙였다(1-6). 남은 `findAll`·`update`·`delete` 도 같은 통로에 [[Java day12 예외 처리와 JDBC]] 의 `executeUpdate()`(변경)·`executeQuery()`+`ResultSet`(조회)을 넣으면 [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 **진짜 DB 게시판**으로 완성된다. 특히 전체조회(2번 메뉴)는 `executeQuery()`+`ResultSet` 으로 여러 줄을 `while(rs.next())` 로 훑어 `BoardDto` 리스트로 만드는 흐름이 이어질 자리다.
+등록·조회·수정·삭제가 모두 이어지면서(1-6·1-7) [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 실제 DB 게시판으로 완성됐다. 다만 DAO 메소드마다 `prepareStatement → set → execute → try/catch` 가 거의 같은 모양으로 되풀이된다. 다음 단계는 이 반복을 줄이는 쪽이다 — 공통 실행 부분을 [[Java day10 상속과 다형성]] 처럼 `BaseDao` 로 한 번 더 끌어올리거나, Spring `JdbcTemplate`·JPA 같은 상위 도구로 넘어가면 SQL만 남기고 나머지 배관 코드를 걷어낼 수 있다(3-3).
 
 ### 3-2. 연결 닫기와 커넥션 풀
 
@@ -243,4 +300,4 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[KDT_2026 학습 지도]]
