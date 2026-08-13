@@ -19,7 +19,7 @@ Spring 프로젝트에서 MySQL을 쓸 때 이런 설정을 적었다.
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/mydb
 spring.datasource.username=root
-spring.datasource.password=1234
+spring.datasource.password=password
 ```
 
 여기서 실제로 일어나는 일은 다음과 같다.
