@@ -46,7 +46,7 @@ VS Code (읽기 전용) → Claude (분석·작성) → Obsidian Vault (원본)
 - 작업을 마칠 때마다 의미 있는 메시지로 커밋 (`SQL day04 노트 추가` 형식, 한국어)
 - 푸시는 obsidian-git 자동 동기화(30분)가 처리하므로 커밋만 남겨도 된다
 - 원격: `github.com/SeungMinShin01/obsidian-til` (Public — 시크릿·토큰·개인정보 커밋 금지)
-- `.gitignore` 대상: `workspace.json`, `.smart-env/`, `.trash/`, `_규칙/sync-config.json`
+- `.gitignore` 대상: `workspace.json`, `.smart-env/`, `.trash/`, `_규칙/sync-config.json`, `Fast-EQA/`
 
 ### 폴더 구조
 
@@ -54,6 +54,7 @@ VS Code (읽기 전용) → Claude (분석·작성) → Obsidian Vault (원본)
 Java/ Python/ JavaScript/ HTML/ CSS/ RPA/ AI/ CS 이론/   ← 학습노트 (day별)
 프로젝트 코드 분석/<프로젝트명>/                            ← 실제 프로젝트 분석 (코드 폴더별 분산)
 프로젝트 노트/                                            ← 사용자가 말한 내용 정리 (고립 구역)
+Fast-EQA/                                                ← 비공개 고립 구역 (로컬 전용 — GitHub·노션 미동기화)
 _규칙/  _템플릿/                                          ← 규칙과 템플릿
 ```
 
@@ -69,6 +70,16 @@ _규칙/  _템플릿/                                          ← 규칙과 템
 - 반대 방향도 금지 — 다른 폴더의 노트에서 `프로젝트 노트/`로 링크를 걸지 않는다
 - MOC·학습 지도에 이 폴더의 노트를 등록하지 않는다
 - 그래프뷰에서 이 폴더는 별도의 섬으로 떠 있는 것이 정상이다
+
+### Fast-EQA/ — 비공개 고립 구역
+
+`Fast-EQA/`는 **로컬 옵시디언에서만 존재하는** 완전 고립 구역이다.
+
+- `.gitignore` + `sync-config.json` exclude 대상 — **GitHub에도, 노션에도 올라가지 않는다**
+- 위키링크는 **이 폴더 안의 노트끼리만** 건다. 바깥으로 나가는 링크도, 바깥에서 들어오는 링크도 금지 (링크 텍스트가 공개 노트 본문에 남기 때문)
+- MOC·학습 지도·`Vault 홈`에 등록하지 않는다
+- 그래프뷰에서 독립 섬으로 뜨는 것이 정상이다
+- 이 폴더의 내용은 사용자 전용 — 마스터 세션 포함 모든 세션이 사용자의 명시 요청 없이는 읽지도 쓰지도 않는다
 
 ### 세션 역할 분담
 

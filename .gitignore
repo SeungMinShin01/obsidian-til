@@ -13,6 +13,9 @@
 # 동기화 설정 (노션 내부 ID 포함)
 _규칙/sync-config.json
 
+# 비공개 고립 구역 (로컬 옵시디언 전용 — GitHub·노션 미동기화)
+Fast-EQA/
+
 # OS
 .DS_Store
 Thumbs.db
