@@ -7,8 +7,8 @@ tags: [학습, java]
 
 # Java day11 — 인터페이스
 
-> 실습 파일: `day11/exam/KeyBoard.java`(인터페이스 정의), `exam1.java`(기본·구현·업캐스팅), `exam2.java`(키보드 규격 예제, 멤버 4종, 다중 구현)
-> 허브: [[Java MOC]] · 이전: [[Java day10 상속과 다형성]]
+> 실습 파일: `day11/exam/KeyBoard.java`(인터페이스 정의), `exam1.java`(기본·구현·업캐스팅), `exam2.java`(키보드 규격 예제, 멤버 4종, 다중 구현), `exam3.java`(타이어 교체·익명 구현체)
+> 허브: [[Java MOC]] · 이전: [[Java day10 상속과 다형성]] · 다음: [[Java day11 종합예제 인터페이스 DAO]]
 
 ## 1. 배운 내용
 
@@ -148,6 +148,33 @@ class Customer2 implements CustomerController {
 }
 ```
 
+### 1-8. 익명 구현체 — 클래스 선언 없이 일회성 구현
+
+`exam3.java`의 타이어 교체 예제가 인터페이스 다형성의 또 다른 쓰임을 보여준다. `Car`가 `Tire` 규격 타입 필드를 갖고, 꽂히는 타이어(구현체)에 따라 `run()` 의 동작이 달라진다.
+
+```java
+Car myCar = new Car();
+
+myCar.tire = new HankookTire();   // 구현체 교체
+myCar.run();                      // 한국타이어 회전
+myCar.tire = new KumhoTire();
+myCar.run();                      // 금호타이어 회전
+```
+
+구현 클래스를 딱 한 번만 쓸 거라면 클래스를 따로 선언하지 않고 그 자리에서 만들 수 있다 — **익명 구현체**다.
+
+```java
+myCar.tire = new Tire() {          // Tire는 인터페이스라 원래 new 불가지만
+    @Override
+    public void roll() {           // 그 자리에서 추상메소드를 구현하면 가능
+        System.out.println("일반타이어 회전");
+    }
+};
+myCar.run();
+```
+
+`new 인터페이스명() { 오버라이딩 }` 형태로, 이름 없는 구현체를 한 번 쓰고 버린다. 인터페이스 타입 변수에 뭐가 꽂혔는지 확인하는 건 여기서도 `instanceof` 다(`myCar.tire instanceof KumhoTire`). 익명 구현체는 뒤의 3-2 함수형 인터페이스·람다로 이어지는 출발점이다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. "규격 먼저" 설계 순서
@@ -214,7 +241,8 @@ System.out.println(add.calc(3, 4));    // 7
 - `2026B_BE/src/day11/exam/KeyBoard.java` (인터페이스 정의)
 - `2026B_BE/src/day11/exam/exam1.java` (기본 문법, 구현, 업캐스팅)
 - `2026B_BE/src/day11/exam/exam2.java` (키보드 규격, 멤버 4종, 다중 구현·상속)
+- `2026B_BE/src/day11/exam/exam3.java` (타이어 교체 다형성, 익명 구현체)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day09 ArrayList]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[Repository Pattern]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day09 ArrayList]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[Repository Pattern]] · [[KDT_2026 학습 지도]]
