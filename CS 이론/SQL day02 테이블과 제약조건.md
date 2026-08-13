@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/database/day02.sql, activity.sql
 작성일: 2026-08-10
-tags: [sql, day02, DDL, 제약조건, 스키마설계, 정규화]
+tags: [학습, sql]
 ---
 
 # SQL day02 — 테이블과 제약조건

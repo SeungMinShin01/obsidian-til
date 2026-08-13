@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/database/day03.sql
 작성일: 2026-08-10
-tags: [sql, day03, DML, JOIN, 집계]
+tags: [학습, sql]
 ---
 
 # SQL day03 — DML과 조인

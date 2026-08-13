@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day05, Note/day/day05
 작성일: 2026-08-10
-tags: [javascript, day05, 반복문, for]
+tags: [학습, javascript]
 ---
 
 # JS day05 — 반복문

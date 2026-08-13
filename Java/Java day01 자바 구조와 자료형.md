@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day01
 작성일: 2026-08-10
-tags: [java, day01, 자료형, 입출력]
+tags: [학습, java]
 ---
 
 # Java day01 — 자바 구조와 자료형

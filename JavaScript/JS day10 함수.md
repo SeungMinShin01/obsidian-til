@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day10, Note/day/day10
 작성일: 2026-08-10
-tags: [javascript, day10, 함수, 스코프]
+tags: [학습, javascript]
 ---
 
 # JS day10 — 함수

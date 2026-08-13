@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day07
 작성일: 2026-08-10
-tags: [java, day07, 메소드, MVC, 프로젝트]
+tags: [학습, java]
 ---
 
 # Java day07 — 메소드와 미니프로젝트

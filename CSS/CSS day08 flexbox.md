@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day08
 작성일: 2026-08-10
-tags: [css, day08, flex, 레이아웃]
+tags: [학습, css]
 ---
 
 # CSS day08 — flexbox

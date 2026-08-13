@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day09/종합예제, src/Note/Java.txt
 작성일: 2026-08-10
-tags: [java, day09, MVC, DTO, DAO, 싱글톤, 프로젝트]
+tags: [학습, java]
 ---
 
 # Java day09 — MVC 종합예제

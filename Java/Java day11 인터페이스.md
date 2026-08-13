@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day11
 작성일: 2026-08-12
-tags: [java, day11, 인터페이스, 다형성, 추상메소드]
+tags: [학습, java]
 ---
 
 # Java day11 — 인터페이스

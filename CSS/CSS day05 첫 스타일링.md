@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day05
 작성일: 2026-08-10
-tags: [css, day05, 시작]
+tags: [학습, css]
 ---
 
 # CSS day05 — 첫 스타일링

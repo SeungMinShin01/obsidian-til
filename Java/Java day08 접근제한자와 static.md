@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day08
 작성일: 2026-08-10
-tags: [java, day08, 캡슐화, static, DTO, MVC]
+tags: [학습, java]
 ---
 
 # Java day08 — 접근제한자와 static

@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: shirhal/back-end/routes
 작성일: 2026-08-11
-tags: [프로젝트, 일지, 보드게임카페예약사이트, sql]
+tags: [프로젝트, sql]
 ---
 
 # routes 분석 - 보드게임과 리뷰

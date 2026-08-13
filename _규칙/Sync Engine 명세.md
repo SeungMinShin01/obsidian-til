@@ -1,7 +1,7 @@
 ---
 출처: Claude 분석
 작성일: 2026-08-10
-tags: [운영, 동기화, nodejs, 명세]
+tags: [규칙]
 ---
 
 # Node.js Sync Engine 명세

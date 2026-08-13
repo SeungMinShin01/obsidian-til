@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day05, src/Note/day04.txt
 작성일: 2026-08-10
-tags: [java, day05, 객체지향, 클래스, GC]
+tags: [학습, java]
 ---
 
 # Java day05 — 클래스와 인스턴스

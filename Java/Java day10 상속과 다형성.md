@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day10
 작성일: 2026-08-11
-tags: [java, day10, 상속, 다형성, 오버라이딩, 캐스팅]
+tags: [학습, java]
 ---
 
 # Java day10 — 상속과 다형성

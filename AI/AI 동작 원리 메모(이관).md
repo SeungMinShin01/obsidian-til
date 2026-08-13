@@ -2,7 +2,7 @@
 출처: 이관
 원본: 노션 > Problem Solving > Velog > day02
 작성일: 2026-08-10
-tags: [ai, 메모]
+tags: [학습, ai]
 ---
 
 # AI 동작 원리 메모 (이관)

@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day06, day08/exam/CSS.txt, Note/CSSNote
 작성일: 2026-08-10
-tags: [css, day06, 선택자, 우선순위, 박스모델]
+tags: [학습, css]
 ---
 
 # CSS day06 — 선택자와 기본 속성

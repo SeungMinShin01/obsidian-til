@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day02, day03/day02, Note/JSNote
 작성일: 2026-08-10
-tags: [javascript, day02, 변수, 입출력]
+tags: [학습, javascript]
 ---
 
 # JS day02 — 변수와 입출력

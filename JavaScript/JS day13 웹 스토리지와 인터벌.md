@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day13, Note/day/day13
 작성일: 2026-08-10
-tags: [javascript, day13, localStorage, 쿼리스트링, setInterval]
+tags: [학습, javascript]
 ---
 
 # JS day13 — 웹 스토리지와 인터벌

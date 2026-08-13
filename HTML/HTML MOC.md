@@ -1,7 +1,7 @@
 ---
 출처: Claude 분석
 작성일: 2026-08-10
-tags: [html, MOC, 허브]
+tags: [허브, html]
 ---
 
 # HTML MOC

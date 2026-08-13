@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day15
 작성일: 2026-08-10
-tags: [css, day15, 테이블, object-fit, background, 스프라이트]
+tags: [학습, css]
 ---
 
 # CSS day15 — 테이블과 배경

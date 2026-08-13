@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day06
 작성일: 2026-08-10
-tags: [java, day06, 생성자, this, 프로젝트]
+tags: [학습, java]
 ---
 
 # Java day06 — 생성자와 콘솔 게시판

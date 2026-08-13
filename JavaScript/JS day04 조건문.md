@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day04, Note/day/day04
 작성일: 2026-08-10
-tags: [javascript, day04, 조건문, 분기]
+tags: [학습, javascript]
 ---
 
 # JS day04 — 조건문

@@ -1,7 +1,7 @@
 ---
 출처: Claude 분석
 작성일: YYYY-MM-DD
-tags: [<주제>, MOC, 허브]
+tags: [허브, <영역>]
 ---
 
 # <주제> MOC

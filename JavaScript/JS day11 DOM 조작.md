@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day11, Note/day/day11
 작성일: 2026-08-10
-tags: [javascript, day11, DOM, 이벤트, XSS]
+tags: [학습, javascript]
 ---
 
 # JS day11 — DOM 조작

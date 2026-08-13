@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/database/DB.txt, day01.sql
 작성일: 2026-08-10
-tags: [sql, database, mysql, DDL, day01]
+tags: [학습, sql]
 ---
 
 # SQL day01 — 데이터베이스 기초

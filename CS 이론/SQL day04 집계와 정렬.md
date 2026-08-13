@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/database/day04.sql
 작성일: 2026-08-11
-tags: [sql, day04, GROUP BY, 집계, 정렬, 페이징]
+tags: [학습, sql]
 ---
 
 # SQL day04 — 집계와 정렬

@@ -2,7 +2,7 @@
 출처: 이관
 원본: 노션 > Problem Solving > 정보처리기사 > day01, 1
 작성일: 2026-08-10
-tags: [python, 코드해석, 정보처리기사]
+tags: [학습, python]
 ---
 
 # Python 코드 해석 문제 (이관)

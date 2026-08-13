@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-08-12
-tags: [프로젝트노트, 수집기, GitHub-Actions, cron, 트리거]
+tags: [프로젝트]
 ---
 
 # 수집기 - Actions 실행과 트리거 설계

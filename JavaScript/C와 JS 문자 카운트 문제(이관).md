@@ -2,7 +2,7 @@
 출처: 이관
 원본: 노션 > Problem Solving > Velog > day02
 작성일: 2026-08-10
-tags: [javascript, c언어, switch, 코드해석]
+tags: [학습, javascript]
 ---
 
 # C와 JS 문자 카운트 문제 (이관)

@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-08-11
-tags: [프로젝트노트, Spring, Maven]
+tags: [프로젝트, java]
 ---
 
 # Spring Maven 환경설정

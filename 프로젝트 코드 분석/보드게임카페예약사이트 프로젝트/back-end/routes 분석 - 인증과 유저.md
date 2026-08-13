@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: shirhal/back-end/routes
 작성일: 2026-08-11
-tags: [프로젝트, 일지, 보드게임카페예약사이트, 인증]
+tags: [프로젝트, javascript]
 ---
 
 # routes 분석 - 인증과 유저

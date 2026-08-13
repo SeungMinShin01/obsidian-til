@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day07, Note/day/day07
 작성일: 2026-08-10
-tags: [javascript, day07, 객체, Object]
+tags: [학습, javascript]
 ---
 
 # JS day07 — 객체

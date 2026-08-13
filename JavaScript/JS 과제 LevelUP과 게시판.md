@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/LevelUP, extra_assignment
 작성일: 2026-08-10
-tags: [javascript, 과제, 모델링, 삼항연산자, 조인, 알고리즘]
+tags: [학습, javascript]
 ---
 
 # JS 과제 — LevelUP과 Message_Board

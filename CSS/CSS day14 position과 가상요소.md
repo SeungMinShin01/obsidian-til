@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day14, Note/day/day14
 작성일: 2026-08-10
-tags: [css, day14, position, 가상요소, hover]
+tags: [학습, css]
 ---
 
 # CSS day14 — position과 가상요소

@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-08-12
-tags: [프로젝트노트, 수집기, Python, datetime, 함수분석]
+tags: [프로젝트, python]
 ---
 
 # 수집기 05-2 - now_utc 함수 분석

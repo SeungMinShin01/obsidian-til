@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day03, Note/day/day03
 작성일: 2026-08-10
-tags: [javascript, day03, 자료형, 배열, 연산자]
+tags: [학습, javascript]
 ---
 
 # JS day03 — 자료형과 연산자

@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day12
 작성일: 2026-08-10
-tags: [javascript, day12, CRUD, 데이터모델링, 정규화, DOM]
+tags: [학습, javascript]
 ---
 
 # JS day12 — 제품·사원 관리 CRUD

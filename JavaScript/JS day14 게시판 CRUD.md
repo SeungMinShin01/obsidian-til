@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day14/test
 작성일: 2026-08-10
-tags: [javascript, day14, CRUD, 프로젝트, localStorage]
+tags: [학습, javascript]
 ---
 
 # JS day14 — 게시판 CRUD

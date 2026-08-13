@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day02
 작성일: 2026-08-10
-tags: [html, day02, 문서구조, 미디어]
+tags: [학습, html]
 ---
 
 # HTML day02 — 문서 구조와 미디어

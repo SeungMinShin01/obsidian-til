@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026_FE/day10
 작성일: 2026-08-10
-tags: [css, day10, 레이아웃, container, sidebar]
+tags: [학습, css]
 ---
 
 # CSS day10 — 카메라 강의 사이트

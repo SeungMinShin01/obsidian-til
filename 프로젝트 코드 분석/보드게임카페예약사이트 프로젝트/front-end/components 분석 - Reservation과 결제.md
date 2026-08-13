@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: shirhal/front-end/src
 작성일: 2026-08-11
-tags: [프로젝트, 일지, 보드게임카페예약사이트, react, 결제]
+tags: [프로젝트, javascript]
 ---
 
 # components 분석 - Reservation과 결제

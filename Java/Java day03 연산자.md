@@ -2,7 +2,7 @@
 출처: Claude 분석
 원본: KDT_2026/2026B_BE/src/day03
 작성일: 2026-08-10
-tags: [java, day03, 연산자]
+tags: [학습, java]
 ---
 
 # Java day03 — 연산자
