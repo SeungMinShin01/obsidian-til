@@ -8,17 +8,10 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "path:\"JavaScript/\"",
-      "color": {
-        "a": 1,
-        "rgb": 15844367
-      }
-    },
-    {
       "query": "path:\"HTML/\"",
       "color": {
         "a": 1,
-        "rgb": 3066993
+        "rgb": 16753700
       }
     },
     {
@@ -60,7 +53,7 @@
       "query": "path:\"프로젝트 코드 분석/\"",
       "color": {
         "a": 1,
-        "rgb": 14271684
+        "rgb": 13665926
       }
     },
     {
@@ -85,10 +78,10 @@
       }
     },
     {
-      "query": "file: \"수집기 프로젝트 MOC\"",
+      "query": "path:\"프로젝트 노트\"  ",
       "color": {
         "a": 1,
-        "rgb": 5431378
+        "rgb": 6902496
       }
     },
     {
@@ -97,6 +90,27 @@
         "a": 1,
         "rgb": 65450
       }
+    },
+    {
+      "query": "path:\"Java/\"  ",
+      "color": {
+        "a": 1,
+        "rgb": 15869478
+      }
+    },
+    {
+      "query": "path:\"JavaScript/\"  ",
+      "color": {
+        "a": 1,
+        "rgb": 16709704
+      }
+    },
+    {
+      "query": "",
+      "color": {
+        "a": 1,
+        "rgb": 5419488
+      }
     }
   ],
   "collapse-display": true,
@@ -104,11 +118,11 @@
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
-  "collapse-forces": false,
+  "collapse-forces": true,
   "centerStrength": 0.835758835758836,
-  "repelStrength": 14.8208092485549,
+  "repelStrength": 17.3451207072424,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.2312676711037986,
-  "close": false
+  "scale": 0.231267671103795,
+  "close": true
 }
