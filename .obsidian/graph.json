@@ -15,13 +15,6 @@
       }
     },
     {
-      "query": "path:\"Java/\"",
-      "color": {
-        "a": 1,
-        "rgb": 15147850
-      }
-    },
-    {
       "query": "path:\"HTML/\"",
       "color": {
         "a": 1,
@@ -83,6 +76,27 @@
         "a": 1,
         "rgb": 16777215
       }
+    },
+    {
+      "query": "file: \"Fast-EQA 홈\"",
+      "color": {
+        "a": 1,
+        "rgb": 64208
+      }
+    },
+    {
+      "query": "file: \"수집기 프로젝트 MOC\"",
+      "color": {
+        "a": 1,
+        "rgb": 5431378
+      }
+    },
+    {
+      "query": "file: \"FastEQA 개요\"",
+      "color": {
+        "a": 1,
+        "rgb": 11403519
+      }
     }
   ],
   "collapse-display": true,
@@ -95,6 +109,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.7132755105061791,
+  "scale": 0.945241781082158,
   "close": true
 }
