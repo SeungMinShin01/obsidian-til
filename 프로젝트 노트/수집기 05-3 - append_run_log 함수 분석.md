@@ -6,7 +6,8 @@ tags: [프로젝트노트, 수집기, Python, 함수분석]
 
 # 수집기 05-3 - append_run_log 함수 분석
 
-> 상위: [[수집기 05 - main.py 코드 분석]] · 세부: [[수집기 05-3 mkdir 소스 읽기]]
+> 상위: [[수집기 05 - main.py 코드 분석]]
+> 세부: [[수집기 05-3-1 - mkdir 소스 읽기]] · [[수집기 05-3-2 - 경로 객체와 타입 힌트]]
 
 ```python
 def append_run_log(message: str) -> None:
@@ -22,7 +23,7 @@ def append_run_log(message: str) -> None:
 
 ### 1-1. `def append_run_log(message: str) -> None:`
 
-`message: str`은 매개변수와 타입 힌트, `-> None`은 반환값이 없다는 표시다.
+`message: str`은 매개변수와 타입 힌트, `-> None`은 반환값이 없다는 표시다. 매개변수의 이름은 `message`이고 `str`은 그 타입 힌트다. → [[수집기 05-3-2 - 경로 객체와 타입 힌트]]
 
 여기서 드러나는 개념은 **이 함수가 값을 만드는 함수가 아니라 일을 하는 함수**라는 것이다.
 
@@ -59,7 +60,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 `True`가 대문자인 것도 파이썬 고유다. 자바와 JS는 `true`, 파이썬은 `True` / `False` / `None`이다.
 
-`mkdir`이 이 두 옵션을 안에서 어떻게 쓰는지는 소스를 열어보면 드러난다. → [[수집기 05-3 mkdir 소스 읽기]]
+`mkdir`이 이 두 옵션을 안에서 어떻게 쓰는지는 소스를 열어보면 드러난다. → [[수집기 05-3-1 - mkdir 소스 읽기]]
 
 ### 1-3. `with LOG_FILE.open("a", encoding="utf-8") as f:`
 
@@ -200,4 +201,4 @@ def append_line(path: Path, message: str) -> None:
 
 ## 관련 노트
 
-[[수집기 05 - main.py 코드 분석]] · [[수집기 05-3 mkdir 소스 읽기]]
+[[수집기 05 - main.py 코드 분석]] · [[수집기 05-3-1 - mkdir 소스 읽기]] · [[수집기 05-3-2 - 경로 객체와 타입 힌트]]
