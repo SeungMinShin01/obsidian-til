@@ -52,7 +52,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC
 | 10 | [[Java day10 상속과 다형성]] | extends, 업·다운캐스팅, instanceof, 오버라이딩 |
 | 11 | [[Java day11 인터페이스]] | interface, implements, 추상메소드, 다중 구현, 익명 구현체 |
 | 11 | [[Java day11 종합예제 인터페이스 DAO]] | **인터페이스 DAO 규격, 제네릭, 싱글톤 전 계층, BaseTime 상속** |
-| 12 | [[Java day12 예외 처리와 JDBC]] | try-catch-finally, 다중 catch, throws, JDBC 연결·PreparedStatement |
+| 12 | [[Java day12 예외 처리와 JDBC]] | try-catch-finally, 다중 catch, throws, JDBC 연결·PreparedStatement·executeQuery·ResultSet 조회 |
 
 ## 주제별 심화
 

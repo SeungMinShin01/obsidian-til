@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day12 — 예외 처리와 JDBC
 
-> 실습 파일: `day12/exam/exam1.java`(예외 처리), `exam2.java`·`dbtest.java`(JDBC 드라이버 로드)
+> 실습 파일: `day12/exam/exam1.java`(예외 처리), `exam2.java`(JDBC 연동·조회), `sample.sql`(DB 준비)
 > 허브: [[Java MOC]] · 이전: [[Java day11 종합예제 인터페이스 DAO]]
 
 ## 1. 배운 내용
@@ -126,7 +126,31 @@ System.out.println(result);
 
 - SQL은 자바 문자열로 적으므로 IDE의 자동완성이 안 된다. 오타가 실행 중에야 드러나기 쉬운 지점이다
 - 연결·실행 중 문제는 `SQLException`(일반예외)으로 잡는다. 드라이버 없음(`ClassNotFoundException`)과 서버 연동 실패(`SQLException`)를 **다중 catch로 나눠** 원인을 구분한다 — 1-4에서 배운 다중 catch가 그대로 쓰인다
-- `executeUpdate()` 는 조회(SELECT)가 아니라 **변경**용이라 결과로 "몇 줄이 바뀌었는지"를 돌려준다. 조회는 뒤에 나올 `executeQuery()` + `ResultSet` 이 담당한다
+- `executeUpdate()` 는 조회(SELECT)가 아니라 **변경**용이라 결과로 "몇 줄이 바뀌었는지"를 돌려준다. 조회는 아래 1-7-1의 `executeQuery()` + `ResultSet` 이 담당한다
+
+#### 1-7-1. 조회하기 — executeQuery · ResultSet
+
+INSERT·UPDATE·DELETE는 `executeUpdate()` 로 "바뀐 줄 수"를 받지만, SELECT는 **결과 표(레코드 묶음)** 를 받아야 하므로 `executeQuery()` 와 `ResultSet` 을 쓴다.
+
+```java
+// select 필드명 from 테이블명;
+String sql2 = "select * from test";
+ps = conn.prepareStatement(sql2);
+ResultSet rs = ps.executeQuery();   // 조회 결과를 ResultSet에 담는다
+rs.next();                          // 커서를 첫(다음) 레코드로 이동
+System.out.println(rs.getInt("no"));      // rs.get타입("속성명")
+System.out.println(rs.getString("name"));
+```
+
+| 타입·메소드 | 하는 일 |
+| --- | --- |
+| `ps.executeQuery()` | SELECT를 실행하고 결과를 `ResultSet`(조회 결과 커서)으로 반환한다 |
+| `rs.next()` | 커서를 다음 레코드로 옮긴다. 읽을 레코드가 있으면 `true`, 없으면 `false` |
+| `rs.getInt("no")` / `rs.getString("name")` | 현재 레코드에서 **컬럼 이름**으로 값을 타입에 맞게 꺼낸다 |
+
+- `ResultSet` 은 처음에 첫 레코드 **앞**을 가리키므로, 값을 읽기 전에 `rs.next()` 로 한 칸 내려야 한다. 여러 행을 읽을 땐 `while (rs.next()) { ... }` 로 반복한다
+- `getInt`·`getString` 의 인자는 SELECT한 **컬럼명**이다. `sample.sql` 에서 만든 `no`·`name` 이 그대로 키가 된다
+- 변경은 `executeUpdate()`(반환: 레코드 수), 조회는 `executeQuery()`(반환: `ResultSet`) — 이 둘을 나눠 쓰는 게 JDBC 실행의 갈림길이다
 
 ### 1-8. 실행 전 DB 준비 (sample.sql)
 
@@ -161,7 +185,7 @@ Throwable
 
 ### 2-2. JDBC 연동의 전체 흐름
 
-JDBC 연동은 6단계로 흐른다. exam2는 ①~④(드라이버 로드·연결·명령 준비·실행)까지 구현했고, 조회(⑤)와 닫기(⑥)가 다음 몫이다.
+JDBC 연동은 6단계로 흐른다. exam2는 ①~⑤(드라이버 로드·연결·명령 준비·실행·`ResultSet` 조회)까지 구현했고, 닫기(⑥)가 다음 몫이다.
 
 ```
 ① 드라이버 로드   Class.forName("com.mysql.cj.jdbc.Driver")
@@ -206,8 +230,7 @@ JDBC의 핵심 타입이 전부 인터페이스라, MySQL 드라이버든 Oracle
 ## 실습 파일
 
 - `2026B_BE/src/day12/exam/exam1.java` (예외 종류, 다중 catch, throws)
-- `2026B_BE/src/day12/exam/exam2.java` (JDBC 드라이버 로드 → 연결 → PreparedStatement → executeUpdate)
-- `2026B_BE/src/day12/exam/dbtest.java` (드라이버 로드 + 예외 처리)
+- `2026B_BE/src/day12/exam/exam2.java` (JDBC 드라이버 로드 → 연결 → PreparedStatement → executeUpdate → executeQuery·ResultSet 조회)
 - `2026B_BE/src/day12/exam/sample.sql` (실습용 DB·테이블 생성)
 
 ## 관련 노트
