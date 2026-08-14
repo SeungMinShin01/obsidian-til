@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_BE/src/database/day05.sql
+원본: KDT_2026/2026B_BE/src/database/day05.sql, practice5.sql
 작성일: 2026-08-14
 tags: [학습, sql]
 ---
 
 # SQL day05 — 외래키 CASCADE와 조인
 
-> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + INNER JOIN 3형태 + OUTER JOIN·합집합·차집합)
+> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + INNER JOIN 3형태 + OUTER JOIN·합집합·차집합), `database/practice5.sql` (3테이블 스키마 실전 연습)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day04 집계와 정렬]]
 
 이번에는 두 테이블을 PK-FK로 이어놓고, ① 부모 값이 바뀌면 자식은 어떻게 되는지(참조 동작), ② 이어진 두 테이블을 어떻게 하나로 조회하는지(JOIN)를 정리합니다. PK/FK 선언 자체는 [[SQL day02 테이블과 제약조건]], JOIN 첫 등장은 [[SQL day03 DML과 조인]] 에서 다뤘고, 여기서는 그 둘을 이어 붙입니다.
@@ -151,6 +151,92 @@ WHERE num_fk IS NULL;
 
 `LEFT JOIN` 후 `WHERE num_fk IS NULL` 조건을 걸면, 오른쪽에서 짝을 못 찾은 왼쪽 행만 남습니다. "참조되지 않는 부모 찾기", "주문 없는 회원 찾기" 같은 질의가 이 패턴입니다.
 
+### 1-8. 실전 스키마로 조인 연습 (practice5.sql)
+
+앞의 `table1/table2`는 관계만 보이려고 만든 뼈대라 값에 의미가 없었습니다. 같은 개념을 이름 있는 3개 테이블로 다시 세워 봅니다 — 카테고리 → 제품 → 재고가 한 방향으로 이어지는 구조입니다.
+
+```sql
+create table pcategory(
+  카테고리번호_pk int unsigned auto_increment,
+  카테고리명 varchar(10) not null,
+  primary key(카테고리번호_pk)
+);
+
+create table product(
+  제품번호_pk int unsigned auto_increment,
+  제품명 varchar(100) not null,
+  제품가격 int unsigned not null,
+  카테고리번호_fk int unsigned,
+  primary key(제품번호_pk),
+  foreign key(카테고리번호_fk) references pcategory(카테고리번호_pk)
+);
+
+create table stock(
+  재고번호_pk int unsigned auto_increment,
+  재고수량 int,
+  재고등록날짜 datetime default now(),
+  제품번호_fk int unsigned,
+  primary key(재고번호_pk),
+  foreign key(제품번호_fk) references product(제품번호_pk)
+);
+```
+
+여기서 컬럼 선언에 새로 붙은 옵션들을 정리하면 이렇습니다.
+
+| 옵션 | 뜻 |
+| --- | --- |
+| `auto_increment` | PK 값을 넣지 않으면 1씩 자동 증가시켜 채움 (수동으로 번호 매길 필요 없음) |
+| `unsigned` | 음수 없는 정수 — 번호·가격·수량처럼 0 이상만 나오는 값에 범위를 두 배로 |
+| `not null` | 빈 값 금지 (이름·가격은 반드시 있어야 함) |
+| `default now()` | 값을 안 넣으면 현재 시각을 자동 기록 (등록 시각용) |
+
+관계는 `pcategory 1 : N product`, `product 1 : N stock` 두 단계입니다. 재고를 카테고리까지 거슬러 보려면 두 개의 FK를 타고 세 테이블을 이어야 합니다.
+
+**3개 테이블 조인** — INNER JOIN을 한 번 더 이어 붙이면 됩니다. 조인 조건(`ON`)을 테이블이 늘어난 만큼 계속 추가하는 게 핵심입니다.
+
+```sql
+-- 제품명 + 카테고리명 + 재고수량 한 번에
+select p.제품명, c.카테고리명, s.재고수량
+from product p
+join pcategory c on p.카테고리번호_fk = c.카테고리번호_pk
+join stock s     on p.제품번호_pk    = s.제품번호_fk;
+```
+
+**짝 없는 쪽까지 살리기** — "제품이 하나도 없는 카테고리도 목록에 나오게" 하려면 부모(카테고리)를 전부 남기는 LEFT JOIN을 씁니다. 1-5·1-7에서 본 패턴을 이름 있는 테이블에 그대로 적용한 것입니다.
+
+```sql
+-- 제품 없는 카테고리도 표시 (제품 자리는 NULL)
+select c.카테고리명, p.제품명
+from pcategory c
+left join product p on c.카테고리번호_pk = p.카테고리번호_fk;
+
+-- 재고가 한 번도 등록되지 않은 제품 = 짝 없는 쪽만 (차집합)
+select p.제품명
+from product p
+left join stock s on p.제품번호_pk = s.제품번호_fk
+where s.재고번호_pk is null;
+```
+
+**조인 + 집계** — 조인으로 테이블을 이어 붙인 뒤 [[SQL day04 집계와 정렬]]의 `group by`·집계 함수를 얹으면 "카테고리별 합계", "제품별 총재고" 같은 질문에 답할 수 있습니다.
+
+```sql
+-- 카테고리별 총 재고 수량
+select c.카테고리명, sum(s.재고수량) as 총재고
+from pcategory c
+join product p on c.카테고리번호_pk = p.카테고리번호_fk
+join stock s   on p.제품번호_pk    = s.제품번호_fk
+group by c.카테고리명;
+
+-- 제품별 총재고를 많은 순으로
+select p.제품명, sum(s.재고수량) as 총재고수량
+from product p
+join stock s on p.제품번호_pk = s.제품번호_fk
+group by p.제품명
+order by 총재고수량 desc;
+```
+
+정리하면 practice5의 9문제는 결국 세 갈래입니다: ① 이어진 테이블을 조인으로 붙이기(2·3테이블), ② 짝 없는 쪽을 LEFT JOIN·`IS NULL`로 다루기, ③ 조인 결과에 `group by` 집계를 얹기. 앞 절들에서 하나씩 배운 조각을 실제 스키마에서 조합하는 연습입니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. INNER JOIN은 "양쪽에 다 있는 것만"
@@ -193,6 +279,7 @@ FK 컬럼에는 조인·참조 검사가 자주 걸리므로 인덱스가 중요
 ## 실습 파일
 
 - `2026B_BE/src/database/day05.sql`
+- `2026B_BE/src/database/practice5.sql` (pcategory·product·stock 3테이블 조인 연습)
 
 ## 관련 노트
 
