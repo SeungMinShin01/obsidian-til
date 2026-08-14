@@ -7,7 +7,7 @@ tags: [학습, sql]
 
 # SQL day05 — 외래키 CASCADE와 조인
 
-> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + JOIN 3형태)
+> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + INNER JOIN 3형태 + OUTER JOIN·합집합·차집합)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day04 집계와 정렬]]
 
 이번에는 두 테이블을 PK-FK로 이어놓고, ① 부모 값이 바뀌면 자식은 어떻게 되는지(참조 동작), ② 이어진 두 테이블을 어떻게 하나로 조회하는지(JOIN)를 정리합니다. PK/FK 선언 자체는 [[SQL day02 테이블과 제약조건]], JOIN 첫 등장은 [[SQL day03 DML과 조인]] 에서 다뤘고, 여기서는 그 둘을 이어 붙입니다.
@@ -100,6 +100,57 @@ INNER JOIN table2 t2 ON t1.num_pk = t2.num_fk;   -- 같은 결과
 
 `INNER JOIN ... ON`을 쓰는 편이 안전합니다. 조인 조건(`ON`)과 데이터 필터(`WHERE`)가 분리돼 읽기 좋고, `ON`을 빠뜨리면 문법이 어색해져 실수(조건 없는 카티션 곱)를 눈치채기 쉽습니다.
 
+### 1-5. OUTER JOIN — 짝 없는 행까지 살려서 조회
+
+INNER JOIN이 "양쪽에 다 있는 짝만" 남긴다면, OUTER JOIN은 한쪽 테이블의 행을 짝이 없어도 전부 남깁니다. 짝이 없는 자리는 NULL로 채워집니다.
+
+```sql
+-- 왼쪽(table1) 전부 + 오른쪽 교집합. table1의 num_pk가 모두 참조되므로 여기선 8행
+SELECT * FROM table1 t1
+LEFT OUTER JOIN table2 t2 ON t1.num_pk = t2.num_fk;
+
+-- 오른쪽(table2) 전부 + 왼쪽 교집합
+SELECT * FROM table1 t1
+RIGHT OUTER JOIN table2 t2 ON t1.num_pk = t2.num_fk;
+
+-- OUTER는 생략 가능 (LEFT JOIN = LEFT OUTER JOIN)
+SELECT * FROM table1 t1
+RIGHT JOIN table2 t2 ON t1.num_pk = t2.num_fk;
+```
+
+`num_fk`가 `1,2,1,1,2`라 `num_pk=1`은 3번, `num_pk=2`는 2번 매칭됩니다. LEFT JOIN을 하면 매칭된 5행에 더해, 참조된 부모 행이 여러 자식과 짝지어지며 행이 늘어 8행이 나옵니다. `OUTER` 키워드는 생략해도 같은 동작이라 보통 `LEFT JOIN` / `RIGHT JOIN`으로 짧게 씁니다.
+
+| 조인 | 남기는 기준 |
+| --- | --- |
+| INNER JOIN | 양쪽에 짝이 있는 행만 |
+| LEFT (OUTER) JOIN | 왼쪽 전부 + 오른쪽 교집합 |
+| RIGHT (OUTER) JOIN | 오른쪽 전부 + 왼쪽 교집합 |
+
+### 1-6. 합집합(UNION) — 두 조회 결과를 세로로 합치기
+
+JOIN이 테이블을 가로로 붙인다면, `UNION`은 두 SELECT 결과를 세로로 이어 붙입니다. MySQL에는 FULL OUTER JOIN이 없어서, LEFT JOIN과 RIGHT JOIN을 각각 구한 뒤 `UNION`으로 합쳐 흉내 냅니다(오라클의 FULL OUTER JOIN에 대응).
+
+```sql
+SELECT * FROM table1 t1 LEFT JOIN table2 t2 ON t1.num_pk = t2.num_fk
+UNION
+SELECT * FROM table1 t1 RIGHT JOIN table2 t2 ON t1.num_pk = t2.num_fk;
+```
+
+`UNION`은 중복 행을 제거하고 합칩니다. 중복까지 그대로 남기려면 `UNION ALL`을 씁니다. 위아래 두 SELECT는 **컬럼 개수와 타입이 맞아야** 합쳐집니다.
+
+### 1-7. 차집합 — IS NULL로 "짝 없는 쪽"만 골라내기
+
+OUTER JOIN 결과에서 짝이 없어 NULL이 된 행만 남기면, 한쪽에만 있고 다른 쪽에는 없는 값(차집합)을 뽑을 수 있습니다.
+
+```sql
+-- table1에는 있지만 어떤 자식도 참조하지 않는 num_pk
+SELECT num_pk FROM table1 t1
+LEFT JOIN table2 t2 ON t1.num_pk = t2.num_fk
+WHERE num_fk IS NULL;
+```
+
+`LEFT JOIN` 후 `WHERE num_fk IS NULL` 조건을 걸면, 오른쪽에서 짝을 못 찾은 왼쪽 행만 남습니다. "참조되지 않는 부모 찾기", "주문 없는 회원 찾기" 같은 질의가 이 패턴입니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. INNER JOIN은 "양쪽에 다 있는 것만"
@@ -133,9 +184,10 @@ FK 컬럼에는 조인·참조 검사가 자주 걸리므로 인덱스가 중요
 
 ### 3-3. 다음에 볼 키워드
 
-- `LEFT JOIN` / `RIGHT JOIN` / `SELF JOIN`
+- `SELF JOIN` (같은 테이블을 자기 자신과 조인), `UNION ALL`과 `UNION`의 차이
 - 참조 동작 나머지: `SET NULL`, `NO ACTION`, `RESTRICT`
 - 다대다 관계와 연결 테이블(junction table)
+- 서브쿼리 기반 차집합(`NOT IN`, `NOT EXISTS`)과 `IS NULL` 방식의 성능 비교
 - 조인 성능과 실행 계획(`EXPLAIN`)
 
 ## 실습 파일
