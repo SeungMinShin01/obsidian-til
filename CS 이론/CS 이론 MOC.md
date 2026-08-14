@@ -29,6 +29,7 @@ CS 이론·정보처리기사·데이터베이스 노트의 허브입니다. 상
 | 02 | [[SQL day02 테이블과 제약조건]] | 자료형, PK/FK, 스키마 설계 |
 | 03 | [[SQL day03 DML과 조인]] | INSERT/SELECT/UPDATE/DELETE, JOIN, 정규화 |
 | 04 | [[SQL day04 집계와 정렬]] | GROUP BY, 집계함수, HAVING, ORDER BY, LIMIT 페이징 |
+| 05 | [[SQL day05 외래키 CASCADE와 조인]] | FK 참조 무결성, ON UPDATE/DELETE CASCADE, INNER JOIN |
 
 ## 기타
 

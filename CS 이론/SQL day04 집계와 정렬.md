@@ -8,8 +8,7 @@ tags: [학습, sql]
 # SQL day04 — 집계와 정렬
 
 > 실습 파일: `database/day04.sql` (member/buy 테이블 + GROUP BY·집계·정렬·LIMIT)
-> 허브: [[CS 이론 MOC]] · 이전: [[SQL day03 DML과 조인]]
-> `day05.sql`은 현재 빈 파일입니다 — 다음 수업(day05) 준비로 비워둔 상태. 내용이 채워지면 SQL day05 노트로 정리합니다.
+> 허브: [[CS 이론 MOC]] · 이전: [[SQL day03 DML과 조인]] · 다음: [[SQL day05 외래키 CASCADE와 조인]]
 
 ## 1. 배운 내용
 
@@ -171,9 +170,8 @@ FROM buy;
 ## 실습 파일
 
 - `2026B_BE/src/database/day04.sql`
-- `2026B_BE/src/database/day05.sql` (현재 빈 파일 — day05 수업 대기)
 - `2026B_BE/src/Note/DB.txt` (누적 요약 노트)
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[Java day09 ArrayList]]
+[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[Java day09 ArrayList]]
