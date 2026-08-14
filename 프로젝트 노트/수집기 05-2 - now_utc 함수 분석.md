@@ -101,7 +101,3 @@ datetime.now(timezone.utc)  # UTC 기준
 - `strptime` — `strftime`의 반대. 문자열을 시각 객체로 되돌린다
 - ISO 8601 형식(`2026-08-12T08:58:53+00:00`)과 `isoformat()`
 - 시각에 의존하는 함수를 어떻게 테스트할 것인가
-
-## 관련 노트
-
-[[수집기 05 - main.py 코드 분석]]

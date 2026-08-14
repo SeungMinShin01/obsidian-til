@@ -195,7 +195,3 @@ if user.confirmed_deletion:
 | 기본값 매개변수 | `mode=0o777, parents=False, exist_ok=False` |
 
 **예외 순서가 특히 중요하다.** `except OSError`를 위에 썼다면 `FileNotFoundError`도 거기서 잡혀버려 부모 생성 로직이 아예 돌지 않는다. **좁은 예외를 먼저, 넓은 예외를 나중에** 두어야 하고, 이는 자바의 catch 블록 순서 규칙과 같다.
-
-## 관련 노트
-
-[[수집기 05-3 - append_run_log 함수 분석]]
