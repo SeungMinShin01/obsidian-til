@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "수집기",
+  "search": "논문",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -123,6 +123,6 @@
   "repelStrength": 17.3451207072424,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.7132755264673872,
-  "close": false
+  "scale": 1.1148145186214413,
+  "close": true
 }
