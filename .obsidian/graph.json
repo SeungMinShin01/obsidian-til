@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "논문",
+  "search": "FAST",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -123,6 +123,6 @@
   "repelStrength": 17.3451207072424,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 1.0626146953847277,
-  "close": false
+  "scale": 0.7134442781071477,
+  "close": true
 }
