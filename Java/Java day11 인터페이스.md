@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day11 — 인터페이스
 
-> 실습 파일: `day11/exam/KeyBoard.java`(인터페이스 정의), `exam1.java`(기본·구현·업캐스팅), `exam2.java`(키보드 규격 예제, 멤버 4종, 다중 구현), `exam3.java`(타이어 교체·익명 구현체)
+> 실습 파일: `day11/exam/KeyBoard.java`(인터페이스 정의), `exam1.java`(기본·구현·업캐스팅), `exam2.java`(키보드 규격 예제, 멤버 4종, 다중 구현), `exam3.java`(타이어 교체·익명 구현체), `day11/practice/practice13.java`(연습문제 9개)
 > 허브: [[Java MOC]] · 이전: [[Java day10 상속과 다형성]] · 다음: [[Java day11 종합예제 인터페이스 DAO]]
 
 ## 1. 배운 내용
@@ -175,6 +175,117 @@ myCar.run();
 
 `new 인터페이스명() { 오버라이딩 }` 형태로, 이름 없는 구현체를 한 번 쓰고 버린다. 인터페이스 타입 변수에 뭐가 꽂혔는지 확인하는 건 여기서도 `instanceof` 다(`myCar.tire instanceof KumhoTire`). 익명 구현체는 뒤의 3-2 함수형 인터페이스·람다로 이어지는 출발점이다.
 
+### 1-9. practice13 — 인터페이스 9문제
+
+`day11/practice/practice13.java`에서 오늘 배운 문법을 문제 아홉 개로 한 번에 훑었습니다. 각 문제가 위의 어떤 절에 해당하는지 대응시켜 두면 복습이 빨라집니다.
+
+**1번 — 구현 필수와 다형성의 기본형**
+
+```java
+interface Soundable { public abstract void makeSound(); }
+
+class Cat implements Soundable { public void makeSound() { System.out.println("야옹"); } }
+class Dog implements Soundable { public void makeSound() { System.out.println("멍멍"); } }
+```
+
+같은 규격을 두 클래스가 각자의 방식으로 채웁니다. → 1-3
+
+**2번 — 상수 필드**
+
+```java
+interface RemoteControl {
+    public final static int MAX_VOLUME = 10;
+    public final static int MIN_VOLUME = 0;
+}
+System.out.println(RemoteControl.MAX_VOLUME);   // 구현체 없이 인터페이스명으로 바로 접근
+```
+
+인터페이스 필드는 `public static final`이라 인스턴스 없이 인터페이스 이름으로 읽습니다. → 1-2, 2-3
+
+**3번 — 매개변수 타입을 인터페이스로 받기**
+
+```java
+class Character {
+    public void useWeapon(Attackable weapon) { weapon.attack(); }
+}
+character.useWeapon(sword);   // 검으로 공격
+character.useWeapon(gun);     // 총으로 공격
+```
+
+여기가 인터페이스의 실전 요령입니다. `useWeapon`은 `Sword`도 `Gun`도 모르고 `Attackable`만 압니다. 무기를 새로 만들어도 `Character` 쪽 코드는 그대로입니다. → 2-1
+
+**4번 — 다중 구현**
+
+```java
+class Duck implements Flyable, Swimmable {
+    public void fly()  { System.out.println("하늘을 난다."); }
+    public void Swin() { System.out.println("물에서 헤엄친다."); }
+}
+```
+
+클래스 상속은 하나뿐이지만 구현은 여러 개를 겹칠 수 있습니다. "날 수 있다 + 헤엄칠 수 있다"처럼 능력을 조합하는 자리입니다. → 1-7, 3-1의 can-do
+
+**5번 — Object 타입에 담고 instanceof로 되찾기**
+
+```java
+Object obj = new Duck();
+if (obj instanceof Flyable)   { ((Duck) obj).fly(); }
+if (obj instanceof Swimmable) { ((Duck) obj).Swin(); }
+```
+
+`instanceof`의 오른쪽에 **인터페이스도 올 수 있다**는 게 이 문제의 핵심입니다. "이 객체가 날 수 있는 놈인가?"를 클래스 이름이 아니라 능력으로 물어보는 방식입니다. → 2-4
+
+**6번 — DAO 규격 갈아끼우기**
+
+```java
+DataAccessObject dao;
+dao = new OracleDao();  dao.save();   // Oracle Db에 저장
+dao = new MySqlDao();   dao.save();   // MYSQL DB 저장
+```
+
+3-3에서 예고한 구조가 그대로 나왔습니다. 저장소를 바꿔도 `dao.save()`를 부르는 쪽은 손대지 않습니다. → [[Java day11 종합예제 인터페이스 DAO]]
+
+**7번 — 익명 구현체**
+
+```java
+Greeting g = new Greeting() {
+    @Override
+    public void welcome() { System.out.println("환영 인사"); }
+};
+g.welcome();
+```
+
+한 번만 쓸 구현이라 클래스를 따로 만들지 않았습니다. 추상메소드가 하나뿐이라 나중에 람다(`Greeting g = () -> System.out.println("환영 인사");`)로도 쓸 수 있는 형태입니다. → 1-8, 3-2
+
+**8번 — 디폴트메소드**
+
+```java
+interface Device {
+    void turnOn();
+    void turnOff();
+    public default void setMute(boolean mute) {
+        if (mute) System.out.println("무음 처리합니다.");
+        else      System.out.println("무음모드 종료");
+    }
+}
+class Television implements Device { /* turnOn, turnOff만 구현 */ }
+```
+
+`Television`은 `setMute`를 구현하지 않았는데도 호출됩니다. 디폴트메소드는 구현이 선택이라 그렇습니다. → 1-6, 2-2
+
+**9번 — 정적메소드**
+
+```java
+interface Calculator {
+    public static int plus(int x, int y) { return x + y; }
+}
+System.out.println(Calculator.plus(10, 20));   // 30
+```
+
+구현 클래스도, 인스턴스도 없이 인터페이스 이름으로 바로 호출합니다. 규격에 딸린 도우미 함수 자리입니다. → 1-6
+
+정리하면 이 아홉 문제는 **추상 → 상수 → 매개변수 다형성 → 다중 구현 → instanceof → 교체 → 익명 → 디폴트 → 정적** 순으로, 인터페이스에서 쓰는 문법이 전부 한 번씩은 나옵니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. "규격 먼저" 설계 순서
@@ -242,6 +353,7 @@ System.out.println(add.calc(3, 4));    // 7
 - `2026B_BE/src/day11/exam/exam1.java` (기본 문법, 구현, 업캐스팅)
 - `2026B_BE/src/day11/exam/exam2.java` (키보드 규격, 멤버 4종, 다중 구현·상속)
 - `2026B_BE/src/day11/exam/exam3.java` (타이어 교체 다형성, 익명 구현체)
+- `2026B_BE/src/day11/practice/practice13.java` (연습문제 9개 — 추상·상수·다중 구현·익명·디폴트·정적)
 
 ## 관련 노트
 

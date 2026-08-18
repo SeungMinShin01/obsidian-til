@@ -115,6 +115,66 @@ new int[3] 선언     → 4byte×3 → [101][102][103][104] [201][202][203][204]
 
 **이게 배열 인덱스 접근이 O(1)인 이유입니다.** 주소를 계산으로 구하기 때문에 몇 번째든 같은 속도입니다. 반대로 연결 리스트는 처음부터 따라가야 해서 O(n)입니다.
 
+### 1-6. practice2 — 배열 실습 10문제
+
+`day04/practice/practice2.java`에서 배열과 반복문을 문제 열 개로 묶어 연습했습니다. 앞쪽 일곱 문제가 배열을 다루는 기본 패턴이고, 뒤 세 문제는 그 패턴을 조합하는 자리입니다.
+
+**기본 패턴 네 가지**
+
+```java
+// 합계·평균 — 누적 변수를 반복문 밖에 둔다
+int sum = 0;
+for (int i = 0; i < scores1.length; i++) sum += scores1[i];
+System.out.printf("합계: %d 평균: %f\n", sum, (double) sum / scores1.length);
+
+// 조건 만족 시 조기 종료
+for (int i = 0; i < scores2.length; i++)
+    if (scores2[i] == 100) { System.out.println("100점 만점자를 찾았습니다!"); break; }
+
+// 개수 세기 — 문자열 비교는 equals
+for (int i = 0; i < bloodTypes.length; i++)
+    if (bloodTypes[i].equals("A")) sum2++;
+
+// 최댓값 찾기
+int max = 0;
+for (int i = 0; i < numbers2.length; i++) if (max < numbers2[i]) max = numbers2[i];
+```
+
+누적(sum)·탐색(break)·계수(count)·최댓값(max)은 배열 문제의 네 가지 기본형이라, 이 네 개를 손에 익혀 두면 대부분의 문제가 조합으로 풀립니다.
+
+최댓값 초기값을 `0`으로 두면 배열에 음수만 있을 때 답이 0이 되므로, `int max = numbers2[0];`처럼 **배열의 첫 원소로 시작**하는 편이 안전합니다. 평균에서 `(double)` 캐스팅을 빼면 정수 나눗셈이 되어 소수점이 잘린다는 것도 같이 걸리는 지점입니다. → [[Java day02 타입 변환]]
+
+**인덱스로 두 배열을 묶기**
+
+```java
+String[] products = { "볼펜", "노트", "지우개" };
+int[]    stock    = { 10, 5, 20 };
+```
+
+이름과 수량을 각각 다른 배열에 두고 **같은 인덱스가 같은 대상**이라고 약속하는 방식입니다(문제 8·9·10이 전부 이 구조). 배열 두 개를 손으로 맞추는 셈이라, 하나만 정렬해도 짝이 깨집니다. 이걸 클래스 하나로 묶는 게 [[Java day05 클래스와 인스턴스]] 이고, 개수 제한까지 없애는 게 [[Java day09 ArrayList]] 입니다 — day04의 이 불편함이 뒤 수업의 출발점입니다.
+
+**이중 반복문으로 그리기**
+
+```java
+for (int i = 0; i < movieNames.length; i++) {
+    result1 += movieNames[i] + " ";
+    for (int j = 0; j < movieRatings[i]; j++)       result1 += "★";   // 점수만큼
+    for (int k = 0; k < 10 - movieRatings[i]; k++)  result1 += "☆";   // 나머지
+    result1 += "\n";
+}
+```
+
+바깥 루프가 "줄", 안쪽 루프가 "칸"입니다. 별점·피라미드·구구단이 전부 이 뼈대라, 안쪽 반복 횟수를 무엇으로 정할지만 바꾸면 됩니다. 문자열을 `+=`로 누적하는 방식은 반복이 많아지면 느려지므로, 양이 커지면 `StringBuilder`를 쓰는 편이 낫습니다.
+
+**요금 계산 — 규칙을 코드 순서로 옮기기**
+
+```java
+fee = 1000 + (usageMinutes[i] - 30) / 10 * 500;   // 기본 30분 1000원 + 초과 10분당 500원
+if (fee > 20000) fee = 20000;                      // 상한
+```
+
+정수 나눗셈이 버림이라는 성질을 그대로 이용해 "매 10분마다"를 표현합니다. 요금처럼 규칙이 여러 겹인 계산은 **기본 → 추가 → 상한** 순으로 한 줄씩 옮겨 적고, 누적 변수를 각 대상마다 초기화하는지 확인하는 게 핵심입니다. 출력의 `%,d`는 천 단위 콤마를 넣는 서식입니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 배열 순회 조건 — length와 인덱스
@@ -253,8 +313,9 @@ JS의 `reduce`, `filter`와 같은 개념입니다. → [[JS day05 반복문]]
 ## 실습 파일
 
 - `2026B_BE/src/day04/exam/exam1.java`, `exam2.java`, `exam3.java`
-- `2026B_BE/src/day04/practice/pracitce1.java`, `practice2.java`
+- `2026B_BE/src/day04/practice/pracitce1.java`
+- `2026B_BE/src/day04/practice/practice2.java` (배열 연습문제 10개 — 누적·탐색·계수·최댓값·이중 반복)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day03 연산자]] · [[Java day05 클래스와 인스턴스]] · [[Java day09 ArrayList]] · [[JS day04 조건문]] · [[JS day05 반복문]]
+[[Java MOC]] · [[Java day02 타입 변환]] · [[Java day03 연산자]] · [[Java day05 클래스와 인스턴스]] · [[Java day09 ArrayList]] · [[JS day04 조건문]] · [[JS day05 반복문]]

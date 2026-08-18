@@ -93,7 +93,7 @@ for (String str : list) { }
 
 `System.out.println(list)`가 바로 내용을 출력하는 이유는 `ArrayList`가 `toString()`을 오버라이딩해 뒀기 때문입니다. → [[Java day05 클래스와 인스턴스]]
 
-### 1-5. practice11 — 리스트 실습 6문제
+### 1-5. practice11 — 리스트 실습 8문제
 
 ```java
 // 1. 문자열 리스트
@@ -129,6 +129,30 @@ for (Book b : bookList) {
 `Book`에 `toString()`을 추가하면 목록이 그대로 읽힙니다. → [[Java day05 클래스와 인스턴스]]
 
 이게 [[Java day06 생성자와 콘솔 게시판]] 의 `Post[100]`을 `ArrayList<Post>`로 바꾸는 것과 같은 형태입니다.
+
+나머지 세 문제는 배열로는 못 하거나 번거로웠던 조작을 다룹니다.
+
+```java
+// 5. 중간 삽입 — 뒤 요소들이 한 칸씩 밀린다
+list2.add(1, "자바스크립트");        // [자바, 자바스크립트, 파이썬, C++]
+
+// 8. 값 교체 — 자리 수는 그대로
+list3.set(1, "영어");               // [국어, 수학, 사회, 과학] → [국어, 영어, 사회, 과학]
+```
+
+`add(index, 값)`과 `set(index, 값)`은 헷갈리기 쉬운 짝입니다. `add`는 **끼워 넣어 크기가 1 늘고**, `set`은 **덮어써서 크기가 그대로**입니다. 배열이었다면 5번은 뒤쪽을 직접 한 칸씩 밀어야 했을 자리입니다.
+
+```java
+// 7. 입력을 계속 받다가 "종료"면 빠져나오기
+ArrayList<String> strList = new ArrayList<>();
+for (;;) {                                   // 조건 없는 무한 루프
+    String str = scan.next();
+    if (str.equals("종료")) { System.out.println(strList); break; }
+    strList.add(str);
+}
+```
+
+7번이 리스트를 쓰는 이유를 가장 잘 보여줍니다. **입력 개수를 미리 모르는 상황**이라 배열이면 크기를 얼마로 잡을지부터 막히는데, 리스트는 그냥 계속 `add` 하면 됩니다. `for(;;)`는 `while(true)`와 같은 뜻이고, 빠져나오는 통로가 `break` 하나뿐이므로 종료 조건을 먼저 써 두는 편이 안전합니다. 문자열 비교는 `==`가 아니라 `equals`라는 점도 여기서 다시 걸립니다. → [[Java day03 연산자]]
 
 ## 2. 추가로 알면 좋은 활용법
 

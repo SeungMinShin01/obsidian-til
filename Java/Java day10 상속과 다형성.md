@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day10 — 상속과 다형성
 
-> 실습 파일: `day10/exam/exam1.java`(상속·캐스팅), `exam2.java`(Object·instanceof), `exam3.java`(오버라이딩), `실습.java`(타이어 교체)
+> 실습 파일: `day10/exam/exam1.java`(상속·캐스팅), `exam2.java`(Object·instanceof), `exam3.java`(오버라이딩), `실습.java`(타이어 교체), `day10/pracitce/practice12.java`(연습문제 10개)
 > 허브: [[Java MOC]] · 이전: [[Java day09 ArrayList]] · 다음: [[Java day11 인터페이스]]
 
 ## 1. 배운 내용
@@ -496,12 +496,58 @@ for (동물 a : 동물원) {
 - `Object`의 `equals` / `hashCode` / `toString` — 모든 클래스가 물려받는 것들
 - 리스코프 치환 원칙 — 부모 자리에 자식을 넣어도 문제없어야 한다는 설계 원칙
 
-### 3-6. 연습문제 — practice10
+### 3-6. 연습문제 — practice12
 
-`pracitce/practice10.java`에 오늘 개념을 문제 6개로 복습한 코드가 있습니다.
+`pracitce/practice12.java`에 오늘 개념을 문제 10개로 복습한 코드가 있습니다(앞서 6문제까지 풀던 파일이 10문제로 늘었습니다).
 
 - `super(name)` — 부모에 기본 생성자가 없으면 자식 생성자가 **첫 줄에서** 부모 생성자를 명시 호출해야 합니다 (`Person(String)` ← `Student`)
 - `Cat.makeSound()` 오버라이딩, `Figure f1 = new Triangle()` 업캐스팅, `Shape.draw()`가 자식 것으로 실행되는 이유 — 각 문제의 주석에 "결과 → 원인" 순으로 풀이를 달아둔 형식 자체가 복습 방법으로 좋습니다
+
+늘어난 뒷부분 네 문제는 다형성을 "쓰는 쪽" 관점으로 옮겨 갑니다.
+
+**7번 — 부모 타입 배열에 자식들을 섞어 담기**
+
+```java
+Beverage[] beverages = new Beverage[2];
+beverages[0] = new Coke();
+beverages[1] = new Coffee();
+for (Beverage b1 : beverages) b1.drink();   // 콜라를 마십니다 / 커피를 마십니다
+```
+
+배열의 타입은 하나(`Beverage`)인데 실제로 담긴 객체는 서로 다르고, 반복문은 그걸 신경 쓰지 않습니다. 3-4에서 본 "한 리스트에 담아 같은 방식으로" 가 배열 버전으로 나온 형태입니다.
+
+**8번 — 매개변수 타입을 부모로 받기**
+
+```java
+class Character {
+    public void use(Weapon weapon) { weapon.attack(); }
+}
+character.use(sword);   // 검으로 공격합니다
+character.use(gun);     // 총으로 공격합니다
+```
+
+`use`는 `Sword`도 `Gun`도 모르고 `Weapon`만 압니다. 무기를 하나 더 만들어도 `Character`는 그대로 둘 수 있습니다. 이 구조가 [[Java day11 인터페이스]] 에서 부모 자리를 인터페이스로 바꿔 그대로 다시 나옵니다.
+
+**9번 — 필드와 메소드의 결정 시점이 다르다**
+
+```java
+SuperClass obj = new SubClass();
+System.out.println(obj.name);   // 상위
+obj.method();                   // 하위 메소드 출력
+```
+
+같은 변수인데 필드는 부모 것이, 메소드는 자식 것이 나옵니다. **필드는 선언한 타입(컴파일 시점)으로, 메소드는 실제 객체(실행 시점)로** 결정되기 때문입니다. 오버라이딩은 메소드에만 적용된다고 기억해 두는 편이 안전하고, 그래서 필드는 `private` + getter로 다루는 습관이 필요합니다. → [[Java day08 접근제한자와 static]]
+
+**10번 — instanceof는 조상 전체에 true**
+
+```java
+Laptop laptop = new Laptop();          // Laptop → Electronic → Device
+laptop instanceof Laptop      // true
+laptop instanceof Electronic  // true
+laptop instanceof Device      // true
+```
+
+상속이 여러 단계여도 위로 올라가는 조상은 전부 `true`입니다. `instanceof`가 "정확히 이 타입인가"가 아니라 "이 타입으로 취급해도 되는가"를 묻는 연산자라서 그렇습니다.
 
 ## 실습 파일
 
@@ -510,7 +556,7 @@ for (동물 a : 동물원) {
 - `2026B_BE/src/day10/exam/exam3.java` (오버로딩 vs 오버라이딩)
 - `2026B_BE/src/day10/exam/실습.java` (타이어 교체)
 - `2026B_BE/src/day10/exam/exam4.java` (차 두 대 — 상태는 각자, 행위는 공유)
-- `2026B_BE/src/day10/pracitce/practice10.java` (연습문제 6개)
+- `2026B_BE/src/day10/pracitce/practice12.java` (연습문제 10개 — 상속·오버라이딩·업캐스팅·instanceof)
 
 ## 관련 노트
 
