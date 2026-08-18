@@ -7,7 +7,7 @@ tags: [학습, sql]
 
 # SQL day03 — DML과 조인
 
-> 실습 파일: `database/day03.sql` (DML 4종 + member/buy 테이블 + 샘플 데이터)
+> 실습 파일: `database/day03.sql` (DML 4종 + member/buy 테이블 + 샘플 데이터), `database/practice3.sql` (서점 스키마 DML·조회 20문제)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day02 테이블과 제약조건]] · 다음: [[SQL day04 집계와 정렬]]
 
 ## 1. 배운 내용
@@ -85,6 +85,67 @@ create table buy(
 ```
 
 **1:N 관계**입니다. 회원 한 명이 여러 번 구매할 수 있습니다. 이 구조가 조인을 배우는 표준 예제입니다.
+
+### 1-5. practice3 — DML·조회 20문제
+
+`database/practice3.sql`에서 서점 스키마(`books` 1 : N `orders`)로 DML과 `WHERE` 조건을 스무 문제 풀었습니다. 문제 1~9가 INSERT/UPDATE/DELETE, 10~20이 SELECT입니다.
+
+**INSERT — 컬럼 목록을 명시하는 형태**
+
+```sql
+INSERT INTO BOOKS(BOOK_ID, TITLE, AUTHOR, GENRE, PRICE, STOCK, PUB_DATE)
+    VALUES (1012, 'MySQL 실습', '김민수', '컴퓨터', 17000, 25, '2023-03-01');
+
+INSERT INTO ORDERS(BOOK_ID, CUSTOMER, ORDER_QTY, ORDER_DATE)
+    VALUES (1002, '최지훈', 1, '2023-08-15');   -- order_id는 AUTO_INCREMENT라 목록에서 뺀다
+```
+
+`AUTO_INCREMENT` 컬럼은 아예 목록에서 빼는 방식과 `VALUES(NULL, ...)`로 자리를 채우는 방식 둘 다 됩니다. 컬럼 목록을 쓰면 어느 쪽 값이 어디로 들어가는지 눈에 보이니 1-1에서 정리한 대로 명시하는 편이 안전합니다. 재고가 없는 도서는 `STOCK`에 `NULL`을 그대로 넣습니다.
+
+**UPDATE — 값 대입, 산술 대입, NULL 채우기**
+
+```sql
+UPDATE BOOKS SET PRICE = 15000 WHERE BOOK_ID = 1004;          -- 지정 값
+UPDATE BOOKS SET PRICE = PRICE + 2000 WHERE GENRE = '소설';    -- 기존 값 기준 인상
+UPDATE BOOKS SET STOCK = 0 WHERE STOCK IS NULL;                -- NULL 정리
+```
+
+가운데 줄이 핵심입니다. `SET PRICE = PRICE + 2000`처럼 **오른쪽의 컬럼명은 수정 전 값**이라, 일괄 인상·할인은 이 한 줄이면 됩니다. 세 번째 줄의 조건을 `STOCK = NULL`로 쓰면 한 행도 안 걸립니다 — `NULL` 비교는 `IS NULL`뿐입니다. → 2-5
+
+**DELETE — 조건이 곧 안전장치**
+
+```sql
+DELETE FROM ORDERS WHERE CUSTOMER = '이서연';
+DELETE FROM BOOKS  WHERE STOCK <= 0;
+DELETE FROM ORDERS WHERE ORDER_QTY >= 3;
+```
+
+`orders.book_id`가 `books.book_id`를 참조하는 외래키라, 부모인 `books`를 지울 때 자식 주문이 남아 있으면 막힙니다. 이 실습 파일은 외래키에 `ON DELETE CASCADE`를 걸어 두어 부모가 지워지면 관련 주문도 함께 사라집니다 — 편한 만큼 지워지는 범위가 넓으니 지우기 전에 `SELECT`로 대상을 먼저 확인하는 순서가 필요합니다. → 2-1, [[SQL day05 외래키 CASCADE와 조인]]
+
+**SELECT — WHERE 조건 문법 총정리**
+
+```sql
+SELECT TITLE, PRICE FROM BOOKS WHERE PRICE > 20000;
+SELECT TITLE, PRICE, STOCK FROM BOOKS WHERE PRICE >= 15000 AND STOCK >= 10;   -- AND
+SELECT TITLE, GENRE FROM BOOKS WHERE GENRE IN ('컴퓨터', '경제');              -- IN
+SELECT * FROM BOOKS WHERE NOT GENRE = '소설';                                  -- NOT
+SELECT TITLE, STOCK FROM BOOKS WHERE STOCK IS NULL;                            -- IS NULL
+SELECT TITLE, PRICE FROM BOOKS WHERE PRICE BETWEEN 14000 AND 18000;            -- BETWEEN(양끝 포함)
+SELECT TITLE, AUTHOR FROM BOOKS WHERE TITLE LIKE '%자%';                       -- 포함
+SELECT TITLE, AUTHOR FROM BOOKS WHERE AUTHOR LIKE '김__';                      -- 김 + 정확히 2글자
+```
+
+정리하면 이렇습니다.
+
+| 조건 | 대신 쓸 수 있는 형태 | 메모 |
+| --- | --- | --- |
+| `IN (a, b)` | `= a OR = b` | 값이 늘어날수록 IN이 짧다 |
+| `BETWEEN a AND b` | `>= a AND <= b` | **양끝을 포함**한다 |
+| `NOT 조건` | `!=` / `<>` | NULL인 행은 어느 쪽에도 안 걸린다 |
+| `IS NULL` | (없음) | `= NULL`은 항상 거짓 |
+| `LIKE '김__'` | (없음) | `_`는 정확히 1글자, `%`는 0글자 이상 |
+
+`NOT GENRE = '소설'`처럼 부정 조건을 쓸 때 장르가 `NULL`인 행은 결과에서 빠진다는 점이 자주 놓치는 부분입니다. `NULL`은 참도 거짓도 아니라서, 부정을 씌워도 통과하지 못합니다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -290,7 +351,8 @@ EXPLAIN SELECT * FROM member WHERE mname = '트와이스';
 ## 실습 파일
 
 - `2026B_BE/src/database/day03.sql`
+- `2026B_BE/src/database/practice3.sql` (books/orders 연습문제 20개 — INSERT·UPDATE·DELETE·WHERE 조건)
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · [[JS 과제 LevelUP과 게시판]] · [[Java day09 ArrayList]] · [[JS day14 게시판 CRUD]]
+[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · [[SQL day04 집계와 정렬]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS 과제 LevelUP과 게시판]] · [[Java day09 ArrayList]] · [[JS day14 게시판 CRUD]]

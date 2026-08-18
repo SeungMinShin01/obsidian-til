@@ -7,7 +7,7 @@ tags: [학습, sql]
 
 # SQL day04 — 집계와 정렬
 
-> 실습 파일: `database/day04.sql` (member/buy 테이블 + GROUP BY·집계·정렬·LIMIT)
+> 실습 파일: `database/day04.sql` (member/buy 테이블 + GROUP BY·집계·정렬·LIMIT), `database/practice4.sql` (서점 스키마 집계·그룹·정렬 15문제)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day03 DML과 조인]] · 다음: [[SQL day05 외래키 CASCADE와 조인]]
 
 ## 1. 배운 내용
@@ -103,6 +103,69 @@ LIMIT 시작, 개수;
 
 처리 흐름으로 읽으면: 테이블에서(FROM) → 행을 거르고(WHERE) → 묶고(GROUP BY) → 그룹을 거르고(HAVING) → 정렬하고(ORDER BY) → 자른다(LIMIT). WHERE에서 별칭이 안 되는 이유, HAVING이 GROUP 뒤에 오는 이유가 이 순서 하나로 전부 설명됩니다.
 
+### 1-8. practice4 — 집계·그룹·정렬 15문제
+
+`database/practice4.sql`에서 서점 스키마(`books` 1 : N `orders`)로 오늘 문법을 열다섯 문제 풀었습니다. 앞의 `practice3.sql`과 같은 테이블이라 [[SQL day03 DML과 조인]] 의 조건 문법 위에 집계가 얹히는 흐름으로 이어집니다.
+
+**중복 제거 — GROUP BY와 DISTINCT**
+
+```sql
+SELECT CUSTOMER FROM ORDERS GROUP BY CUSTOMER;   -- 그룹으로 묶어 대표값 하나씩
+SELECT DISTINCT GENRE FROM BOOKS;                -- 중복 제거 전용
+```
+
+같은 결과가 나오는 두 방법을 나란히 풀어 보는 문제입니다. 정리하면 이렇습니다.
+
+| | GROUP BY | DISTINCT |
+| --- | --- | --- |
+| 목적 | 그룹을 만들어 **집계를 붙이기 위해** | 중복만 제거 |
+| 집계함수 | 함께 쓸 수 있다 | 못 쓴다 |
+| HAVING | 가능 | 불가 |
+
+지금처럼 목록만 뽑을 때는 `DISTINCT`가 의도가 분명하고, 뒤에 `COUNT`·`SUM`을 붙일 생각이면 처음부터 `GROUP BY`로 씁니다.
+
+**집계함수 — 전체 한 줄로 접기**
+
+```sql
+SELECT COUNT(*)            FROM ORDERS;   -- 전체 주문 건수
+SELECT SUM(ORDER_QTY)      FROM ORDERS;   -- 총 주문수량
+SELECT AVG(PRICE)          FROM BOOKS;    -- 평균 가격
+SELECT MAX(PRICE), MIN(PRICE) FROM BOOKS; -- 최고·최저 동시에
+SELECT COUNT(STOCK)        FROM BOOKS;    -- 재고가 NULL이 아닌 도서 수
+```
+
+마지막 줄이 1-2에서 정리한 성질을 그대로 확인하는 문제입니다. `COUNT(STOCK)`은 애초에 `NULL`을 세지 않으므로 `WHERE STOCK IS NOT NULL`을 붙이든 안 붙이든 결과가 같습니다. 반대로 `COUNT(*)`에 조건을 붙이면 그때는 `WHERE`가 실제로 일을 합니다. → 2-3
+
+**"~별" 집계**
+
+```sql
+SELECT CUSTOMER, COUNT(*)       FROM ORDERS GROUP BY CUSTOMER;   -- 고객별 주문 건수
+SELECT BOOK_ID, SUM(ORDER_QTY)  FROM ORDERS GROUP BY BOOK_ID;    -- 도서별 총 주문수량
+```
+
+"고객별", "도서번호별"이라는 말이 그대로 `GROUP BY` 뒤 컬럼이 됩니다. 건수는 `COUNT(*)`, 수량 합은 `SUM(수량)` — 세는 것과 더하는 것을 문제 문장에서 구분하는 게 요령입니다.
+
+**HAVING — 집계 결과에 거는 조건**
+
+```sql
+SELECT CUSTOMER, SUM(ORDER_QTY) FROM ORDERS
+    GROUP BY CUSTOMER HAVING SUM(ORDER_QTY) >= 5;   -- 총 주문수량 5 이상인 고객
+
+SELECT BOOK_ID, COUNT(*) FROM ORDERS
+    GROUP BY BOOK_ID HAVING COUNT(*) >= 3;          -- 주문이 3회 이상 들어온 도서
+```
+
+1-4의 구분이 문제로 나온 형태입니다. 두 조건 모두 **그룹을 만든 뒤에야 값이 생기므로** `WHERE`로는 쓸 수 없습니다. `HAVING`에는 별칭도 쓸 수 있어서 `SUM(ORDER_QTY) 총수량 ... HAVING 총수량 >= 5`로도 됩니다.
+
+**정렬과 상위 N건**
+
+```sql
+SELECT * FROM BOOKS ORDER BY PRICE DESC;           -- 비싼 순
+SELECT * FROM BOOKS ORDER BY PRICE DESC LIMIT 3;   -- 상위 3권
+```
+
+`ORDER BY ... DESC LIMIT n`이 "TOP N"의 표준형입니다. `LIMIT`만 쓰면 어떤 행이 올지 보장되지 않는다는 2-2의 이야기가 여기서 그대로 적용됩니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. GROUP BY + JOIN — 이름을 붙인 집계
@@ -170,6 +233,7 @@ FROM buy;
 ## 실습 파일
 
 - `2026B_BE/src/database/day04.sql`
+- `2026B_BE/src/database/practice4.sql` (books/orders 연습문제 15개 — GROUP BY·집계함수·HAVING·ORDER BY·LIMIT)
 - `2026B_BE/src/Note/DB.txt` (누적 요약 노트)
 
 ## 관련 노트
