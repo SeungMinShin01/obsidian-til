@@ -171,6 +171,30 @@ System.out.println(park1.calculateFee(140));
 
 `getStar`는 반복문으로 문자열을 누적하는 문제이고, `calculateFee`는 **조건 분기 + 계산**을 메소드로 캡슐화한 실전형 문제입니다. 요금 정책이 바뀌어도 이 메소드만 고치면 됩니다 — 메소드로 묶는 이유가 여기 있습니다.
 
+`Product`는 재고를 확인해 `boolean`을 돌려주는 구조입니다.
+
+```java
+class Product {
+    int stock;
+    Product() { this.stock = 10; }
+    boolean sell(int stock) { return this.stock >= stock; }
+}
+```
+
+```java
+Product pr1 = new Product();
+if (pr1.sell(10)) {
+    System.out.println(true);
+} else {
+    System.out.println("재고 부족");
+    System.out.println(false);
+}
+```
+
+반환값을 그대로 찍는 대신 호출부에서 `if`로 갈라 두면, 실패했을 때 **왜 실패했는지 한 줄을 더 붙일 자리**가 생깁니다. 4번 `isEven`과 같은 `boolean` 반환이지만 쓰임이 다릅니다 — `isEven`은 상태를 묻는 판정이고, `sell`은 **동작을 시도한 결과**를 돌려줍니다. 뒤쪽이 실무에서 더 흔한 형태라 성공/실패 분기를 함께 쓰는 습관을 들이는 편이 좋습니다.
+
+메소드 안에서 화면 출력을 하지 않고 `boolean`만 돌려준 덕분에 이 분기가 가능해집니다. 판단은 메소드가 하고 **출력은 호출부가 하는** 이 분리가 나중에 [[Java day09 MVC 종합예제]] 의 Controller ↔ View 구분으로 이어집니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 메소드 오버로딩
