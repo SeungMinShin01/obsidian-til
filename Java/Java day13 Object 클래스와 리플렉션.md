@@ -577,6 +577,109 @@ return location;
 
 반환값도 두 갈래가 섞이기 쉽다. 성공하면 위치번호, 실패하면 안내 문구를 같은 `String` 으로 돌려주면 호출부에서 둘을 구분할 방법이 문자열 내용뿐이다. 갱신된 목록을 돌려줄지, 결과 코드만 돌려줄지 **하나로 정해 두고 메시지는 화면 쪽에서 붙이는** 편이 나중에 기능이 늘어도 흔들리지 않는다 — [[Java day09 MVC 종합예제]] 에서 view와 model을 갈라 둔 이유와 같다.
 
+### 1-17. 출차 처리 — 고정폭 문자열 파싱과 요금 계산
+
+세 기능 중 가장 손이 많이 가는 자리가 출차다. 행을 지우는 것 자체는 문자열 조작이지만, 그 전에 **저장해 둔 입차 시각을 다시 날짜 객체로 되살리고 요금을 계산**해야 한다. 1-11의 `java.time`, 1-12의 `substring()`, [[Java day03 연산자]] 의 정수 나눗셈이 한 메소드에서 전부 만난다.
+
+**① 12자리 문자열을 날짜로 되돌리기**
+
+`202608190930` 처럼 자리 수가 고정된 형식은 `substring()` 으로 잘라 숫자로 바꾸면 그대로 `LocalDateTime.of()` 의 인자가 된다.
+
+```java
+int year  = Integer.parseInt(s.substring(0, 4));    // 2026
+int month = Integer.parseInt(s.substring(4, 6));    // 08
+int day   = Integer.parseInt(s.substring(6, 8));    // 19
+int hour  = Integer.parseInt(s.substring(8, 10));   // 09
+int min   = Integer.parseInt(s.substring(10, 12));  // 30
+
+LocalDateTime inTime = LocalDateTime.of(year, month, day, hour, min);
+```
+
+- `substring(시작, 끝)` 의 끝이 포함되지 않으므로 구간이 `0-4`, `4-6`, `6-8` 처럼 **앞 구간의 끝이 다음 구간의 시작**으로 이어진다. 이 규칙 덕분에 자리 수만 맞으면 경계를 세지 않고 쭉 나열할 수 있다
+- 큰 단위부터 고정 자리 수로 붙여 저장한 형식이라 이런 잘라내기가 가능하다. 2-13에서 정리한 저장 형식의 장점이 실제로 쓰이는 자리다
+- 같은 일을 2-13의 포맷터로 한 번에 처리할 수도 있다. 자리마다 `parseInt()` 를 부르는 대신 규격을 한 곳에 모아 두는 쪽이다
+
+```java
+DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+LocalDateTime inTime = LocalDateTime.parse(s, FMT);
+```
+
+**② 두 시각의 간격 구하기**
+
+입차 시각과 현재 시각의 차이를 분으로 환산해야 요금을 매길 수 있다. 날짜 부분과 시각 부분을 각각 분으로 바꿔 빼는 방식이 먼저 떠오른다.
+
+```java
+int inMinutesOfDay  = (inTime.getHour() * 60) + inTime.getMinute();
+int nowMinutesOfDay = (now.getHour() * 60) + now.getMinute();
+int totalMinutes = (diffDays * 24 * 60) + (nowMinutesOfDay - inMinutesOfDay);
+```
+
+시각 부분은 이 방식이 정확하지만, **날짜 차이를 직접 셈하는 쪽은 조심할 자리**다. 연·월·일을 숫자로 놓고 산술하면 윤년(365일이 아닌 해)과 월마다 다른 일수가 그대로 오차로 들어온다. 이런 계산은 라이브러리에 맡기는 편이 안전하다.
+
+```java
+long totalMinutes = ChronoUnit.MINUTES.between(inTime, now);
+```
+
+`ChronoUnit` 은 2-7에서 날짜 간격을 구할 때 본 그 유틸이고, `MINUTES` 말고도 `HOURS`·`DAYS`·`SECONDS` 를 같은 모양으로 쓸 수 있다. 정리하면 **"시각을 만드는 일은 내가, 시각끼리 빼는 일은 `java.time` 이"** 로 나누는 것이 기본형이다.
+
+- 미래 시각이 들어오면 간격이 음수가 된다. 요금처럼 음수가 의미 없는 값은 `if (totalMinutes < 0) totalMinutes = 0;` 으로 바닥을 막아 두면 뒤쪽 계산이 단순해진다
+- `between(a, b)` 는 `a` 에서 `b` 로 가는 방향이라 인자 순서가 부호를 정한다. 입차 → 현재 순서로 넣는다
+
+**③ 요금 정책을 식으로 옮기기**
+
+정책은 세 줄이지만 각각 계산 관용구가 하나씩 붙는다.
+
+| 정책 | 식 |
+| --- | --- |
+| 최초 30분 무료 | `billable = remainMinutes - 30` (0 이하면 요금 없음) |
+| 30분 초과분 10분당 1,000원 (올림) | `((billable + 9) / 10) * 1000` |
+| 하루 최대 20,000원 | `if (fee > 20000) fee = 20000;` |
+| 여러 날 주차 | `days * 20000 + 잔여분 요금` |
+
+```java
+int days          = totalMinutes / (24 * 60);   // 며칠치인가 — 몫
+int remainMinutes = totalMinutes % (24 * 60);   // 하루 안에 남은 분 — 나머지
+```
+
+`/` 와 `%` 를 한 쌍으로 쓰는 이 모양이 "큰 단위로 묶고 나머지를 따로 본다"의 기본형이다. 초를 시·분·초로 쪼개거나 페이지 번호를 계산할 때도 같은 손놀림이 나온다.
+
+**정수 나눗셈으로 올림 만들기**가 이 실습의 핵심 계산이다. 자바의 `/` 는 정수끼리면 소수점을 버리므로(내림), 올림이 필요하면 **나누는 수보다 1 작은 값을 미리 더한다.**
+
+```java
+(31 + 9) / 10 = 4   // 31분 → 4 × 1,000원
+(40 + 9) / 10 = 4   // 40분 → 4 × 1,000원 (딱 나눠떨어지면 그대로)
+(41 + 9) / 10 = 5   // 41분 → 5 × 1,000원
+```
+
+`Math.ceil()` 로 하면 실수 변환이 끼어들고 다시 `(int)` 로 되돌려야 한다. 정수만 다루는 자리에서는 `(a + b - 1) / b` 쪽이 짧고 오차도 없다.
+
+**④ 결과를 화면에 내보내기**
+
+계산이 끝나면 입·출차 시각을 사람이 읽는 형식으로 바꿔 안내문을 찍는다.
+
+```java
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+System.out.println("입차시간: " + inTime.format(formatter));
+System.out.println("출차시간: " + now.format(formatter));
+System.out.println("주차요금: " + totalFee + "원");
+```
+
+저장용 형식(`yyyyMMddHHmm`)과 표시용 형식(`yyyy-MM-dd HH:mm`)이 다르다는 점이 여기서 분명해진다. 저장은 자르기 쉽게 붙여 쓰고, 화면은 읽기 쉽게 구분자를 넣는다. **같은 값이라도 층마다 형식이 다르다**는 것이 요지다.
+
+**⑤ 반환값을 무엇으로 둘 것인가**
+
+출차 메소드는 두 가지 결과를 동시에 갖는다 — 계산한 **요금**과, 그 행을 뺀 **갱신된 목록**이다. 자바 메소드는 값을 하나만 돌려주므로 둘 중 하나를 골라야 한다.
+
+| 반환 | 장점 | 남는 문제 |
+| --- | --- | --- |
+| `int` 요금 | 호출부에서 바로 출력·집계에 쓴다 | 목록 갱신을 별도로 처리해야 한다 |
+| `String` 갱신 목록 | 1-15의 입차와 반환 규약이 통일된다 | 요금을 따로 꺼낼 방법이 필요하다 |
+
+1-15에서 정리한 대로 `String` 은 불변이라, 목록을 문자열 상태로 두는 이상 **갱신 결과는 반환해서 다시 대입**하지 않으면 호출부에 반영되지 않는다. 요금까지 함께 넘기려면 결과를 담는 작은 클래스를 하나 두거나, 목록을 `static` 멤버로 올려 메소드가 직접 갱신하게 하는 방법이 있다. 후자는 1-16에서 본 공유 상태 방식이라 호출부는 짧아지고 추적은 어려워지는 맞바꿈이 그대로 따라온다.
+
+- 행 삭제는 2-10의 "남길 행만 모아 다시 잇기"가 그대로 쓰인다. `String.join("\n", 남길행들)` 이면 구분자 정리까지 한 번에 끝난다
+- 값을 찾은 뒤 `i + 1`·`i - 1` 로 옆 칸을 꺼내는 방식은 1-15 ②의 성질을 그대로 갖는다. 컬럼이 늘거나 순서가 바뀌면 오프셋이 통째로 어긋나므로, 행으로 자른 뒤 `col[2]` 처럼 **열 번호로 짚는** 형태가 뜻을 코드에 남긴다
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. equals()와 hashCode()는 짝으로 오버라이딩한다
@@ -827,6 +930,31 @@ LocalDateTime back = LocalDateTime.parse(saved, fmt);    // 되읽기
 - 포맷터는 상태를 갖지 않으므로 **한 번 만들어 상수로 두고 재사용**해도 된다. `static final DateTimeFormatter FMT = …` 형태가 흔하다
 - 날짜를 문자열로 저장할 땐 `yyyyMMddHHmm` 처럼 **큰 단위부터 고정 자리 수로** 붙이는 형식이 좋다. 이러면 문자열을 그냥 사전순으로 정렬해도 시간순이 되고, `substring()` 으로 연·월·일을 잘라 내기도 쉽다
 
+### 2-14. 정수 나눗셈으로 단위 계산하기
+
+요금·페이지·용량처럼 "단위로 묶어 세는" 계산은 `/` 와 `%` 두 연산자로 거의 다 처리된다. 관용구를 모아 두면 이렇다.
+
+```java
+int q = total / unit;              // 몫   — 몇 단위인가
+int r = total % unit;              // 나머지 — 단위에 못 미친 부분
+
+int up = (total + unit - 1) / unit;   // 올림 나눗셈
+int fee = Math.min(계산값, 상한);      // 상한 걸기
+int safe = Math.max(계산값, 0);        // 바닥 걸기
+```
+
+| 하고 싶은 것 | 식 |
+| --- | --- |
+| 10분 단위로 올림 | `(분 + 9) / 10` |
+| 초 → 시·분·초 | `s/3600`, `(s%3600)/60`, `s%60` |
+| 총 개수를 한 쪽 n개씩 나눈 페이지 수 | `(개수 + n - 1) / n` |
+| 값을 0~100 사이로 가두기 | `Math.max(0, Math.min(100, 값))` |
+
+- 자바의 정수 나눗셈은 소수점을 **버린다**(0 방향으로). 그래서 올림은 미리 `unit - 1` 을 더해 만든다 — [[Java day03 연산자]] 에서 `5 / 2` 가 `2` 였던 그 성질을 거꾸로 이용하는 셈이다
+- `Math.min`·`Math.max` 는 `if` 로 쓰는 것과 결과가 같지만, 상한·바닥이라는 뜻이 이름에 드러나서 읽기 쉽다
+- 나누는 수가 변수라면 0인지 먼저 확인한다. 정수를 0으로 나누면 `ArithmeticException` 이 나고, 실수는 예외 대신 `Infinity` 가 나와서 오히려 늦게 발견된다
+- 금액처럼 정확해야 하는 값에 `double` 을 쓰면 `0.1 + 0.2` 가 `0.30000000000000004` 가 되는 부동소수점 오차가 따라온다. **원 단위 정수로 계산**하거나 `BigDecimal` 을 쓴다
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 리플렉션이 실무에서 쓰이는 곳
@@ -890,6 +1018,8 @@ public record BoardDto(int no, String content, String writer) { }
 - `ChronoUnit`·`Duration`·`Period` 로 기간 계산하기
 - 얕은 복사·깊은 복사, `clone()`
 - `Random` vs `SecureRandom` vs `Math.random()`, `ThreadLocalRandom`
+- `BigDecimal` 로 금액 다루기, 부동소수점 오차
+- 여러 값을 한 번에 돌려주는 방법 — 결과 클래스·`record`·`Map`
 - UUID 버전(v4 난수 기반)과 DB 기본키로 쓸 때의 장단점
 - csv 파싱과 파일 입출력(`Files.readAllLines`), 문자열 대신 클래스로 표를 담기
 
@@ -900,7 +1030,7 @@ public record BoardDto(int no, String content, String writer) { }
 - `2026B_BE/src/day13/exam/exam3.java` (String 클래스 — 문자열과 char 배열, 아스키·유니코드 코드값 변환, concat·length·charAt·replace·substring·split·indexOf·contains·getBytes, StringBuilder)
 - `2026B_BE/src/day13/exam/exam4.java` (Random 난수 — nextInt·nextBoolean, UUID.randomUUID 고유 식별자)
 - `2026B_BE/src/day13/exam/test.java` (콘솔 좌석 현황판 렌더링 — StringBuilder, Deque, switch 표현식, 한글 폭 계산)
-- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산, 메뉴 루프와 기능 메소드 분리, 쪼개기 헬퍼와 static 공유 리스트, DateTimeFormatter로 입차 시각 기록)
+- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 메뉴 루프와 기능 메소드 분리, 쪼개기 헬퍼와 static 공유 리스트, DateTimeFormatter로 입차 시각 기록, 출차 시 고정폭 문자열 파싱·시각 간격·요금 계산)
 
 ## 관련 노트
 
