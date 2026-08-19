@@ -1,20 +1,20 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_BE/src/day13/exam
+원본: KDT_2026/2026B_BE/src/day13/exam, day13/practice
 작성일: 2026-08-19
 tags: [학습, java]
 ---
 
 # Java day13 — Object 클래스와 리플렉션
 
-> 실습 파일: `day13/exam/exam1.java`(Object·Class·리플렉션), `exam2.java`(래퍼 클래스·타입 변환·날짜/시간), `exam3.java`(String 클래스·문자 코드값), `test.java`(콘솔 화면 렌더링)
+> 실습 파일: `day13/exam/exam1.java`(Object·Class·리플렉션), `exam2.java`(래퍼 클래스·타입 변환·날짜/시간), `exam3.java`(String 클래스·문자 코드값), `exam4.java`(난수·UUID), `test.java`(콘솔 화면 렌더링), `day13/practice/practice14.java`(문자열 주차 데이터 실습)
 > 허브: [[Java MOC]] · 이전: [[Java day12 종합예제 JDBC DAO]]
 
 day12까지는 내가 만든 클래스들(DTO·DAO·Controller)을 어떻게 조립하는지가 주제였다. day13은 방향이 반대다. **자바가 이미 만들어 둔 클래스(라이브러리)를 어떻게 쓰는가**, 그중에서도 모든 클래스의 조상인 `Object` 와 클래스 자신의 정보를 담은 `Class` 를 본다.
 
 라이브러리는 다른 사람들이 만들어 둔 클래스·메소드의 집합이다. `Scanner`·`String`·`ArrayList` 도 전부 라이브러리이고, day12에서 `lib` 폴더에 넣은 MySQL 드라이버 jar도 라이브러리다.
 
-같은 흐름에서 **기본타입을 객체로 감싸는 래퍼 클래스**, **날짜·시간을 다루는 `java.time` 패키지**, 그리고 **문자열을 다루는 `String` 클래스**도 함께 본다. 넷 다 "이미 만들어져 있으니 가져다 쓰는" 자바 표준 라이브러리다.
+같은 흐름에서 **기본타입을 객체로 감싸는 래퍼 클래스**, **날짜·시간을 다루는 `java.time` 패키지**, **문자열을 다루는 `String` 클래스**, **난수를 만드는 `Random`·`UUID`** 도 함께 본다. 전부 "이미 만들어져 있으니 가져다 쓰는" 자바 표준 라이브러리다.
 
 ## 1. 배운 내용
 
@@ -394,6 +394,76 @@ builder.append("프로그래밍");
 System.out.println(builder);   // 자바프로그래밍
 ```
 
+### 1-13. Random과 UUID — 값을 만들어 내는 라이브러리
+
+지금까지 본 라이브러리가 "가진 값을 다루는" 쪽이었다면, `Random` 과 `UUID` 는 **값을 만들어 내는** 쪽이다.
+
+```java
+Random random = new Random();
+
+int value1 = random.nextInt();        // int 범위 전체에서 난수 — 378904417
+int value2 = random.nextInt(10);      // 0 ~ 9
+int value3 = random.nextInt(10) + 1;  // 1 ~ 10
+boolean value4 = random.nextBoolean();// true / false
+```
+
+`nextXXX()` 는 뽑아낼 타입에 따라 이름이 갈린다(`nextInt`·`nextDouble`·`nextBoolean`·`nextLong`). 정리하면 규칙은 두 가지다.
+
+| 형태 | 나오는 범위 |
+| --- | --- |
+| `nextInt()` | `int` 가 표현할 수 있는 전 범위 (음수 포함) |
+| `nextInt(n)` | `0` 이상 `n` **미만** — 개수를 넣는다 |
+| `nextInt(n) + 시작값` | `시작값` 부터 `n` 개 |
+
+- 주사위(1~6)는 `nextInt(6) + 1`. "개수를 넣고 시작 번호를 더한다"로 외우면 헷갈리지 않는다
+- 끝값이 포함되지 않는 건 [[Java day04 제어문과 배열]] 의 인덱스 규칙, 1-12의 `substring(시작, 끝)` 과 같은 결이다. 자바는 범위를 다룰 때 대체로 "시작은 포함, 끝은 제외"로 통일돼 있다
+
+**UUID**(범용 고유 식별자)는 사실상 중복이 나지 않는 128비트 식별자다.
+
+```java
+String uuid = UUID.randomUUID().toString();
+System.out.println(uuid);   // 91ce0f1e-7a0a-4034-be44-fd94d3d3b07e
+```
+
+- `randomUUID()` 는 `new` 없이 부르는 정적 팩토리 메소드다 — 1-11의 `LocalDate.now()` 와 같은 형태
+- 반환값이 `UUID` 객체라 문자열로 쓰려면 `toString()` 을 붙인다. 1-2에서 정리한 그 `toString()` 이 여기선 하이픈으로 끊긴 36자 문자열을 돌려준다
+- 쓰는 자리는 **회원번호·주문번호·업로드 파일명**처럼 "겹치면 안 되는 이름"이 필요한 곳이다. DB의 `AUTO_INCREMENT` 는 한 테이블 안에서만 유일하지만, UUID는 서버가 여러 대여도 각자 만들어 쓸 수 있다 — [[SQL day02 테이블과 제약조건]] 의 기본키를 정하는 선택지 중 하나다
+- 업로드 파일명을 UUID로 바꿔 두면 같은 이름의 파일이 서로를 덮어쓰는 상황을 피할 수 있다
+
+### 1-14. 문자열 하나에 담긴 표 데이터 다루기 (practice14)
+
+`String` 메소드를 모아서 쓰는 실습으로 **타워 주차 관리** 과제가 붙는다. 요구사항의 핵심은 데이터를 클래스나 배열이 아니라 **문자열 하나**로 관리한다는 점이다.
+
+```java
+String carParkingList = "3,211가6231,202608190930\n8,452하1234,202608171227";
+// 행 구분: \n   열 구분: ,   컬럼: 위치번호,차량번호,날짜시간(YYYYMMDDhhmm)
+```
+
+한 줄이 한 대의 차량이고, 줄 안에서 쉼표가 열을 가른다. 표를 문자열로 눌러 담은 형태라 결국 **두 번 쪼개는** 것이 기본 동작이 된다.
+
+```java
+String[] rows = carParkingList.split("\n");     // ① 행으로 자르기
+for (String row : rows) {
+    String[] col = row.split(",");              // ② 열로 자르기
+    // col[0] 위치번호, col[1] 차량번호, col[2] 날짜시간
+}
+```
+
+과제가 요구하는 세 기능을 문자열 연산으로 옮기면 이렇게 대응된다.
+
+| 기능 | 쓰는 도구 |
+| --- | --- |
+| 위치 찾기 | 행마다 `split(",")` 후 `col[1].equals(차량번호)` 비교, 찾으면 `col[0]` 반환 / 없으면 `-1` |
+| 입차 | 위치 중복을 먼저 확인한 뒤 `carParkingList + "\n" + 새 행` 으로 이어 붙이기 |
+| 출차 | 해당 행을 빼고 남은 행들을 `String.join("\n", …)` 으로 다시 잇기 |
+
+- 검색은 `indexOf`·`contains` 로도 되지만, **"어느 열에서 찾을지"가 정해져 있으면 쪼갠 뒤 열 단위로 `equals()` 비교**하는 편이 안전하다. 문자열 전체를 대상으로 하면 위치번호나 날짜에 우연히 같은 숫자가 들어 있을 때 걸린다
+- 행을 지울 때 `replace(행, "")` 만 쓰면 줄바꿈이 남아 빈 줄이 생긴다. 남길 행만 모아 다시 잇는 방식이면 구분자가 저절로 정리된다. 조립은 2-3의 `StringBuilder` 나 `String.join()` 이 맡는다
+- 요금 계산은 `202608190930` 같은 12자리를 `substring()` 으로 잘라 `LocalDateTime.of(...)` 로 만들고, 1-11의 `ChronoUnit.MINUTES.between()` 으로 분 차이를 구하는 흐름이 된다. 10분 단위 올림은 `(분 + 9) / 10` 처럼 정수 나눗셈으로 처리할 수 있다 — [[Java day03 연산자]] 의 정수 나눗셈 성질을 쓰는 자리다
+- `DateTimeFormatter.ofPattern("yyyyMMddHHmm")` 을 만들어 `LocalDateTime.parse(문자열, formatter)` 로 한 번에 파싱하는 방법도 있다. 1-11의 포맷터가 출력뿐 아니라 입력에도 쓰인다는 점이 여기서 드러난다
+
+정리하면 이 실습은 **문자열 = 구분자로 눌러 담은 표**라는 관점을 연습하는 과제다. csv 파일이 정확히 이 구조라, 나중에 파일 입출력이나 API 응답을 다룰 때 같은 손놀림이 그대로 쓰인다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. equals()와 hashCode()는 짝으로 오버라이딩한다
@@ -534,6 +604,50 @@ String.format("%s님, 잔액은 %,d원입니다.", "홍길동", 1234567);
 
 `System.out.printf()` 는 `format()` 한 결과를 바로 출력하는 형태다. 1-8처럼 콘솔에 표를 그릴 때 폭 지정 서식으로 칸을 맞출 수 있다. 다만 한글은 두 칸을 차지해서 `%5s` 만으로는 어긋나므로, 글자 폭을 직접 세는 방식과 섞어 쓰게 된다.
 
+### 2-9. 난수 관용구
+
+```java
+// 범위 난수 — a 이상 b 이하
+int n = random.nextInt(b - a + 1) + a;
+
+// 배열·리스트에서 하나 무작위로 뽑기
+String pick = list.get(random.nextInt(list.size()));
+
+// 인증번호 6자리 (앞자리 0이 사라지지 않게 서식으로 채운다)
+String code = String.format("%06d", random.nextInt(1000000));
+
+// 씨앗(seed)을 고정하면 매번 같은 순서가 나온다 — 테스트용
+Random fixed = new Random(42);
+```
+
+`nextInt(list.size())` 가 인덱스 범위와 정확히 맞는 이유는 1-13에서 정리한 "끝값 제외" 규칙 덕분이다. 씨앗을 고정하는 건 난수가 실제로는 계산식으로 만들어지는 값이라 가능한 일이고, 결과가 매번 달라지면 곤란한 테스트에서 쓴다.
+
+보안이 걸린 값(비밀번호 초기화 토큰 등)에는 `Random` 대신 `SecureRandom` 을 쓴다. `Random` 은 씨앗을 알면 다음 값을 예측할 수 있어서, 맞히면 안 되는 값에는 맞지 않는다.
+
+### 2-10. 구분자로 담은 데이터를 다룰 때
+
+```java
+String data = "3,211가6231,202608190930\n8,452하1234,202608171227";
+
+// 행 단위 순회
+for (String row : data.split("\n")) { … }
+
+// 남길 행만 모아 다시 잇기 (삭제)
+StringBuilder sb = new StringBuilder();
+for (String row : data.split("\n")) {
+    if (!row.split(",")[1].equals(대상번호)) {
+        if (sb.length() > 0) sb.append("\n");
+        sb.append(row);
+    }
+}
+String result = sb.toString();
+```
+
+`if (sb.length() > 0)` 로 구분자를 붙이는 건, 맨 앞이나 맨 뒤에 빈 줄이 남지 않게 하는 흔한 처리다. 자바 8부터는 `String.join("\n", 리스트)` 가 같은 일을 한 줄로 해 준다.
+
+- `split()` 의 인자는 사실 정규표현식이다. `.` `|` `+` 같은 문자를 구분자로 쓸 때는 `split("\\.")` 처럼 이스케이프해야 의도대로 갈린다
+- 줄바꿈은 운영체제마다 `\n`·`\r\n` 으로 다르다. 외부에서 받은 텍스트를 쪼갤 때는 `split("\\r?\\n")` 이 안전하다
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 리플렉션이 실무에서 쓰이는 곳
@@ -596,14 +710,19 @@ public record BoardDto(int no, String content, String writer) { }
 - `Math`·`Random` 등 나머지 표준 유틸 클래스
 - `ChronoUnit`·`Duration`·`Period` 로 기간 계산하기
 - 얕은 복사·깊은 복사, `clone()`
+- `Random` vs `SecureRandom` vs `Math.random()`, `ThreadLocalRandom`
+- UUID 버전(v4 난수 기반)과 DB 기본키로 쓸 때의 장단점
+- csv 파싱과 파일 입출력(`Files.readAllLines`), 문자열 대신 클래스로 표를 담기
 
 ## 실습 파일
 
 - `2026B_BE/src/day13/exam/exam1.java` (Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·getClass·Class.forName 리플렉션)
 - `2026B_BE/src/day13/exam/exam2.java` (래퍼 클래스와 오토박싱·언박싱, parseXXX·String.valueOf 타입 변환, LocalDate·LocalTime·LocalDateTime, DateTimeFormatter, plusXXX·getXXX)
 - `2026B_BE/src/day13/exam/exam3.java` (String 클래스 — 문자열과 char 배열, 아스키·유니코드 코드값 변환, concat·length·charAt·replace·substring·split·indexOf·contains·getBytes, StringBuilder)
+- `2026B_BE/src/day13/exam/exam4.java` (Random 난수 — nextInt·nextBoolean, UUID.randomUUID 고유 식별자)
 - `2026B_BE/src/day13/exam/test.java` (콘솔 좌석 현황판 렌더링 — StringBuilder, Deque, switch 표현식, 한글 폭 계산)
+- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[SQL day02 테이블과 제약조건]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]

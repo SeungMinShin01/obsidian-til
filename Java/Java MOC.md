@@ -57,7 +57,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 | 11 | [[Java day11 종합예제 인터페이스 DAO]] | **인터페이스 DAO 규격, 제네릭, 싱글톤 전 계층, BaseTime 상속** |
 | 12 | [[Java day12 예외 처리와 JDBC]] | try-catch-finally, 다중 catch, throws, JDBC 연결·PreparedStatement·executeQuery·ResultSet 조회 |
 | 12 | [[Java day12 종합예제 JDBC DAO]] | **BaseDao 상속으로 JDBC 연동 공통화, 싱글톤 MVC 배선, DB 표를 담는 DTO, 등록·조회·수정·삭제 CRUD 완성** |
-| 13 | [[Java day13 Object 클래스와 리플렉션]] | Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·리플렉션, 래퍼 클래스와 오토박싱, parseXXX 타입 변환, LocalDate·DateTimeFormatter, String 클래스 메소드·문자 코드값, 콘솔 렌더링 |
+| 13 | [[Java day13 Object 클래스와 리플렉션]] | Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·리플렉션, 래퍼 클래스와 오토박싱, parseXXX 타입 변환, LocalDate·DateTimeFormatter, String 클래스 메소드·문자 코드값, Random·UUID, 구분자 문자열 파싱, 콘솔 렌더링 |
 
 ## 주제별 심화
 
