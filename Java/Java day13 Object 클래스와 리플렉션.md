@@ -524,6 +524,59 @@ for (int i = 0; i < flat.size(); i++) {
 - 반환값 규약은 하나로 정해 두는 편이 낫다. 과제 설명에는 `"미등록 차량"` 과 `-1` 이 같이 나오는데, 위치번호를 숫자로 쓸 거면 **`int` + 실패는 `-1`** 로 통일하고 메시지는 호출부에서 붙이는 쪽이 호출하는 코드가 단순해진다
 - 입차의 중복 검사는 "그 위치에 이미 차가 있는지"를 묻는 것이므로, 찾기와 같은 순회를 `col[0]`(위치) 기준으로 한 번 더 돌리면 된다. 열만 바꾼 같은 모양이라 `findByColumn(list, 열번호, 값)` 식으로 하나로 묶어도 된다
 
+### 1-16. 쪼개는 일을 헬퍼로 빼기 — 공유 상태와 clear()
+
+세 기능이 전부 "문자열을 쪼개고 순회한다"로 시작하니, 쪼개는 부분만 메소드 하나로 빼면 중복이 줄어든다. 결과를 담을 곳을 멤버변수로 올려 두고 헬퍼가 그 자리를 채우는 형태가 된다.
+
+```java
+static ArrayList<String> carList = new ArrayList<>();
+
+static void listSplit(String carParkingList) {
+    carList.clear();                                  // ① 먼저 비운다
+    for (String row : carParkingList.split("\n")) {
+        for (String cell : row.split(",")) {
+            carList.add(cell);                        // ② 전부 펴서 담는다
+        }
+    }
+}
+```
+
+여기서 눈여겨볼 자리는 ①이다. `carList` 는 `static` 이라 프로그램이 도는 동안 **한 개만 존재하고 계속 살아 있다** — [[Java day08 접근제한자와 static]] 의 static 영역 이야기 그대로다. 비우지 않고 `add()` 만 하면 헬퍼를 부를 때마다 이전 내용 뒤에 계속 쌓여서, 두 번째 호출부터 리스트 길이가 두 배·세 배가 된다. **같은 입력으로 몇 번을 불러도 결과가 같아야** 메뉴 루프처럼 반복 호출되는 구조에서 안심하고 쓸 수 있다 (`#멱등성`).
+
+반환하는 방식과 비교하면 성격이 갈린다.
+
+| 방식 | 모양 | 성격 |
+| --- | --- | --- |
+| 공유 상태 | `static void listSplit(String s)` → `carList` 를 채움 | 호출부가 짧다. 대신 "지금 `carList` 안에 뭐가 들어 있나"를 늘 신경 써야 한다 |
+| 반환 | `static ArrayList<String> split(String s)` | 호출할 때마다 새 리스트가 나오므로 섞일 일이 없다. 매번 새로 만드는 비용은 있다 |
+
+작은 실습에서는 둘 다 돌아가지만, 메소드가 늘어날수록 반환 방식이 추적하기 쉬워진다. 공유 상태로 갈 거면 "채우는 쪽은 반드시 먼저 비운다"를 규칙으로 고정해 두는 편이 안전하다.
+
+**시각을 밖에서 받아 넣기**
+
+입차 메소드가 시각을 직접 만들지 않고 매개변수로 받는 형태를 잡았다.
+
+```java
+LocalDateTime now = LocalDateTime.now();                 // 호출부에서 만들고
+String result = carCheckIn(carParkingList, location, carNumber, now);   // 넘긴다
+```
+
+메소드 안에서 `LocalDateTime.now()` 를 부르면 호출할 때마다 결과가 달라져서, 나중에 "2026-08-19 09:30에 들어온 차"처럼 특정 시각을 넣어 확인하고 싶을 때 손댈 방법이 없다. **바깥에서 만들어 넘기면 값이 하나 더 늘어나는 대신 결과를 내가 정할 수 있다.** [[Java day11 인터페이스]] 에서 구현을 밖에서 갈아끼운 것과 같은 결의 이야기고, 나중에 테스트 코드를 쓸 때 반복해서 만나는 방식이다.
+
+**중복 검사에서 비교 대상을 좁히기**
+
+입차는 "그 위치에 이미 차가 있나"를 먼저 확인한 뒤 행을 이어 붙인다.
+
+```java
+if (중복) return location + "번 자리에는 중복 주차할 수 없습니다.";
+carParkingList += "\n" + location + "," + carNumber + "," + nowTime;
+return location;
+```
+
+이때 1-15의 ②처럼 펴 놓은 리스트 전체를 대상으로 비교하면, 위치번호가 우연히 다른 열의 값(차량번호 일부나 날짜 조각)과 같아도 걸린다. **위치는 위치 열끼리만 비교한다**는 조건을 코드에 남기려면 행 단위로 자른 뒤 `col[0]` 만 보는 형태가 필요하다. 데이터가 늘어나기 전에는 잘 드러나지 않는 종류의 차이라, 문자열 표를 다룰 땐 "어느 열을 보고 있는지"를 항상 코드에 적어 두는 습관이 남는다.
+
+반환값도 두 갈래가 섞이기 쉽다. 성공하면 위치번호, 실패하면 안내 문구를 같은 `String` 으로 돌려주면 호출부에서 둘을 구분할 방법이 문자열 내용뿐이다. 갱신된 목록을 돌려줄지, 결과 코드만 돌려줄지 **하나로 정해 두고 메시지는 화면 쪽에서 붙이는** 편이 나중에 기능이 늘어도 흔들리지 않는다 — [[Java day09 MVC 종합예제]] 에서 view와 model을 갈라 둔 이유와 같다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. equals()와 hashCode()는 짝으로 오버라이딩한다
@@ -749,6 +802,31 @@ public class A {
 - 여러 호출에 걸쳐 값을 유지해야 하면 그건 지역변수가 아니라 클래스 멤버로 올릴 자리다 — [[Java day08 접근제한자와 static]] 의 static 영역 이야기가 그대로 적용된다
 - 지역변수에 붙일 수 있는 유일한 제한자는 `final` 이다. 한 번 대입한 뒤 바꾸지 않겠다는 표시로 쓴다
 
+### 2-13. 날짜 포맷 문자는 대소문자가 다른 뜻이다
+
+`DateTimeFormatter.ofPattern()` 에 넣는 문자는 대문자와 소문자가 서로 다른 값을 가리킨다. 눈으로는 잘 안 보이는데 결과는 완전히 달라진다.
+
+| 문자 | 뜻 | 문자 | 뜻 |
+| --- | --- | --- | --- |
+| `yyyy` | 연도 | `YYYY` | 주 기준 연도 (연말·연초에 어긋난다) |
+| `MM` | 월 | `mm` | 분 |
+| `dd` | 일 | `DD` | 그 해의 몇 번째 날 |
+| `HH` | 24시간 (0~23) | `hh` | 12시간 (1~12) |
+| `ss` | 초 | `SS` | 밀리초 |
+
+- 자주 걸리는 자리는 **`MM`(월) / `mm`(분)** 과 **`HH` / `hh`** 두 쌍이다. `hh` 로 찍으면 오후 3시가 `03` 이 되어 새벽 3시와 구분되지 않으므로, `a`(오전/오후)를 같이 쓰지 않는 이상 `HH` 가 기본이다
+- 자리 수는 문자를 반복한 개수로 정해진다. `yy` 는 두 자리(`26`), `yyyy` 는 네 자리(`2026`)다. 데이터 규격이 `YYYYMMDDhhmm` 12자리라면 패턴은 `yyyyMMddHHmm` 이 된다
+- 패턴은 출력과 입력 양쪽에 쓴다. 같은 포맷터로 `format()` 해서 저장하고 `LocalDateTime.parse(문자열, formatter)` 로 되읽으면 규격이 어긋날 일이 없다
+
+```java
+DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+String saved = LocalDateTime.now().format(fmt);          // 202608191524
+LocalDateTime back = LocalDateTime.parse(saved, fmt);    // 되읽기
+```
+
+- 포맷터는 상태를 갖지 않으므로 **한 번 만들어 상수로 두고 재사용**해도 된다. `static final DateTimeFormatter FMT = …` 형태가 흔하다
+- 날짜를 문자열로 저장할 땐 `yyyyMMddHHmm` 처럼 **큰 단위부터 고정 자리 수로** 붙이는 형식이 좋다. 이러면 문자열을 그냥 사전순으로 정렬해도 시간순이 되고, `substring()` 으로 연·월·일을 잘라 내기도 쉽다
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 리플렉션이 실무에서 쓰이는 곳
@@ -822,7 +900,7 @@ public record BoardDto(int no, String content, String writer) { }
 - `2026B_BE/src/day13/exam/exam3.java` (String 클래스 — 문자열과 char 배열, 아스키·유니코드 코드값 변환, concat·length·charAt·replace·substring·split·indexOf·contains·getBytes, StringBuilder)
 - `2026B_BE/src/day13/exam/exam4.java` (Random 난수 — nextInt·nextBoolean, UUID.randomUUID 고유 식별자)
 - `2026B_BE/src/day13/exam/test.java` (콘솔 좌석 현황판 렌더링 — StringBuilder, Deque, switch 표현식, 한글 폭 계산)
-- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산, 메뉴 루프와 기능 메소드 분리)
+- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산, 메뉴 루프와 기능 메소드 분리, 쪼개기 헬퍼와 static 공유 리스트, DateTimeFormatter로 입차 시각 기록)
 
 ## 관련 노트
 
