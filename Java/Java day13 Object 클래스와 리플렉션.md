@@ -7,14 +7,14 @@ tags: [학습, java]
 
 # Java day13 — Object 클래스와 리플렉션
 
-> 실습 파일: `day13/exam/exam1.java`(Object·Class·리플렉션), `exam2.java`(래퍼 클래스·타입 변환·날짜/시간), `test.java`(콘솔 화면 렌더링)
+> 실습 파일: `day13/exam/exam1.java`(Object·Class·리플렉션), `exam2.java`(래퍼 클래스·타입 변환·날짜/시간), `exam3.java`(String 클래스·문자 코드값), `test.java`(콘솔 화면 렌더링)
 > 허브: [[Java MOC]] · 이전: [[Java day12 종합예제 JDBC DAO]]
 
 day12까지는 내가 만든 클래스들(DTO·DAO·Controller)을 어떻게 조립하는지가 주제였다. day13은 방향이 반대다. **자바가 이미 만들어 둔 클래스(라이브러리)를 어떻게 쓰는가**, 그중에서도 모든 클래스의 조상인 `Object` 와 클래스 자신의 정보를 담은 `Class` 를 본다.
 
 라이브러리는 다른 사람들이 만들어 둔 클래스·메소드의 집합이다. `Scanner`·`String`·`ArrayList` 도 전부 라이브러리이고, day12에서 `lib` 폴더에 넣은 MySQL 드라이버 jar도 라이브러리다.
 
-같은 흐름에서 **기본타입을 객체로 감싸는 래퍼 클래스**와 **날짜·시간을 다루는 `java.time` 패키지**도 함께 본다. 셋 다 "이미 만들어져 있으니 가져다 쓰는" 자바 표준 라이브러리다.
+같은 흐름에서 **기본타입을 객체로 감싸는 래퍼 클래스**, **날짜·시간을 다루는 `java.time` 패키지**, 그리고 **문자열을 다루는 `String` 클래스**도 함께 본다. 넷 다 "이미 만들어져 있으니 가져다 쓰는" 자바 표준 라이브러리다.
 
 ## 1. 배운 내용
 
@@ -314,6 +314,86 @@ dt.getMonth();        // AUGUST — 영문 이름(열거형)
 
 [[Java day11 종합예제 인터페이스 DAO]] 에서 게시글에 작성일을 붙일 때 쓴 자리가 이 클래스들이다. 등록 시각을 `LocalDateTime.now()` 로 찍고, 목록에 보여 줄 때 `DateTimeFormatter` 로 다듬는 흐름이 가장 흔한 조합이다.
 
+### 1-12. String 클래스 — 문자열은 배열이다
+
+`String` 도 자바가 만들어 둔 클래스이고, 안에 **문자 배열(`char[]`)을 멤버변수로 갖고 있다.** 그래서 문자열을 다루는 메소드가 배열을 다루듯 인덱스로 움직인다.
+
+```java
+char   str1 = '유';                    // char는 작은따옴표, 1글자만
+char[] str2 = { '유', '재', '석' };     // char 배열
+String str3 = "유재석";                 // String 클래스 — 내부에 char 배열을 가짐
+```
+
+**문자와 코드값은 서로 바꿔 쓸 수 있다.** `char` 는 사실 정수 하나이고, 그 정수가 아스키코드(영문·일부 특수문자)와 유니코드(여러 언어) 표의 자리 번호다.
+
+```java
+char str4 = 65;
+System.out.println(str4);              // A
+
+char[] str5 = { 74, 65, 86, 65 };
+System.out.println(str5);              // JAVA
+
+char str6 = '유';
+System.out.println((int) str6);        // 50976
+```
+
+- 숫자를 `char` 변수에 넣으면 그 번호의 문자로 해석된다. `(int)` 를 붙이면 반대로 코드값이 나온다 — [[Java day02 타입 변환]] 의 캐스팅이 문자에 적용된 자리다
+- `char[]` 를 `println()` 에 넣으면 주소가 아니라 **글자들이 이어져 출력**된다. `println()` 이 `char[]` 전용으로 오버로딩돼 있기 때문이고, 1-2에서 `int[]` 가 `[I@...` 로 찍히던 것과 대비된다
+- 1-8의 한글 폭 계산에서 `c >= 0xAC00 && c <= 0xD7A3` 로 비교하던 것도 이 성질이다. 한글 음절이 유니코드에서 연속된 구간을 차지하고 있어 범위 비교가 성립한다
+
+**문자열 비교는 1-3에서 정리한 규칙 그대로다.**
+
+```java
+System.out.println("유재석".equals("유재석"));              // true
+System.out.println("유재석" == "유재석");                   // true  (리터럴끼리는 같은 주소)
+System.out.println(new String("유재석").equals("유재석"));   // true
+System.out.println(new String("유재석") == "유재석");        // false (새 객체 vs 리터럴)
+```
+
+**자주 쓰는 String 메소드**를 표로 모아 둔다. 전부 원본을 바꾸지 않고 **새 문자열을 돌려준다**(`String` 은 불변).
+
+| 메소드 | 하는 일 | 예 |
+| --- | --- | --- |
+| `concat(문자열)` | 뒤에 이어 붙인 문자열 반환 | `"자바".concat("프로그래밍")` → `자바프로그래밍` |
+| `length()` | 문자 개수 | `"자바프로그래밍".length()` → `7` |
+| `charAt(인덱스)` | 문자 1개 추출 | `"자바프로그래밍".charAt(2)` → `프` |
+| `replace(기존, 새것)` | 있으면 치환해서 반환 | `"자바프로그래밍".replace("자바","JAVA")` → `JAVA프로그래밍` |
+| `substring(시작)` | 시작 인덱스부터 끝까지 잘라 반환 | `"010339-2140421".substring(6)` → `-2140421` |
+| `substring(시작, 끝)` | 시작부터 **끝 직전까지** | `.substring(0, 6)` → `010339` |
+| `split(구분문자)` | 구분자로 쪼개 **배열** 반환 | `.split("-")` → `["010339", "2140421"]` |
+| `indexOf(문자열)` | 처음 나오는 위치, 없으면 `-1` | `"자바 프로그래밍 언어".indexOf("프로")` → `3` |
+| `contains(문자열)` | 포함 여부 `boolean` | `.contains("프로")` → `true` |
+| `getBytes()` | 문자들을 바이트 배열로 | `"ABC".getBytes()` → `[65, 66, 67]` |
+
+- `length()` 는 **메소드**다. 배열의 `length` 는 괄호 없는 필드라 모양이 다르다 — [[Java day04 제어문과 배열]] 과 함께 헷갈리기 쉬운 자리다
+- 인덱스는 0부터 세고, `substring(시작, 끝)` 의 끝은 포함되지 않는다. 그래서 `substring(0, 6)` 이 6글자다
+- `split()` 이 돌려주는 건 배열이라 그대로 출력하면 `[Ljava.lang.String;@...` 처럼 주소가 나온다. 원소를 꺼내 쓰거나 `Arrays.toString()` 으로 감싸야 내용이 보인다 — 1-2의 `toString()` 이야기가 여기서 다시 나온다
+
+```java
+String[] strAry = "010339-2140421".split("-");
+System.out.println(strAry[0]);   // 010339
+System.out.println(strAry[1]);   // 2140421
+```
+
+**`getBytes()` 와 `new String(byte[])`** 는 문자열과 바이트를 오가는 한 쌍이다.
+
+```java
+byte[] strAry2 = "ABC".getBytes();
+System.out.println(Arrays.toString(strAry2));   // [65, 66, 67]
+System.out.println(new String(strAry2));        // ABC
+```
+
+파일 저장·네트워크 전송처럼 프로그램 바깥으로 나갈 때 데이터는 결국 바이트다. 그래서 외부 통신 코드에서는 이 변환이 늘 등장한다. 1-10에서 "바깥에서 들어오는 데이터는 문자열"이라고 정리했는데, 한 층 더 내려가면 바이트인 셈이다.
+
+**`StringBuilder`** 는 2-3에서 정리한 그대로다. `String` 이 불변이라 이어 붙일 때마다 새 객체가 생기므로, 조립할 때는 빌더 하나를 두고 `append()` 로 쌓는다.
+
+```java
+StringBuilder builder = new StringBuilder();
+builder.append("자바");
+builder.append("프로그래밍");
+System.out.println(builder);   // 자바프로그래밍
+```
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. equals()와 hashCode()는 짝으로 오버라이딩한다
@@ -425,6 +505,35 @@ LocalDate d = LocalDate.parse("2026-08-19");
 
 DB와 주고받을 때는 MySQL의 `DATE`·`DATETIME` 컬럼이 `LocalDate`·`LocalDateTime` 과 그대로 대응한다. `ResultSet` 에서 꺼낼 때는 `rs.getDate("regdate").toLocalDate()` 처럼 변환해서 받는다 — [[Java day12 종합예제 JDBC DAO]] 의 DAO가 DTO를 채우는 자리에서 쓰인다.
 
+### 2-8. 문자열 다듬기 관용구
+
+입력값을 그대로 믿고 쓰면 앞뒤 공백이나 빈 문자열 때문에 잔실수가 생긴다. 검증 전에 한 번 다듬어 두는 편이 안전하다.
+
+```java
+String 입력 = "  홍길동  ";
+입력.trim();            // 앞뒤 공백 제거 — "홍길동"
+입력.strip();           // trim의 유니코드 대응 버전 (자바 11+)
+"".isEmpty();           // true  — 길이가 0인가
+"   ".isBlank();        // true  — 공백만 있는가 (자바 11+)
+"abc".toUpperCase();    // ABC
+```
+
+여러 조각을 합칠 때는 구분자를 직접 붙이는 것보다 `String.join()` 이 읽기 쉽고, 자리를 채워 문장을 만들 때는 `String.format()` 을 쓴다.
+
+```java
+String.join(", ", "사과", "포도", "감");        // 사과, 포도, 감
+String.format("%s님, 잔액은 %,d원입니다.", "홍길동", 1234567);
+```
+
+| 서식 | 뜻 |
+| --- | --- |
+| `%s` | 문자열 |
+| `%d` / `%,d` | 정수 / 천 단위 콤마 |
+| `%.2f` | 소수점 둘째 자리까지 |
+| `%5d` / `%-5s` | 폭 5로 오른쪽 정렬 / 왼쪽 정렬 |
+
+`System.out.printf()` 는 `format()` 한 결과를 바로 출력하는 형태다. 1-8처럼 콘솔에 표를 그릴 때 폭 지정 서식으로 칸을 맞출 수 있다. 다만 한글은 두 칸을 차지해서 `%5s` 만으로는 어긋나므로, 글자 폭을 직접 세는 방식과 섞어 쓰게 된다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 리플렉션이 실무에서 쓰이는 곳
@@ -482,6 +591,8 @@ public record BoardDto(int no, String content, String writer) { }
 - `HashMap`·`HashSet` 의 동작 원리 (해시 버킷과 `hashCode`)
 - 어노테이션(`@Override`·`@Test`)과 리플렉션의 조합
 - `String` vs `StringBuilder` vs `StringBuffer`
+- 정규표현식으로 `split`·`replaceAll` 쓰기, `String.join`·`strip`·`isBlank`
+- 문자 인코딩(UTF-8·EUC-KR)과 `getBytes(Charset)`
 - `Math`·`Random` 등 나머지 표준 유틸 클래스
 - `ChronoUnit`·`Duration`·`Period` 로 기간 계산하기
 - 얕은 복사·깊은 복사, `clone()`
@@ -490,6 +601,7 @@ public record BoardDto(int no, String content, String writer) { }
 
 - `2026B_BE/src/day13/exam/exam1.java` (Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·getClass·Class.forName 리플렉션)
 - `2026B_BE/src/day13/exam/exam2.java` (래퍼 클래스와 오토박싱·언박싱, parseXXX·String.valueOf 타입 변환, LocalDate·LocalTime·LocalDateTime, DateTimeFormatter, plusXXX·getXXX)
+- `2026B_BE/src/day13/exam/exam3.java` (String 클래스 — 문자열과 char 배열, 아스키·유니코드 코드값 변환, concat·length·charAt·replace·substring·split·indexOf·contains·getBytes, StringBuilder)
 - `2026B_BE/src/day13/exam/test.java` (콘솔 좌석 현황판 렌더링 — StringBuilder, Deque, switch 표현식, 한글 폭 계산)
 
 ## 관련 노트
