@@ -464,6 +464,66 @@ for (String row : rows) {
 
 정리하면 이 실습은 **문자열 = 구분자로 눌러 담은 표**라는 관점을 연습하는 과제다. csv 파일이 정확히 이 구조라, 나중에 파일 입출력이나 API 응답을 다룰 때 같은 손놀림이 그대로 쓰인다.
 
+### 1-15. 실습 뼈대 — 메뉴 루프와 기능 메소드 분리
+
+구현을 시작하면서 잡은 골격은 [[Java day06 생성자와 콘솔 게시판]]·[[Java day07 메소드와 미니프로젝트]] 의 콘솔 프로그램과 같다. **무한 루프 + 번호 입력 + 분기**가 화면 쪽을 맡고, 실제 처리는 `static` 메소드로 빼 둔다.
+
+```java
+String carParkingList = "3,211가6231,202608190930\n8,452하1234,202608171227";
+Scanner scan = new Scanner(System.in);
+
+while (true) {
+    System.out.print("1.위치찾기 2.입차 3.출차 선택:");
+    int ch = scan.nextInt();
+
+    if (ch == 1) {
+        String carNumber = scan.next();
+        int result = findCarLocation(carParkingList, carNumber);
+        System.out.println(result);
+    }
+    if (ch == 2) { … }
+    if (ch == 3) { … }
+}
+```
+
+기능 메소드의 시그니처를 어떻게 잡느냐가 이 실습의 실제 설계 지점이다.
+
+| 기능 | 형태 | 왜 이 모양인가 |
+| --- | --- | --- |
+| 위치 찾기 | `static int findCarLocation(String list, String carNumber)` | 데이터를 바꾸지 않고 읽기만 한다. 못 찾으면 `-1` |
+| 입차 | `static String carCheckIn(String list, int location, String carNumber, LocalDate dt)` | 데이터를 **바꾸므로 갱신된 문자열을 돌려줘야** 한다 |
+| 출차 | `static String carCheckOut(String list, String carNumber)` | 같은 이유로 반환형이 `String` |
+
+여기서 1-12의 **`String` 불변** 성질이 설계에 직접 영향을 준다. 메소드 안에서 `list += "\n" + 새 행` 을 해도 그건 메소드 안 지역변수만 바뀐 것이라 **호출한 쪽의 원본은 그대로**다. 그래서 입차·출차는 결과를 반환하고, 호출부에서 다시 대입해야 실제로 반영된다.
+
+```java
+carParkingList = carCheckIn(carParkingList, location, carNumber, LocalDate.now());
+```
+
+매개변수로 넘긴 참조타입이라도 **재대입은 바깥에 전달되지 않는다**. 반대로 `ArrayList` 처럼 가변 객체를 넘겨 `add()` 로 내용을 바꾸면 바깥에도 보인다. 참조를 바꾸는 것과 참조가 가리키는 내용을 바꾸는 것이 다르다는 이야기이고, 문자열을 상태로 쓰기로 한 이상 "반환해서 다시 대입"이 유일한 갱신 방법이 된다.
+
+**찾기 방식 두 갈래**
+
+`split("\n")` 으로 자른 행을 다시 `split(",")` 하면 자연스럽게 2차원이 된다. 이걸 한 줄로 펴서 `ArrayList` 하나에 전부 담고 순회하는 방법도 있다.
+
+```java
+// ① 행 단위로 보기 — 열 위치가 이름 그대로 남는다
+for (String row : list.split("\n")) {
+    String[] col = row.split(",");
+    if (col[1].equals(carNumber)) return Integer.parseInt(col[0]);
+}
+
+// ② 전부 펴서 한 줄로 보기 — 찾은 자리의 앞 칸이 위치번호
+for (int i = 0; i < flat.size(); i++) {
+    if (flat.get(i).equals(carNumber)) return Integer.parseInt(flat.get(i - 1));
+}
+```
+
+②는 코드가 짧지만 "값을 찾은 뒤 인덱스를 되짚어 앞 칸을 꺼낸다"는 규칙이 열 순서에 묶인다. 컬럼이 하나 늘거나 순서가 바뀌면 `i - 1` 이 통째로 어긋나고, 첫 원소가 걸리면 인덱스가 음수로 내려간다. **행 안에서 열 번호로 접근하는 ①이 열 구조의 뜻을 코드에 남긴다는 점에서 안전한 편이다.**
+
+- 반환값 규약은 하나로 정해 두는 편이 낫다. 과제 설명에는 `"미등록 차량"` 과 `-1` 이 같이 나오는데, 위치번호를 숫자로 쓸 거면 **`int` + 실패는 `-1`** 로 통일하고 메시지는 호출부에서 붙이는 쪽이 호출하는 코드가 단순해진다
+- 입차의 중복 검사는 "그 위치에 이미 차가 있는지"를 묻는 것이므로, 찾기와 같은 순회를 `col[0]`(위치) 기준으로 한 번 더 돌리면 된다. 열만 바꾼 같은 모양이라 `findByColumn(list, 열번호, 값)` 식으로 하나로 묶어도 된다
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. equals()와 hashCode()는 짝으로 오버라이딩한다
@@ -648,6 +708,47 @@ String result = sb.toString();
 - `split()` 의 인자는 사실 정규표현식이다. `.` `|` `+` 같은 문자를 구분자로 쓸 때는 `split("\\.")` 처럼 이스케이프해야 의도대로 갈린다
 - 줄바꿈은 운영체제마다 `\n`·`\r\n` 으로 다르다. 외부에서 받은 텍스트를 쪼갤 때는 `split("\\r?\\n")` 이 안전하다
 
+### 2-11. Scanner의 next 계열 — 섞어 쓸 때 주의
+
+메뉴 루프에서 숫자와 문자열을 번갈아 받으면 입력이 어긋나는 자리가 하나 있다.
+
+| 메소드 | 읽는 범위 | 개행(`\n`) 처리 |
+| --- | --- | --- |
+| `nextInt()` / `nextDouble()` | 공백 전까지의 숫자 하나 | 뒤에 남은 개행을 **버리지 않는다** |
+| `next()` | 공백 전까지의 단어 하나 | 마찬가지로 남긴다 |
+| `nextLine()` | 개행 전까지 한 줄 전체 | 개행까지 읽고 버린다 |
+
+그래서 `nextInt()` 뒤에 바로 `nextLine()` 을 부르면 남아 있던 개행만 읽고 빈 문자열이 돌아온다. 해결은 두 가지다.
+
+```java
+int ch = scan.nextInt();
+scan.nextLine();              // ① 남은 개행을 한 번 비운다
+String name = scan.nextLine();
+
+int ch2 = Integer.parseInt(scan.nextLine());   // ② 전부 nextLine으로 받고 변환
+```
+
+②는 1-10의 `parseInt()` 를 쓰는 방식이라 입력 경로가 `nextLine()` 하나로 통일된다. 공백이 들어간 값(주소·제목 등)을 받아야 한다면 `next()` 는 첫 단어에서 끊기므로 어차피 `nextLine()` 이 필요하다.
+
+숫자를 기대한 자리에 문자가 들어오면 `nextInt()` 는 `InputMismatchException` 을 던지고 입력이 버퍼에 그대로 남아 무한 루프가 된다. 메뉴처럼 계속 도는 구조라면 ②로 받아 2-6의 `NumberFormatException` 을 잡는 편이 흐름이 끊기지 않는다.
+
+### 2-12. 지역변수에는 접근제한자·static을 붙이지 않는다
+
+`public`·`private`·`static` 은 **클래스의 멤버**(멤버변수·메소드)에 붙이는 키워드다. 메소드 안에서 선언하는 지역변수에는 붙일 수 없다 — 지역변수는 메소드가 실행될 때 생겼다가 끝나면 사라지므로 "밖에서 접근하는 범위"라는 개념 자체가 성립하지 않는다.
+
+```java
+static void method() {
+    ArrayList<String> list = new ArrayList<>();   // 지역변수 — 제한자 없이
+}
+
+public class A {
+    private static int count;                     // 멤버변수 — 여기에 붙는다
+}
+```
+
+- 여러 호출에 걸쳐 값을 유지해야 하면 그건 지역변수가 아니라 클래스 멤버로 올릴 자리다 — [[Java day08 접근제한자와 static]] 의 static 영역 이야기가 그대로 적용된다
+- 지역변수에 붙일 수 있는 유일한 제한자는 `final` 이다. 한 번 대입한 뒤 바꾸지 않겠다는 표시로 쓴다
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 리플렉션이 실무에서 쓰이는 곳
@@ -721,8 +822,8 @@ public record BoardDto(int no, String content, String writer) { }
 - `2026B_BE/src/day13/exam/exam3.java` (String 클래스 — 문자열과 char 배열, 아스키·유니코드 코드값 변환, concat·length·charAt·replace·substring·split·indexOf·contains·getBytes, StringBuilder)
 - `2026B_BE/src/day13/exam/exam4.java` (Random 난수 — nextInt·nextBoolean, UUID.randomUUID 고유 식별자)
 - `2026B_BE/src/day13/exam/test.java` (콘솔 좌석 현황판 렌더링 — StringBuilder, Deque, switch 표현식, 한글 폭 계산)
-- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산)
+- `2026B_BE/src/day13/practice/practice14.java` (문자열 주차 관리 실습 — 구분자로 담은 표 데이터, split·indexOf·substring, 요금 계산, 메뉴 루프와 기능 메소드 분리)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[SQL day02 테이블과 제약조건]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[SQL day02 테이블과 제약조건]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]
