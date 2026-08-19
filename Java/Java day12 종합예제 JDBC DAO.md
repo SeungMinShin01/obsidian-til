@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day12 — 종합예제 (JDBC DAO)
 
 > 실습 파일: `day12/종합예제/` (BoardView, BoardController, BoardDao·BaseDao, BoardDto)
-> 허브: [[Java MOC]] · 이전: [[Java day12 예외 처리와 JDBC]]
+> 허브: [[Java MOC]] · 이전: [[Java day12 예외 처리와 JDBC]] · 다음: [[Java day13 Object 클래스와 리플렉션]]
 
 [[Java day11 종합예제 인터페이스 DAO]] 는 저장소를 인터페이스로 규격화하고 데이터는 메모리(ArrayList)에 담았다. day12 종합예제는 같은 MVC 골격을 가져오되, 저장소를 **실제 DB에 연결**하는 쪽으로 방향을 튼 시작점이다. [[Java day12 예외 처리와 JDBC]] 에서 exam으로 익힌 JDBC 연동을, 이번에는 프로젝트 구조 안(DAO 계층)으로 옮겨 넣는 단계다.
 
@@ -300,4 +300,4 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[KDT_2026 학습 지도]]
