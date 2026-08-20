@@ -7,7 +7,7 @@ tags: [학습, sql]
 
 # SQL day05 — 외래키 CASCADE와 조인
 
-> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + INNER JOIN 3형태 + OUTER JOIN·합집합·차집합), `database/practice5.sql` (3테이블 스키마 실전 연습)
+> 실습 파일: `database/day05.sql` (table1/table2 + FK 참조 동작 + INNER JOIN 3형태 + OUTER JOIN·합집합·차집합), `database/practice5.sql` (3테이블 스키마 실전 연습 + 미니프로젝트 스키마 설계)
 > 허브: [[CS 이론 MOC]] · 이전: [[SQL day04 집계와 정렬]]
 
 이번에는 두 테이블을 PK-FK로 이어놓고, ① 부모 값이 바뀌면 자식은 어떻게 되는지(참조 동작), ② 이어진 두 테이블을 어떻게 하나로 조회하는지(JOIN)를 정리합니다. PK/FK 선언 자체는 [[SQL day02 테이블과 제약조건]], JOIN 첫 등장은 [[SQL day03 DML과 조인]] 에서 다뤘고, 여기서는 그 둘을 이어 붙입니다.
@@ -237,6 +237,81 @@ order by 총재고수량 desc;
 
 정리하면 practice5의 9문제는 결국 세 갈래입니다: ① 이어진 테이블을 조인으로 붙이기(2·3테이블), ② 짝 없는 쪽을 LEFT JOIN·`IS NULL`로 다루기, ③ 조인 결과에 `group by` 집계를 얹기. 앞 절들에서 하나씩 배운 조각을 실제 스키마에서 조합하는 연습입니다.
 
+### 1-9. 배운 조각으로 미니프로젝트 스키마 짜보기
+
+조인 문제를 마친 뒤, 같은 파일에 미니프로젝트에서 쓸 데이터베이스를 처음부터 설계해 보는 부분이 이어집니다. 소재는 식당 경영 게임이고, 지금까지 배운 PK·FK·기본값·제약조건을 한 스키마 안에서 조합하는 연습입니다.
+
+```sql
+DROP DATABASE IF EXISTS MINI2;
+CREATE DATABASE MINI2;
+USE MINI2;
+
+CREATE TABLE MENU (
+    MENU_ID    INT PRIMARY KEY AUTO_INCREMENT,   -- 컬럼 뒤에 바로 PK 선언
+    MENU_NAME  VARCHAR(50) NOT NULL,
+    MENU_PRICE INT NOT NULL
+);
+
+CREATE TABLE PRODUCT (
+    PRODUCT_NO    INT PRIMARY KEY AUTO_INCREMENT,
+    PRODUCT_NAME  VARCHAR(50) NOT NULL,
+    PRODUCT_QTY   INT NOT NULL,
+    PRODUCT_PRICE INT NOT NULL
+);
+
+CREATE TABLE CUSTOMER (
+    CUSTOMER_NO     INT PRIMARY KEY AUTO_INCREMENT,
+    MENU_ID         INT,
+    ENTERED_AT      DATETIME DEFAULT NOW(),       -- 입장 시각 자동 기록
+    CUSTOMER_STATE  VARCHAR(10),
+    CUSTOMERLOG_DAY INT NOT NULL,
+    CURRENT_GOLD    INT,
+    CONSTRAINT FOREIGN KEY (MENU_ID) REFERENCES MENU(MENU_ID)
+);
+```
+
+테이블을 나눈 기준을 정리하면 이렇습니다.
+
+| 테이블 | 맡는 것 |
+| --- | --- |
+| `MENU` | 판매 메뉴 — 이름과 가격 |
+| `PRODUCT` | 재료 — 보유 수량과 단가 |
+| `RECIPE` | 메뉴 하나에 들어가는 재료와 조리 순서 |
+| `CUSTOMER` | 손님 입장 기록과 주문한 메뉴 |
+| `COOK` | 조리 중인 메뉴와 조리 상태 |
+| `GAMESTATE` | 지금 진행 상태 — 며칠째인지, 보유 골드, 영업 여부 |
+| `GAMELOG` · `PRODUCTLOG` | 지난 기록 — 유저별 최고 기록, 재료 변동 이력 |
+
+여기서 새로 눈에 들어오는 문법은 세 가지입니다.
+
+| 문법 | 뜻 |
+| --- | --- |
+| `INT PRIMARY KEY AUTO_INCREMENT` | 컬럼 선언 뒤에 바로 PK를 붙이는 축약형. `CONSTRAINT PRIMARY KEY(...)`를 따로 쓰는 방식과 결과는 같습니다 |
+| `UNIQUE` | 값 중복 금지 — 유저명처럼 "한 번만 등장해야 하는" 컬럼에 씁니다 (PK와 달리 테이블에 여러 개 둘 수 있음) |
+| `BOOLEAN` | MySQL에서는 `TINYINT(1)`의 별칭 — 참/거짓을 1/0으로 저장합니다 |
+
+**상태 테이블과 이력 테이블의 분리**가 이 스키마의 설계 포인트입니다. `GAMESTATE`는 "지금 몇 일차, 골드 얼마"처럼 항상 최신값 하나만 있으면 되니 한 행을 계속 갱신(UPDATE)하고, `GAMELOG`·`PRODUCTLOG`는 지나간 사건이라 행을 계속 쌓습니다(INSERT). 같은 `CURRENT_GOLD` 컬럼이 양쪽에 있어도 의미가 다른 이유가 여기 있습니다 — 한쪽은 현재값, 한쪽은 그 시점의 스냅샷입니다.
+
+| 성격 | 쓰는 법 | 예 |
+| --- | --- | --- |
+| 상태(state) | 행을 갱신 | `GAMESTATE` — 현재 일차·골드·영업 여부 |
+| 이력(log) | 행을 추가 | `GAMELOG`·`PRODUCTLOG` — 종료 기록, 재료 변동 |
+
+**`RECIPE`는 다대다를 푸는 연결 테이블**입니다. 메뉴 하나에 재료가 여러 개 들어가고, 같은 재료가 여러 메뉴에 쓰이니 `MENU`와 `PRODUCT`는 N:M 관계입니다. 관계형 DB는 N:M을 직접 표현하지 못하므로, 양쪽 PK를 FK로 갖는 테이블을 가운데 하나 두고 1:N 두 개로 쪼갭니다. `RECIPE_ORDER` 같은 추가 정보(조리 순서)를 함께 담을 수 있는 것도 연결 테이블의 장점입니다.
+
+```
+MENU 1 ──< RECIPE >── N PRODUCT
+```
+
+스키마를 직접 짤 때 챙기면 좋은 일반적인 주의사항도 몇 개 정리해 둡니다.
+
+- FK의 `REFERENCES`에는 **부모 테이블의 PK 컬럼명**을 정확히 적습니다. 이름이 한 글자만 달라도, 타입이나 `UNSIGNED` 여부가 어긋나도 테이블 생성 단계에서 막힙니다
+- 컬럼 목록의 **마지막 항목 뒤에는 쉼표를 두지 않습니다**. 제약조건 절을 뒤에 덧붙이다 보면 놓치기 쉬운 자리입니다
+- `DATE`·`ORDER`처럼 SQL 예약어와 겹치는 이름은 컬럼명으로 쓰면 백틱(`` `DATE` ``)이 필요해집니다. `ORDER_DATE`, `CREATED_AT`처럼 접두·접미를 붙여 피하는 편이 안전합니다
+- 자식 테이블은 부모보다 **뒤에** 만듭니다. 참조 대상이 아직 없으면 FK를 걸 수 없습니다
+
+정리하면 day05는 "이미 있는 테이블을 잇는 법(JOIN)"에서 시작해 "어떤 테이블을 둘지 정하는 법(스키마 설계)"으로 넘어온 셈입니다. 조인 문법을 알고 나니, 설계 단계에서 "이 조회를 하려면 어디에 FK가 있어야 하나"를 거꾸로 생각하게 됩니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. INNER JOIN은 "양쪽에 다 있는 것만"
@@ -275,11 +350,14 @@ FK 컬럼에는 조인·참조 검사가 자주 걸리므로 인덱스가 중요
 - 다대다 관계와 연결 테이블(junction table)
 - 서브쿼리 기반 차집합(`NOT IN`, `NOT EXISTS`)과 `IS NULL` 방식의 성능 비교
 - 조인 성능과 실행 계획(`EXPLAIN`)
+- 정규화 1NF~3NF와 반정규화, ERD로 스키마 먼저 그려보기
+- 상태 테이블 vs 이력 테이블 설계, `CREATED_AT`/`UPDATED_AT` 감사 컬럼 관례
+- `UNIQUE` 복합키(두 컬럼 조합의 중복 금지)와 `ON DUPLICATE KEY UPDATE`
 
 ## 실습 파일
 
 - `2026B_BE/src/database/day05.sql`
-- `2026B_BE/src/database/practice5.sql` (pcategory·product·stock 3테이블 조인 연습)
+- `2026B_BE/src/database/practice5.sql` (pcategory·product·stock 3테이블 조인 연습 + MINI2 미니프로젝트 스키마 설계)
 
 ## 관련 노트
 
