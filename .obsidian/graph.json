@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "논문",
+  "search": "논문 분석",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -106,10 +106,94 @@
       }
     },
     {
-      "query": "",
+      "query": "path:\"Fast-EQA/논문 분석/계획서/1 동기·문제\"",
       "color": {
         "a": 1,
-        "rgb": 5419488
+        "rgb": 16739179
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/계획서/2 EM 활성화\"",
+      "color": {
+        "a": 1,
+        "rgb": 5090295
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/계획서/3 재방문 spacing\"",
+      "color": {
+        "a": 1,
+        "rgb": 3725737
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/계획서/4 지속 메모리·스키마\"",
+      "color": {
+        "a": 1,
+        "rgb": 16565273
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/계획서/5 실험·평가\"",
+      "color": {
+        "a": 1,
+        "rgb": 16221100
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/계획서/\"",
+      "color": {
+        "a": 1,
+        "rgb": 9926138
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/논문/\"",
+      "color": {
+        "a": 1,
+        "rgb": 1867478
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/공유 개념/\"",
+      "color": {
+        "a": 1,
+        "rgb": 16749099
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/메타/\"",
+      "color": {
+        "a": 1,
+        "rgb": 8818326
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/원문/\"",
+      "color": {
+        "a": 1,
+        "rgb": 11041362
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/논문 분석/\"",
+      "color": {
+        "a": 1,
+        "rgb": 11638780
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/코드 분석/학습/\"",
+      "color": {
+        "a": 1,
+        "rgb": 9754669
+      }
+    },
+    {
+      "query": "path:\"Fast-EQA/코드 분석/\"",
+      "color": {
+        "a": 1,
+        "rgb": 5361510
       }
     }
   ],
@@ -123,6 +207,6 @@
   "repelStrength": 17.3451207072424,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 1.6604157678267646,
-  "close": true
+  "scale": 0.7069025941539335,
+  "close": false
 }
