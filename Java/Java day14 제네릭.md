@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_BE/src/day14/exam
+원본: KDT_2026/2026B_BE/src/day14/exam, day14/practice
 작성일: 2026-08-20
 tags: [학습, java]
 ---
 
 # Java day14 — 제네릭
 
-> 실습 파일: `day14/exam/exam1.java`(제네릭 타입 선언·다중 타입 파라미터·중첩·제네릭 메소드·상속 제약), `exam2.java`(컬렉션 프레임워크·List 인터페이스와 다형성·리스트 순회·구현체 구조 차이), `exam3.java`(Set 인터페이스·HashSet·Iterator·TreeSet)
+> 실습 파일: `day14/exam/exam1.java`(제네릭 타입 선언·다중 타입 파라미터·중첩·제네릭 메소드·상속 제약), `exam2.java`(컬렉션 프레임워크·List 인터페이스와 다형성·리스트 순회·구현체 구조 차이), `exam3.java`(Set 인터페이스·HashSet·Iterator·TreeSet), `day14/practice/parctice15.java`(제네릭 클래스 설계·와일드카드 컬렉션 인벤토리 실습)
 > 허브: [[Java MOC]] · 이전: [[Java day13 Object 클래스와 리플렉션]]
 
 day13에서 `Object` 가 "모든 타입을 받아 주는 그릇"이라는 걸 정리했다. 그런데 그릇이 아무거나 받아 주면 꺼낼 때가 문제가 된다. 무엇이 들어 있는지 컴파일러가 모르니 꺼낸 값은 다시 `Object` 고, 쓰려면 매번 타입 변환을 붙여야 한다.
@@ -481,6 +481,84 @@ System.out.println(set2.descendingSet());  // [70, 60, 50]  — 내림차순으�
 
 한 가지 눈여겨볼 것은 선언 타입이다. `descendingSet()` 은 **`Set` 인터페이스에는 없고 `TreeSet` 에만 있는 메소드**라, `Set<Integer> set2 = new TreeSet<>();` 로 선언해 두면 부를 수 없다. 1-9에서 "왼쪽은 인터페이스로"가 기본형이라고 정리했지만, **구현체 고유 기능을 써야 할 때는 구현체 타입으로 선언한다.** 선언 타입이 부를 수 있는 메소드의 범위를 정한다는 [[Java day10 상속과 다형성]] 의 규칙이 여기서 실제 판단으로 나타나는 자리다.
 
+### 1-15. 제네릭 클래스를 직접 설계해 보기 — 인벤토리 슬롯 실습 (practice15)
+
+1-2에서 본 `Box3<T>` 는 필드 하나짜리 뼈대였다. 실습 과제는 여기에 **고정 타입 필드 하나를 섞는다.** 게임 인벤토리의 슬롯을 만드는데, 슬롯 번호는 언제나 정수이고 보관하는 물건만 타입이 달라진다.
+
+```java
+class InventorySlot<T> {
+    private int slotNumber;   // 타입이 고정된 필드
+    private T data;           // 타입이 열려 있는 필드
+
+    public InventorySlot(int slotNumber, T data) {
+        this.slotNumber = slotNumber;
+        this.data = data;
+    }
+
+    public int getSlotNumber() { return slotNumber; }
+    public T   getData()       { return data; }
+}
+```
+
+한 클래스 안에서 **일부 필드만 제네릭으로 두는 것**이 가능하다는 게 핵심이다. 타입 파라미터는 "이 클래스의 모든 필드를 덮는 것"이 아니라 **비워 둘 자리를 골라서 지정하는 장치**다.
+
+읽어 둘 곳이 두 군데 더 있다.
+
+| 자리 | 정리 |
+| --- | --- |
+| 생성자 `(int slotNumber, T data)` | 생성자 이름 뒤에는 꺾쇠를 적지 않는다. 클래스 선언의 `T` 를 그대로 쓴다 |
+| 게터 `public T getData()` | 반환 타입이 `T` 라 꺼낼 때 형변환이 필요 없다 — 1-7에서 정리한 `Object` 와의 차이가 그대로 나타난다 |
+
+필드를 `private` 으로 닫고 게터로 꺼내는 구조는 [[Java day08 접근제한자와 static]] 의 캡슐화 그대로다. 제네릭이 붙어도 접근제한자 규칙은 달라지지 않는다.
+
+**슬롯을 한 목록에 담을 때 생기는 문제**
+
+슬롯마다 담긴 타입이 다르다.
+
+```java
+InventorySlot<String>  slot1 = new InventorySlot<>(1, "집행자의 검");
+InventorySlot<Integer> slot2 = new InventorySlot<>(2, 500000);
+InventorySlot<Double>  slot3 = new InventorySlot<>(3, 85.5);
+```
+
+이 셋을 한 리스트에 담으려면 원소 타입을 뭐라고 적어야 할까. `List<InventorySlot<String>>` 으로 두면 나머지 둘이 못 들어가고, `List<InventorySlot<Object>>` 로 두어도 마찬가지다. 2-4에서 적어 둔 **불공변**이 실제로 걸리는 자리다 — `String` 이 `Object` 의 자식이어도 `InventorySlot<String>` 은 `InventorySlot<Object>` 의 자식이 아니다.
+
+답이 **와일드카드**다.
+
+```java
+List<InventorySlot<?>> inventory = new ArrayList<>();
+
+inventory.add(slot1);
+inventory.add(slot2);
+inventory.add(slot3);
+inventory.add(slot4);
+```
+
+`InventorySlot<?>` 는 "안에 무엇이 들었는지는 묻지 않는 슬롯"이라는 타입이다. 꺾쇠 안이 서로 달라도 **바깥 클래스가 같으면 같은 자리에 들어간다.**
+
+순회는 1-10에서 정리한 `forEach` 를 쓴다.
+
+```java
+inventory.forEach((slot) -> {
+    System.out.printf("[슬롯 %d번] 보관 : %s\n", slot.getSlotNumber(), slot.getData());
+});
+```
+
+여기서 와일드카드의 성격이 드러난다.
+
+- `getSlotNumber()` 는 반환이 `int` 로 고정이라 그냥 쓸 수 있다
+- `getData()` 의 반환 타입은 `?` 라 컴파일러가 아는 것이 `Object` 뿐이다. 그래도 **출력에는 문제가 없다** — `printf` 의 `%s` 는 넘어온 값의 `toString()` 을 부르기 때문이다([[Java day13 Object 클래스와 리플렉션]])
+
+반대로 꺼낸 값으로 **계산을 하려 하면 막힌다.** 그때는 `?` 대신 `<? extends Number>` 처럼 상한을 붙여 범위를 좁혀야 한다. 정리하면 이렇다.
+
+| 하려는 일 | 필요한 선언 |
+| --- | --- |
+| 담고, 그냥 출력만 | `<?>` 로 충분하다 |
+| 꺼내서 숫자로 계산 | `<? extends Number>` 로 상한을 준다 |
+| 목록에 값을 넣기 | `<?>` 로는 못 넣는다 — 구체 타입이나 `<? super T>` 가 필요하다 |
+
+마지막 줄이 `?` 의 대가다. 무엇이든 받는 대신 **읽기 쪽으로만 열려 있다.** 이 실습이 "만들어 담고 출력"에서 끝나는 것도 그래서 자연스럽다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 다이아몬드 연산자는 왼쪽을 보고 채운다
@@ -532,6 +610,8 @@ static void printSize(ArrayList<?> list) {
 
 - `<? extends Number>` — Number이거나 그 자식. **꺼내 읽기**에 쓴다
 - `<? super Integer>` — Integer이거나 그 부모. **넣기**에 쓴다
+
+메소드 매개변수뿐 아니라 **컬렉션의 원소 타입 자리에도** 쓸 수 있다. 꺾쇠 안이 제각각인 객체들을 한 목록에 모을 때가 그 자리이고, 1-15의 인벤토리 실습이 그 형태다.
 
 ### 2-5. 제네릭 안에서 못 하는 것들
 
@@ -663,6 +743,7 @@ DAO에서 조회 결과를 담을 때 `List` 로 순서대로 쌓을지, `Map` �
 - `2026B_BE/src/day14/exam/exam1.java` (제네릭 타입 선언과 사용, 타입별 클래스 중복 문제, 래퍼 클래스 사용, 다중 타입 파라미터와 중첩, 제네릭 메소드와 타입 추론, `<T extends Number>` 상한 제약, 컬렉션과 제네릭)
 - `2026B_BE/src/day14/exam/exam2.java` (컬렉션 프레임워크의 정의와 세 갈래, `List` 인터페이스 타입 선언과 다형성, 인터페이스 타입으로 구현체 메소드 호출, 리스트 순회 세 가지(일반 for·향상된 for·forEach), `ArrayList`·`LinkedList`·`Vector` 의 구조 차이)
 - `2026B_BE/src/day14/exam/exam3.java` (`Set` 인터페이스와 중복 제거, `HashSet` 사용법과 인덱스 없는 메소드 구성, 값 기준 삭제·검색, `Set` 순회(향상된 for·forEach·`Iterator`), `Iterator` 의 `hasNext`·`next`, `TreeSet` 의 이진 트리 구조와 `descendingSet()`)
+- `2026B_BE/src/day14/practice/parctice15.java` (인벤토리 슬롯 실습 — 제네릭 클래스 직접 설계, 고정 타입 필드와 제네릭 필드 혼용, 제네릭 생성자·게터, 와일드카드 `<?>` 를 원소 타입으로 둔 리스트, `forEach` 와 `printf` 로 순회 출력)
 
 ## 관련 노트
 
