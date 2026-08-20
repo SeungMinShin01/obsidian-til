@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day13 — Object 클래스와 리플렉션
 
 > 실습 파일: `day13/exam/exam1.java`(Object·Class·리플렉션), `exam2.java`(래퍼 클래스·타입 변환·날짜/시간), `exam3.java`(String 클래스·문자 코드값), `exam4.java`(난수·UUID), `test.java`(콘솔 화면 렌더링), `day13/practice/practice14.java`(문자열 주차 데이터 실습)
-> 허브: [[Java MOC]] · 이전: [[Java day12 종합예제 JDBC DAO]]
+> 허브: [[Java MOC]] · 이전: [[Java day12 종합예제 JDBC DAO]] · 다음: [[Java day14 제네릭]]
 
 day12까지는 내가 만든 클래스들(DTO·DAO·Controller)을 어떻게 조립하는지가 주제였다. day13은 방향이 반대다. **자바가 이미 만들어 둔 클래스(라이브러리)를 어떻게 쓰는가**, 그중에서도 모든 클래스의 조상인 `Object` 와 클래스 자신의 정보를 담은 `Class` 를 본다.
 
@@ -87,9 +87,9 @@ System.out.println(str2 == "유재석");     // false  (새 객체 vs 리터럴)
 System.out.println(str2.equals("유재석"));// true   (내용 비교)
 ```
 
-| 비교 방식 | 무엇을 보는가 |
-| --- | --- |
-| `==` | 참조타입이면 **주소값**, 기본타입이면 값 |
+| 비교 방식      | 무엇을 보는가                               |
+| ---------- | ------------------------------------- |
+| `==`       | 참조타입이면 **주소값**, 기본타입이면 값              |
 | `equals()` | 클래스가 재정의한 **내용** (String은 문자 배열이 같은지) |
 
 - 같은 리터럴 문자열은 자바가 상수 풀(String Pool)에 하나만 만들어 두고 공유한다. 그래서 리터럴끼리는 `==` 가 `true` 다
@@ -1034,4 +1034,4 @@ public record BoardDto(int no, String content, String writer) { }
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[SQL day02 테이블과 제약조건]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day14 제네릭]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day04 제어문과 배열]] · [[Java day03 연산자]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[SQL day02 테이블과 제약조건]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]

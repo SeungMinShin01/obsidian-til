@@ -38,6 +38,9 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
                                                                     │
                                                                     ▼
                                                         day13 Object·리플렉션·표준 라이브러리
+                                                                    │
+                                                                    ▼
+                                                        day14 제네릭
 ```
 
 | day | 노트 | 핵심 |
@@ -58,6 +61,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 | 12 | [[Java day12 예외 처리와 JDBC]] | try-catch-finally, 다중 catch, throws, JDBC 연결·PreparedStatement·executeQuery·ResultSet 조회 |
 | 12 | [[Java day12 종합예제 JDBC DAO]] | **BaseDao 상속으로 JDBC 연동 공통화, 싱글톤 MVC 배선, DB 표를 담는 DTO, 등록·조회·수정·삭제 CRUD 완성** |
 | 13 | [[Java day13 Object 클래스와 리플렉션]] | Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·리플렉션, 래퍼 클래스와 오토박싱, parseXXX 타입 변환, LocalDate·DateTimeFormatter, String 클래스 메소드·문자 코드값, Random·UUID, 구분자 문자열 파싱, Scanner 입력 주의, 콘솔 렌더링, 고정폭 시각 파싱과 정수 나눗셈 요금 계산 |
+| 14 | [[Java day14 제네릭]] | 타입을 비워 두고 선언하기, 타입 파라미터와 래퍼 클래스, 다중·중첩 타입, 제네릭 메소드와 타입 추론, `<T extends 상위타입>` 상한 제약, Object 대비 컴파일 시점 타입 검사 |
 
 ## 주제별 심화
 
