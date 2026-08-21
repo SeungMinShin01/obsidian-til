@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day14 — 제네릭
 
 > 실습 파일: `day14/exam/exam1.java`(제네릭 타입 선언·다중 타입 파라미터·중첩·제네릭 메소드·상속 제약), `exam2.java`(컬렉션 프레임워크·List 인터페이스와 다형성·리스트 순회·구현체 구조 차이), `exam3.java`(Set 인터페이스·HashSet·Iterator·TreeSet), `day14/practice/parctice15.java`(제네릭 클래스 설계·와일드카드 컬렉션 인벤토리 실습)
-> 허브: [[Java MOC]] · 이전: [[Java day13 Object 클래스와 리플렉션]]
+> 허브: [[Java MOC]] · 이전: [[Java day13 Object 클래스와 리플렉션]] · 다음: [[Java day15 Map과 HashMap]]
 
 day13에서 `Object` 가 "모든 타입을 받아 주는 그릇"이라는 걸 정리했다. 그런데 그릇이 아무거나 받아 주면 꺼낼 때가 문제가 된다. 무엇이 들어 있는지 컴파일러가 모르니 꺼낸 값은 다시 `Object` 고, 쓰려면 매번 타입 변환을 붙여야 한다.
 
@@ -747,4 +747,4 @@ DAO에서 조회 결과를 담을 때 `List` 로 순서대로 쌓을지, `Map` �
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day08 접근제한자와 static]] · [[Java day04 제어문과 배열]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day15 Map과 HashMap]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day08 접근제한자와 static]] · [[Java day04 제어문과 배열]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[JS day03 자료형과 연산자]] · [[KDT_2026 학습 지도]]

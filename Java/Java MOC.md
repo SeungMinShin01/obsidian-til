@@ -41,6 +41,9 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
                                                                     │
                                                                     ▼
                                                         day14 제네릭·컬렉션 프레임워크
+                                                                    │
+                                                                    ▼
+                                                        day15 Map·HashMap
 ```
 
 | day | 노트 | 핵심 |
@@ -62,6 +65,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 | 12 | [[Java day12 종합예제 JDBC DAO]] | **BaseDao 상속으로 JDBC 연동 공통화, 싱글톤 MVC 배선, DB 표를 담는 DTO, 등록·조회·수정·삭제 CRUD 완성** |
 | 13 | [[Java day13 Object 클래스와 리플렉션]] | Object 최상위 클래스, toString·equals·hashCode, 문자열 리터럴 비교, Class·리플렉션, 래퍼 클래스와 오토박싱, parseXXX 타입 변환, LocalDate·DateTimeFormatter, String 클래스 메소드·문자 코드값, Random·UUID, 구분자 문자열 파싱, Scanner 입력 주의, 콘솔 렌더링, 고정폭 시각 파싱과 정수 나눗셈 요금 계산 |
 | 14 | [[Java day14 제네릭]] | 타입을 비워 두고 선언하기, 타입 파라미터와 래퍼 클래스, 다중·중첩 타입, 제네릭 메소드와 타입 추론, `<T extends 상위타입>` 상한 제약, Object 대비 컴파일 시점 타입 검사, 컬렉션 프레임워크(List·Set·Map)와 인터페이스 선언·다형성, 리스트 순회 세 가지, ArrayList·LinkedList·Vector 구조 차이, Set 인터페이스와 중복 제거(equals·hashCode), Iterator 순회, TreeSet 정렬, 제네릭 클래스 직접 설계와 와일드카드 `<?>` 컬렉션 |
+| 15 | [[Java day15 Map과 HashMap]] | 컬렉션 세 갈래 재정리, Map 인터페이스와 엔트리(키·값 쌍), HashMap 선언과 JSON 대응, put의 키 중복 덮어쓰기, get·size·containsKey·containsValue, keySet·values의 반환 타입 차이, remove·clear·isEmpty, 인덱스가 없어 keySet()을 거치는 순회(향상된 for·forEach), JSON↔DTO/Map 통신 구간과 키 기반 조회 |
 
 ## 주제별 심화
 
@@ -78,6 +82,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 | 정적 타입 | [[JS day03 자료형과 연산자]] 동적 타입 |
 | 배열(고정 길이) | [[JS day03 자료형과 연산자]] 배열(가변) |
 | 클래스·인스턴스 | [[JS day07 객체]] 객체 리터럴 |
+| `Map`·`HashMap` ([[Java day15 Map과 HashMap]]) | [[JS day07 객체]] 객체 `{ }` 와 JSON |
 | 메소드 오버로딩 | [[JS day10 함수]] 오버로딩 없음, 기본값 매개변수 |
 | 상속·다형성 | [[JS day07 객체]] 프로토타입 체인 |
 | `private` + getter/setter | [[JS day10 함수]] 클로저 |
