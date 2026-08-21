@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day15 — Map과 HashMap
 
-> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep·멀티스레드 구현 세 가지), `exam4.java`(Runnable 구현체로 만든 시계 스레드)
+> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep·멀티스레드 구현 세 가지), `exam4.java`(Runnable 구현체로 만든 시계 스레드·플래그로 껐다 켜는 타이머 스레드·main 흐름이 입력으로 다른 흐름을 제어)
 > 허브: [[Java MOC]] · 이전: [[Java day14 제네릭]]
 
 day14에서 컬렉션 프레임워크의 세 갈래를 늘어놓고 `List` 와 `Set` 을 실습으로 확인했다. 남은 하나가 `Map` 이다. 앞의 둘이 "값을 죽 늘어놓는" 구조였다면 `Map` 은 **값에 이름표를 붙여 담는** 구조라, 꺼내는 방식부터 달라진다.
@@ -514,6 +514,79 @@ thread1.start();
 - 무한 루프 스레드는 **스스로 끝나지 않으므로** 종료 조건을 어떻게 줄지 미리 정해 두는 편이 안전하다. 반복 조건을 `while (실행중)` 같은 플래그로 두고 바깥에서 내리는 방식이 흔하다
 - 프로그램을 끝내야 하는데 이런 흐름이 남아 있으면 JVM이 종료되지 않는다. 배경 작업 성격이면 `setDaemon(true)` 로 표시해 두면 main이 끝날 때 함께 정리된다
 
+### 1-17. 타이머 스레드 — 플래그로 흐름을 끝내기
+
+1-16의 시계는 한 번 켜지면 끌 방법이 없었다. 같은 파일에서 흐름을 하나 더 두고, 이번에는 **바깥에서 끌 수 있는** 형태로 만든다.
+
+```java
+class 타이머스레드 extends Thread {
+    public boolean state = true;   // 작동 여부
+
+    @Override
+    public void run() {
+        int time = 0;
+        while (state) {            // true 인 동안만 돈다
+            time++;
+            System.out.println(">> 타이머: " + time + "초");
+            try { Thread.sleep(1000); } catch (Exception e) { }
+        }
+    }
+}
+```
+
+`while (true)` 대신 **`while (state)`** 를 쓴 것이 전부다. 필드 하나를 반복 조건으로 삼았으니, 바깥에서 그 필드를 `false` 로 바꾸면 다음 회차에서 조건이 깨지고 `run()` 이 끝난다. 1-16 끝에서 "종료 조건을 플래그로 두고 바깥에서 내린다"고 적어 둔 방식이 실제로 이 모양이다.
+
+여기서는 `extends Thread`(1-14의 ③)를 썼다. 필드를 직접 들고 있어야 하는 데다 자기 자신이 스레드라 `타이머.state = false` 한 줄로 제어가 끝나서, 짧게 쓰기에 편한 자리다.
+
+**끄는 신호는 main이 보낸다.**
+
+```java
+시계스레드 runnable1 = new 시계스레드();
+Thread thread1 = new Thread(runnable1);
+thread1.start();                    // 시계 흐름 시작
+
+타이머스레드 thread2 = null;         // 아직 만들지 않은 상태
+
+while (true) {
+    System.out.print("1.ON , 2.OFF : ");
+    Scanner scan = new Scanner(System.in);
+    int ch = scan.nextInt();
+
+    if (ch == 1) {
+        thread2 = new 타이머스레드();
+        thread2.start();            // 켜기
+    }
+    if (ch == 2) {
+        if (thread2 != null) thread2.state = false;   // 끄기
+    }
+}
+```
+
+프로그램 안에서 도는 흐름이 셋이 된다.
+
+| 흐름 | 하는 일 |
+| --- | --- |
+| main 스레드 | 입력을 받아 나머지 둘을 켜고 끈다 |
+| 시계 스레드 | 1초마다 현재 시각을 찍는다 |
+| 타이머 스레드 | 1초마다 경과 초를 센다 — 플래그가 내려가면 멈춘다 |
+
+세 흐름이 같은 콘솔에 동시에 출력하므로 입력 프롬프트와 시계·타이머 줄이 뒤섞여 나온다. 1-15에서 본 "순서를 보장하지 않는다"가 화면에 그대로 드러나는 장면이다.
+
+잡아 둘 점을 정리하면 이렇다.
+
+**① 흐름끼리 통신하는 가장 단순한 방법은 공유 변수다.** main은 타이머의 `run()` 안으로 들어갈 수 없다. 대신 두 흐름이 같은 객체(`thread2`)를 보고 있으니, 한쪽이 필드를 바꾸면 다른 쪽 반복 조건이 그 값을 읽는다. 1-13에서 "같은 프로세스 안의 흐름은 메모리를 공유한다"고 한 성질이 여기서 쓰인다.
+
+**② 끄는 것은 즉시가 아니다.** `state = false` 를 넣어도 타이머가 `sleep(1000)` 중이면 그 1초를 마저 자고 나서야 조건을 다시 본다. 반복 한 바퀴만큼의 지연이 생기는 셈이라, 정확한 시점에 끊어야 하는 작업이면 다른 장치가 필요하다(2-12).
+
+**③ `null` 로 두고 시작한 뒤 확인하고 쓴다.** `thread2` 는 켜기 전까지 객체가 없다. 한 번도 켜지 않고 끄기를 고르면 `null` 을 건드리게 되므로 `if (thread2 != null)` 로 막는다. [[Java day12 예외 처리와 JDBC]] 에서 정리한 `NullPointerException` 을 조건문으로 미리 거르는 형태다.
+
+**④ 끄기를 고를 때마다 새 객체를 만든다.** `ch == 1` 에서 매번 `new 타이머스레드()` 를 하는 것이 중요하다. **한 번 끝난 스레드는 다시 `start()` 할 수 없다.** 스레드에는 수명이 있어서 `run()` 이 끝나면 종료 상태로 넘어가고, 그 객체를 다시 띄우려 하면 예외가 난다. 다시 켜려면 흐름을 새로 만드는 수밖에 없다.
+
+`main` 의 `while (true)` 가 프로그램을 붙잡고 있는 구조라는 것도 확인해 둔다. 입력을 기다리는 동안 main은 멈춰 있지만 나머지 두 흐름은 계속 돈다 — 1-12에서 본 단일 스레드의 한계를 흐름 분리로 푼 그림이 완성된 형태다.
+
+"켜고 끄는 배경 작업"은 실제 프로그램에서 자주 나오는 요구다. 자동 저장, 알림 폴링, 진행률 표시 같은 것들이 전부 이 모양 — **배경에서 도는 흐름 하나 + 그것을 제어하는 플래그** — 으로 만들어진다.
+
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. entrySet — 키와 값을 한 번에 꺼내기
@@ -680,6 +753,41 @@ System.out.println(t.getName());                        // 시계
 
 디버깅할 때 출력 앞에 `Thread.currentThread().getName()` 을 붙여 두면 어느 흐름의 줄인지 바로 보인다. `join()` 은 1-15에서 본 "순서를 보장하지 않는다"를 부분적으로 되돌리는 장치라, 여러 흐름의 결과를 모아 써야 할 때 쓰인다.
 
+### 2-12. 스레드를 안전하게 멈추는 방법
+
+1-17에서 쓴 플래그 방식은 구조가 단순해서 좋지만, 흐름이 여러 개일 때 알아 둘 점이 두 가지 있다.
+
+**① 플래그에는 `volatile` 을 붙이는 편이 안전하다.**
+
+```java
+private volatile boolean state = true;
+```
+
+각 스레드는 성능을 위해 변수 값을 자기 쪽 캐시에 들고 있을 수 있다. 그러면 한 흐름이 바꾼 값을 다른 흐름이 한동안 못 볼 가능성이 생긴다. `volatile` 은 "이 변수는 항상 메모리에서 직접 읽고 쓴다"는 표시라, 변경이 곧바로 보이게 만든다. 여러 흐름이 함께 보는 상태 변수에 붙이는 최소한의 장치다.
+
+**② `sleep` 중인 흐름은 `interrupt()` 로 깨운다.**
+
+플래그만으로는 자고 있는 흐름을 즉시 끊을 수 없다(1-17의 ②). `interrupt()` 는 그 흐름에 "중단 요청"을 보내는 메소드이고, `sleep` 중이었다면 `InterruptedException` 을 던지며 즉시 깨어난다.
+
+```java
+thread.interrupt();          // 바깥에서 중단 요청
+
+// run() 안에서
+try { Thread.sleep(1000); }
+catch (InterruptedException e) { return; }   // 깨어나면 종료
+```
+
+1-12에서 `Thread.sleep` 이 검사 예외를 강제하는 이유가 여기 있다 — **자는 도중에 깨울 수 있기 때문**이다. `catch` 를 비워 두면 깨워도 다시 반복문으로 돌아가 버리므로, 중단 요청을 종료로 이어 주려면 이 자리에서 빠져나오게 둔다.
+
+| 방법 | 성격 |
+| --- | --- |
+| 플래그(`volatile boolean`) | 반복 한 바퀴 뒤에 멈춘다 — 단순하고 예측 가능 |
+| `interrupt()` | 자고 있어도 즉시 깨운다 — 예외 처리와 짝으로 씀 |
+| `stop()` | 강제 종료 — **쓰지 않는다.** 정리 작업 없이 끊겨 데이터가 깨질 수 있어 폐기된 메소드 |
+
+실무에서는 플래그와 `interrupt()` 를 함께 둬서, 평소에는 조건으로 끝내고 자고 있을 때는 깨워 끝내는 형태를 쓴다.
+
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 해시 테이블이 빠른 이유
@@ -780,6 +888,8 @@ exam3 주석에 적어 둔 톰캣·스프링 이야기가 정확히 이 구조�
 - 익명 구현체·구현체 클래스·`extends Thread` 세 방식과 단일 상속 제약
 - 함수형 인터페이스와 람다로 쓰는 `Runnable`
 - `getName()`·`isAlive()`·`join()`·`setDaemon()` 등 `Thread` 메소드
+- 플래그로 스레드 종료하기와 `volatile`, `interrupt()`·`InterruptedException`, 폐기된 `stop()`
+- 스레드의 생명주기 — 종료된 스레드를 다시 `start()` 할 수 없는 이유
 - 경쟁 상태(race condition)·`synchronized`·교착 상태(deadlock)
 - `ExecutorService`·스레드 풀, `Callable`·`Future`·`CompletableFuture`
 - `synchronized`·`ExecutorService`·`ConcurrentHashMap` 등 동시성 도구
@@ -793,7 +903,7 @@ exam3 주석에 적어 둔 톰캣·스프링 이야기가 정확히 이 구조�
 - `2026B_BE/src/day15/exam/exam1.java` (제네릭 타입의 결정 시점 복습, 컬렉션 프레임워크 세 갈래 정리, `Map` 인터페이스와 `HashMap` 선언, 엔트리 개념과 JSON 대응, `put` 의 키 중복 덮어쓰기, `get`·`size`·`containsKey`·`containsValue`, `keySet`·`values`, `remove`·`clear`·`isEmpty`, 일반 for문 불가와 `keySet()` 경유 순회, 향상된 for문과 `forEach` 람다)
 - `2026B_BE/src/day15/exam/exam2.java` (스택의 후입선출(LIFO)과 `push`·`pop`, `while (!isEmpty())` 순회, 브라우저 뒤로가기·실행 취소 활용처, 큐의 선입선출(FIFO)과 `offer`·`poll`, `Queue` 인터페이스를 `LinkedList` 로 구현하는 이유, 대기표·인쇄 대기열 활용처)
 - `2026B_BE/src/day15/exam/exam3.java` (단일 스레드와 실행 흐름의 개념, `main` 메소드가 제공하는 main 스레드, `java.awt.Toolkit` 의 `getDefaultToolkit()`·`beep()`, `Thread.sleep(밀리초)` 로 현재 스레드 일시정지, 검사 예외라 필수인 `try-catch`, 반복문과 결합한 일정 간격 실행, 프로그램·프로세스·스레드의 층 구분과 멀티태스킹 두 방식, 멀티스레드 구현 세 가지(익명 구현체·`implements Runnable`·`extends Thread`), `run()` 과 `start()` 의 역할 분담, 병렬 처리의 순서 미보장)
-- `2026B_BE/src/day15/exam/exam4.java` (`Runnable` 구현체로 만든 시계 스레드, `LocalTime.now()` 로 현재 시각 조회, `while (true)` 무한 루프를 별도 흐름에 실어 main을 막지 않기)
+- `2026B_BE/src/day15/exam/exam4.java` (`Runnable` 구현체로 만든 시계 스레드, `LocalTime.now()` 로 현재 시각 조회, `while (true)` 무한 루프를 별도 흐름에 실어 main을 막지 않기, `extends Thread` 로 만든 타이머 스레드, `boolean` 플래그를 반복 조건으로 두고 바깥에서 내려 종료하기, main 스레드가 `Scanner` 입력으로 다른 흐름을 켜고 끄기, 공유 변수로 흐름끼리 신호 주고받기, `null` 초기화와 조건 확인, 종료된 스레드는 재시작할 수 없어 새 객체를 만드는 이유, 세 흐름이 같은 콘솔에 동시에 출력되는 모습)
 
 ## 관련 노트
 
