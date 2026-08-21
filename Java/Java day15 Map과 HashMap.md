@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day15 — Map과 HashMap
 
-> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회)
+> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep)
 > 허브: [[Java MOC]] · 이전: [[Java day14 제네릭]]
 
 day14에서 컬렉션 프레임워크의 세 갈래를 늘어놓고 `List` 와 `Set` 을 실습으로 확인했다. 남은 하나가 `Map` 이다. 앞의 둘이 "값을 죽 늘어놓는" 구조였다면 `Map` 은 **값에 이름표를 붙여 담는** 구조라, 꺼내는 방식부터 달라진다.
@@ -221,6 +221,144 @@ BoardDto 찾은글 = 게시글모음.get(3);
 
 DAO에서 조회 결과를 `List` 로 반환할지 `Map` 으로 반환할지가 갈리는 지점이라 [[Java day12 종합예제 JDBC DAO]] 와 이어서 보면 쓰임이 잡힌다. 순서대로 화면에 뿌릴 것이면 `List`, 특정 번호를 반복해서 찾을 것이면 `Map` 쪽이다.
 
+### 1-10. Stack — 나중에 넣은 것이 먼저 나온다
+
+`List`·`Set`·`Map` 을 다 훑고 나면 컬렉션의 나머지 갈래가 남는다. **꺼내는 순서를 구조 자체가 정해 두는** 자료구조들이다. 첫 번째가 스택이다.
+
+**스택(Stack)은 후입선출(LIFO, Last In First Out)** 이다. 가장 마지막에 넣은 것이 가장 먼저 나온다.
+
+```java
+Stack<String> stack = new Stack<>();
+stack.push("네이버메인페이지");
+stack.push("뉴스페이지");
+stack.push("블로그페이지");
+
+while (!stack.isEmpty()) {
+    System.out.println(stack.pop());
+}
+// 블로그페이지 → 뉴스페이지 → 네이버메인페이지
+```
+
+넣은 순서는 메인 → 뉴스 → 블로그인데 나오는 순서는 그 반대다. 접시를 쌓아 올리고 위에서부터 걷어내는 그림으로 잡아 두면 된다 — **넣는 입구와 꺼내는 출구가 같은 쪽**이다.
+
+| 메소드 | 하는 일 |
+| --- | --- |
+| `push(값)` | 맨 위에 쌓는다 |
+| `pop()` | 맨 위를 꺼내면서 **제거한다** |
+| `peek()` | 맨 위를 보기만 한다 — 제거하지 않는다 |
+| `isEmpty()` | 비었으면 `true` |
+
+`pop()` 이 꺼내면서 지운다는 점이 `List` 의 `get()` 과 갈리는 자리다. `get(0)` 은 몇 번을 불러도 같은 값이 나오지만 `pop()` 은 부를 때마다 스택이 줄어든다. 그래서 위 코드처럼 `while (!isEmpty())` 로 도는 형태가 스택의 기본 순회가 된다. 조건문의 `!` 는 부정이니 "비어 있지 않은 동안 계속"이라고 읽는다.
+
+반복 조건에 `isEmpty()` 를 쓰는 이유도 짚어 둔다. 빈 스택에 `pop()` 을 부르면 값이 없어 예외가 나므로, **꺼내기 전에 남아 있는지 확인**하는 것이 짝으로 붙어 다닌다.
+
+쓰이는 자리는 "되돌리기"가 필요한 곳이다.
+
+- 브라우저 뒤로가기 — 방문한 페이지를 쌓아 두고 최근 것부터 꺼낸다
+- `Ctrl+Z` 실행 취소 — 작업을 쌓아 두고 마지막 작업부터 되돌린다
+- 괄호 짝 검사, 수식 계산 — 열린 것을 쌓고 닫힐 때 하나씩 꺼낸다
+
+세 경우 모두 **"가장 최근 것"이 관심 대상**이라는 공통점이 있다. 그 성질이 필요하면 스택이다.
+
+`Stack` 은 [[Java day14 제네릭]] 에서 정리한 `Vector` 를 상속해 만든 클래스라 `List` 의 성질도 함께 갖고 있다. 인덱스로 접근하는 메소드까지 열려 있다는 뜻인데, 스택으로 쓰기로 했으면 `push`·`pop`·`peek` 만 쓰는 편이 의도가 분명하다.
+
+### 1-11. Queue — 먼저 넣은 것이 먼저 나온다
+
+**큐(Queue)는 선입선출(FIFO, First In First Out)** 이다. 스택과 정반대로, 먼저 넣은 것이 먼저 나온다.
+
+```java
+Queue<String> queue = new LinkedList<>();
+queue.offer("1번 손님");
+queue.offer("2번 손님");
+queue.offer("3번 손님");
+
+while (!queue.isEmpty()) {
+    System.out.println(queue.poll());
+}
+// 1번 손님 → 2번 손님 → 3번 손님
+```
+
+넣은 순서 그대로 나온다. 줄을 서는 그림 그대로다 — **넣는 입구는 뒤, 꺼내는 출구는 앞**이라 먼저 온 사람이 먼저 빠진다.
+
+| 메소드 | 하는 일 |
+| --- | --- |
+| `offer(값)` | 뒤에 붙인다 |
+| `poll()` | 앞에서 꺼내면서 제거한다 |
+| `peek()` | 앞을 보기만 한다 |
+
+선언 줄을 눈여겨볼 필요가 있다. **`Queue` 는 인터페이스이고 구현체로 `LinkedList` 를 쓴다.**
+
+```java
+Queue<String> queue = new LinkedList<>();
+```
+
+`Stack` 이 클래스 하나로 끝나는 것과 다른 모양이다. 이유는 [[Java day14 제네릭]] 에서 본 구조 차이에 있다 — `LinkedList` 는 노드가 앞뒤 주소로 이어진 구조라 **앞에서 빼고 뒤에 붙이는 일이 빠르다.** 큐가 요구하는 동작과 정확히 맞아떨어져서, `LinkedList` 는 `List` 와 `Queue` 를 동시에 구현하고 있다. 왼쪽을 `Queue` 로 선언하면 큐로 쓰겠다는 의도가 드러나고, 나중에 다른 구현체로 갈아끼울 여지도 남는다.
+
+쓰이는 자리는 "온 순서대로 처리"가 필요한 곳이다.
+
+- 대기표·웨이팅 — 먼저 온 손님부터 부른다
+- 프린터 인쇄 대기열 — 먼저 넣은 문서부터 출력한다
+- 작업 큐·메시지 큐 — 들어온 요청을 순서대로 처리한다
+
+`Stack` 과 `Queue` 를 한 줄로 정리하면 이렇다.
+
+| | 순서 | 넣기 | 꺼내기 | 구현 |
+| --- | --- | --- | --- | --- |
+| `Stack` | LIFO — 나중 것 먼저 | `push` | `pop` | `Stack` 클래스 |
+| `Queue` | FIFO — 먼저 것 먼저 | `offer` | `poll` | `LinkedList` 로 구현 |
+
+둘 다 **꺼내는 순서를 구조가 강제한다**는 점이 `List` 와 다르다. `List` 는 아무 자리나 골라 꺼낼 수 있지만, 이 둘은 정해진 한 곳에서만 나온다. 자유를 줄이는 대신 "순서 규칙"을 코드가 아니라 자료구조가 보증하게 만드는 셈이다.
+
+앞서 만든 대기 화면들이 실제로 이 구조를 손으로 흉내 낸 것이었다는 점도 이어서 보면 좋다 — 대기 목록을 `ArrayList` 로 두고 0번을 꺼내 쓰던 자리가 [[Java day09 MVC 종합예제]] 에 있다.
+
+### 1-12. 스레드의 시작 — 실행 흐름이라는 단위
+
+컬렉션에서 한 걸음 옮겨, 코드가 **어떤 흐름을 타고 실행되는가**를 본다.
+
+**스레드(thread)는 코드를 실행하는 흐름의 단위**다. 지금까지 쓴 프로그램은 `main` 메소드에서 시작해 위에서 아래로 한 줄씩 내려갔다. 그 흐름이 스레드 하나이고, 흐름이 하나뿐이면 **단일(싱글) 스레드**라고 부른다.
+
+`main` 메소드가 특별한 이유가 여기서 드러난다. JVM이 프로그램을 시작할 때 **main 스레드를 만들어 `main` 메소드를 실행**한다. 프로그램마다 최소 하나는 존재하는 흐름이 이것이다.
+
+```java
+Toolkit toolkit = Toolkit.getDefaultToolkit();
+toolkit.beep();          // '띵' 소리
+```
+
+`Toolkit` 은 `java.awt` 패키지에 있는 UI 관련 클래스로, `getDefaultToolkit()` 으로 인스턴스를 얻어 쓴다. `new` 로 직접 만들지 않고 정해진 메소드로 하나를 받아 쓰는 형태라, [[Java day08 접근제한자와 static]] 에서 본 static 메소드로 인스턴스를 얻는 방식과 같은 모양이다.
+
+**흐름을 잠시 멈추는 것이 `Thread.sleep()`** 이다.
+
+```java
+try {
+    Thread.sleep(1000);   // 1000밀리초 = 1초 멈춤
+} catch (Exception e) { }
+```
+
+| 항목 | 내용 |
+| --- | --- |
+| 단위 | 밀리초 — `1000` 이 1초 |
+| 대상 | **현재 실행 중인 스레드** |
+| 예외 | 검사 예외라 `try-catch` 나 `throws` 가 필수 |
+
+`Thread.sleep` 은 클래스 이름으로 바로 부르는 static 메소드이고, "이 스레드를 재운다"는 뜻이다. 멈추는 대상이 프로그램 전체가 아니라 **그 코드를 실행하고 있는 흐름**이라는 점이 나중에 흐름을 여러 개 만들 때 의미가 커진다.
+
+예외 처리가 문법상 강제된다는 것도 짚어 둔다. 자는 도중에 다른 흐름이 깨울 수 있어서 그 상황이 예외로 정의돼 있고, 컴파일러가 처리 여부를 검사한다 — [[Java day12 예외 처리와 JDBC]] 에서 정리한 검사 예외의 성질이 그대로 적용되는 자리다. 다만 `catch` 블록을 비워 두면 실제로 문제가 생겼을 때 아무 흔적이 남지 않으므로, 최소한 로그라도 남기는 편이 안전하다.
+
+둘을 합치면 일정 간격으로 반복하는 형태가 된다.
+
+```java
+for (int i = 1; i <= 5; i++) {
+    System.out.println("띵");
+    try {
+        Thread.sleep(1000);
+    } catch (Exception e) { }
+}
+```
+
+1초에 한 번씩 다섯 번 출력한다. 여기서 확인할 것은 **`sleep` 이 도는 동안 다른 일은 아무것도 못 한다**는 점이다. 흐름이 하나뿐이라 그 하나가 멈추면 프로그램 전체가 멈춘 것처럼 보인다. 화면이 있는 프로그램에서 이렇게 하면 그동안 버튼도 안 눌린다.
+
+이 한계가 **흐름을 여러 개 두는 이야기(멀티스레드)로 넘어가는 이유**다. 기다리는 일과 반응하는 일을 다른 흐름에 나눠 맡기면, 한쪽이 자는 동안 다른 쪽이 계속 움직일 수 있다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. entrySet — 키와 값을 한 번에 꺼내기
@@ -301,6 +439,57 @@ for (String 단어 : 단어들) {
 
 `Map` 은 키가 유동적이거나 개수가 정해지지 않을 때 쓰는 도구라고 잡아 두면 선택이 쉬워진다.
 
+### 2-7. Deque — 스택과 큐를 겸하는 인터페이스
+
+`Stack` 클래스는 `Vector` 를 상속한 옛 구조라 동기화가 걸려 있어 느리고, 인덱스 접근까지 열려 있어 "스택으로만 쓴다"는 의도가 새어 나간다. 요즘은 **`Deque`(덱, 양쪽 끝에서 넣고 뺄 수 있는 큐)** 로 스택을 만드는 쪽을 권한다.
+
+```java
+Deque<String> stack = new ArrayDeque<>();
+stack.push("A");
+stack.push("B");
+System.out.println(stack.pop());   // B
+
+Deque<String> queue = new ArrayDeque<>();
+queue.offer("1번");
+queue.offer("2번");
+System.out.println(queue.poll());  // 1번
+```
+
+같은 `Deque` 하나로 양쪽 성질을 다 낼 수 있다. 어느 끝을 쓰느냐만 다르다.
+
+| 인터페이스·클래스 | 성격 |
+| --- | --- |
+| `Queue` | 한쪽 끝에서 넣고 반대 끝에서 뺀다 |
+| `Deque` | 양쪽 끝 모두에서 넣고 뺄 수 있다 |
+| `ArrayDeque` | `Deque` 의 배열 기반 구현 — 스택·큐 용도의 기본 선택 |
+| `LinkedList` | `List`·`Queue`·`Deque` 를 모두 구현 |
+
+`Vector` 를 `ArrayList` 가 대체하고 `HashTable` 을 `HashMap` 이 대체한 것과 같은 흐름이다. **옛 동기화 클래스 대신 동기화 없는 클래스를 기본으로 두고, 필요할 때만 동시성 전용 클래스를 쓴다.**
+
+### 2-8. 값이 없을 때의 동작 — 예외냐 null이냐
+
+`Queue` 에는 하는 일이 같은데 이름이 다른 메소드가 짝으로 있다. 비었을 때의 처리가 갈린다.
+
+| 하는 일 | 예외를 던지는 쪽 | `null`·`false` 를 주는 쪽 |
+| --- | --- | --- |
+| 넣기 | `add(값)` | `offer(값)` |
+| 꺼내기 | `remove()` | `poll()` |
+| 보기 | `element()` | `peek()` |
+
+`offer`·`poll`·`peek` 을 쓰는 이유가 여기 있다. **비었을 때 예외 대신 `null` 이 돌아오므로 흐름을 끊지 않고 확인할 수 있다.** 1-4에서 본 `Map.get()` 이 없는 키에 `null` 을 주던 것과 같은 설계다. 대신 `null` 을 그대로 쓰면 늦게 터지는 문제도 같이 따라오므로, 반복 조건에 `isEmpty()` 를 두거나 꺼낸 값을 확인하는 습관을 붙인다.
+
+### 2-9. 정해진 순서로 꺼내는 또 하나 — PriorityQueue
+
+큐인데 **넣은 순서가 아니라 우선순위 순서로** 나오는 구현체도 있다.
+
+```java
+Queue<Integer> pq = new PriorityQueue<>();
+pq.offer(50); pq.offer(10); pq.offer(30);
+System.out.println(pq.poll());   // 10 — 가장 작은 값
+```
+
+정렬 기준이 필요하다는 점에서 `TreeSet`·`TreeMap` 과 같은 부류다. 담기는 타입이 `Comparable` 을 구현하고 있거나 생성자에 `Comparator` 를 넘겨야 한다. 급한 작업을 먼저 처리하는 대기열, 최단 경로 탐색 같은 자리에 쓰인다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 해시 테이블이 빠른 이유
@@ -322,7 +511,27 @@ for (String 단어 : 단어들) {
 
 `List`·`Set`·`Map` 을 다 훑었으니 그 위에 얹히는 것들이 남는다. 특히 **스트림**은 컬렉션을 "돌면서 처리"하는 코드를 통째로 바꾸는 도구라, 지금까지 for문으로 쓰던 것들이 한 줄로 줄어드는 지점이다.
 
-### 3-4. 다음에 볼 키워드
+### 3-4. 호출 스택 — 스택은 자바가 이미 쓰고 있다
+
+스택은 라이브러리에만 있는 것이 아니라 **JVM이 메소드를 실행하는 방식 자체**다. 메소드를 부르면 그 메소드의 지역 변수와 돌아갈 자리가 스택에 쌓이고, 끝나면 걷힌다. 나중에 부른 메소드가 먼저 끝나 걷히는 것이 정확히 LIFO다.
+
+- 예외가 났을 때 찍히는 스택 트레이스가 이 쌓임을 그대로 출력한 것이다 — [[Java day12 예외 처리와 JDBC]] 에서 본 `e.printStackTrace()` 가 보여주는 목록이 호출 스택이다
+- 재귀 호출이 끝나지 않으면 이 영역이 넘쳐 `StackOverflowError` 가 난다
+- 참조 타입의 실제 객체는 힙에, 그 객체를 가리키는 변수는 스택에 놓인다는 구분도 여기서 정리된다
+
+자료구조 `Stack` 을 이해하면 예외 로그와 메모리 구조가 같은 그림 위에 얹힌다.
+
+### 3-5. 흐름을 여러 개 두면 — 멀티스레드로 가는 길
+
+1-12에서 흐름이 하나뿐이라 `sleep` 동안 아무것도 못 한다는 것을 확인했다. 흐름을 늘리는 방법이 다음 단계다.
+
+- `Thread` 클래스를 상속하거나 `Runnable` 인터페이스를 구현해 새 흐름을 만들고 `start()` 로 띄운다
+- `Runnable` 은 추상 메소드가 하나뿐이라 람다로도 쓸 수 있다 — `new Thread(() -> { ... }).start();`
+- 흐름이 여럿이 되면 실행 순서가 정해지지 않는다. 같은 데이터를 동시에 건드리면 값이 어긋나므로 `synchronized` 같은 동기화 장치가 필요해진다
+
+컬렉션에서 `Vector`·`HashTable` 이 "동기화 지원"이라고 붙어 있던 이유가 여기서 이어진다. 여러 흐름이 같은 목록을 건드릴 때를 대비한 옛 방식이고, 지금은 `ConcurrentHashMap` 처럼 목적에 맞게 만든 컬렉션이나 `ExecutorService` 로 흐름 자체를 관리하는 쪽을 쓴다.
+
+### 3-6. 다음에 볼 키워드
 
 - `Map.Entry`·`entrySet()` 순회와 두 인자 `forEach`
 - `getOrDefault`·`putIfAbsent`·`computeIfAbsent`·`merge` 로 null 처리 줄이기
@@ -331,6 +540,11 @@ for (String 단어 : 단어들) {
 - `Collections.unmodifiableMap`·`Map.of` 로 읽기 전용 만들기
 - `ConcurrentHashMap` 과 동시성 컬렉션
 - `Queue`·`Deque`·`Stack` — 컬렉션의 나머지 갈래
+- `ArrayDeque` 로 스택·큐 만들기, `add`/`offer`·`remove`/`poll` 의 차이
+- `PriorityQueue` 와 우선순위 기준(`Comparable`·`Comparator`)
+- 호출 스택·스택 트레이스·`StackOverflowError`
+- `Thread`·`Runnable` 로 흐름 만들기, `start()` 와 `run()` 의 차이
+- `synchronized`·`ExecutorService`·`ConcurrentHashMap` 등 동시성 도구
 - 스트림 API — `filter`·`map`·`collect`·`groupingBy`
 - JSON 라이브러리(Jackson·Gson)로 `Map`·DTO ↔ JSON 변환
 - `Optional<T>` 로 없는 값 다루기
@@ -338,7 +552,9 @@ for (String 단어 : 단어들) {
 ## 실습 파일
 
 - `2026B_BE/src/day15/exam/exam1.java` (제네릭 타입의 결정 시점 복습, 컬렉션 프레임워크 세 갈래 정리, `Map` 인터페이스와 `HashMap` 선언, 엔트리 개념과 JSON 대응, `put` 의 키 중복 덮어쓰기, `get`·`size`·`containsKey`·`containsValue`, `keySet`·`values`, `remove`·`clear`·`isEmpty`, 일반 for문 불가와 `keySet()` 경유 순회, 향상된 for문과 `forEach` 람다)
+- `2026B_BE/src/day15/exam/exam2.java` (스택의 후입선출(LIFO)과 `push`·`pop`, `while (!isEmpty())` 순회, 브라우저 뒤로가기·실행 취소 활용처, 큐의 선입선출(FIFO)과 `offer`·`poll`, `Queue` 인터페이스를 `LinkedList` 로 구현하는 이유, 대기표·인쇄 대기열 활용처)
+- `2026B_BE/src/day15/exam/exam3.java` (단일 스레드와 실행 흐름의 개념, `main` 메소드가 제공하는 main 스레드, `java.awt.Toolkit` 의 `getDefaultToolkit()`·`beep()`, `Thread.sleep(밀리초)` 로 현재 스레드 일시정지, 검사 예외라 필수인 `try-catch`, 반복문과 결합한 일정 간격 실행)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day09 ArrayList]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
