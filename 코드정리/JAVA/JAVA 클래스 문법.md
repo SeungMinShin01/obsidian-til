@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA 클래스 문법
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA enum]] · [[JAVA equals와 hashCode]] · [[JAVA record와 Lombok]]
 
 ## 클래스와 인스턴스
 
@@ -125,6 +126,3 @@ public String toString() {
 - `println(객체)`는 내부적으로 `toString()`을 부른다. 재정의하지 않으면 `클래스명@해시코드`(주소)가 나온다
 - DTO마다 만들어 두면 리스트 출력과 디버깅이 바로 읽힌다. IDE의 Generate toString으로 자동 생성하면 된다
 
-## 관련 노트
-
-[[JAVA]]

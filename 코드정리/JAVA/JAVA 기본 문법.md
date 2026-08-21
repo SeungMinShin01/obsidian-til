@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA 기본 문법
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA 입력 심화]] · [[JAVA 연산자 심화]]
 
 ## 기본 구조와 main
 
@@ -133,6 +134,3 @@ for (String name : names) { }
 - 중첩 반복문을 한 번에 빠져나오려면 라벨을 쓴다: `outer: for(...) { for(...) { break outer; } }`
 - 순회 조건은 `i < length`다. `i <= length`는 언제나 범위를 벗어난다
 
-## 관련 노트
-
-[[JAVA]]

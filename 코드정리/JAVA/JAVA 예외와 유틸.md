@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA 예외와 유틸
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA 사용자 정의 예외]] · [[JAVA 날짜와 포맷 심화]] · [[JAVA 파일 입출력]]
 
 ## try-catch ※
 
@@ -90,6 +91,3 @@ long overdue = ChronoUnit.DAYS.between(due, today);
 - 두 날짜의 차이는 `ChronoUnit.DAYS.between(앞, 뒤)`다. 대여 시스템의 반납예정일·연체일 계산이 이 두 줄이다
 - 문자열 변환: `LocalDate.parse("2026-08-21")` ↔ `date.toString()`
 
-## 관련 노트
-
-[[JAVA]]

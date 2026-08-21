@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "코드",
+  "search": "",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -99,7 +99,7 @@
       }
     },
     {
-      "query": "path:\"JavaScript/\"  ",
+      "query": "path:\"JavaScript/\" path:코드정리/JS  ",
       "color": {
         "a": 1,
         "rgb": 16709704
@@ -202,11 +202,11 @@
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
-  "collapse-forces": true,
-  "centerStrength": 0.835758835758836,
-  "repelStrength": 17.3451207072424,
+  "collapse-forces": false,
+  "centerStrength": 0.553014553014553,
+  "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.9367963112535367,
+  "scale": 0.13051066303174896,
   "close": false
 }

@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA JDBC
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA JDBC 트랜잭션]] · [[JAVA DB 연결 관리]]
 
 자바에서 MySQL에 SQL을 보내고 결과를 받는 표준 통로다. ※ 수업 진도 기준 최신 범위.
 
@@ -107,6 +108,3 @@ public class BookDao {
 - 메소드 하나 = SQL 하나 + 성공 여부(또는 DTO/리스트) 반환이 기본 단위다
 - ArrayList 저장이던 DAO를 이 형태로 바꿔도 Controller는 한 줄도 안 바뀐다 — 계층을 나눈 보상이 여기서 나온다
 
-## 관련 노트
-
-[[JAVA]] · [[JAVA 패턴]]

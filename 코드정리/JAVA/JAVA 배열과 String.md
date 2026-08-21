@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA 배열과 String
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA 2차원 배열]] · [[JAVA 정규표현식]]
 
 ## 배열
 
@@ -108,6 +109,3 @@ String result = sb.toString();
 - 문자열 `+=` 누적은 반복마다 새 문자열을 만들어 느리다. 반복이 많으면 StringBuilder에 `append`로 쌓고 마지막에 `toString()` 한 번으로 뽑는다
 - `append`가 자기 자신을 반환해서 점을 이어 붙이는 체인이 가능하다
 
-## 관련 노트
-
-[[JAVA]]

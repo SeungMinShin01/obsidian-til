@@ -7,6 +7,7 @@ tags: [코드정리]
 # JAVA 컬렉션
 
 > 상위: [[JAVA]]
+> 세부: [[JAVA Stream 심화]] · [[JAVA Queue와 스택]]
 
 ## ArrayList
 
@@ -131,6 +132,3 @@ Map        키-값            → HashMap, TreeMap
 
 - 순서 있는 목록이면 List, 번호(키)로 찾으면 Map, 중복 제거면 Set — 이 셋이 실전의 대부분이다
 
-## 관련 노트
-
-[[JAVA]]
