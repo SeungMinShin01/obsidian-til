@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java day15 — Map과 HashMap
 
-> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep)
+> 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep·멀티스레드 구현 세 가지), `exam4.java`(Runnable 구현체로 만든 시계 스레드)
 > 허브: [[Java MOC]] · 이전: [[Java day14 제네릭]]
 
 day14에서 컬렉션 프레임워크의 세 갈래를 늘어놓고 `List` 와 `Set` 을 실습으로 확인했다. 남은 하나가 `Map` 이다. 앞의 둘이 "값을 죽 늘어놓는" 구조였다면 `Map` 은 **값에 이름표를 붙여 담는** 구조라, 꺼내는 방식부터 달라진다.
@@ -359,6 +359,161 @@ for (int i = 1; i <= 5; i++) {
 
 이 한계가 **흐름을 여러 개 두는 이야기(멀티스레드)로 넘어가는 이유**다. 기다리는 일과 반응하는 일을 다른 흐름에 나눠 맡기면, 한쪽이 자는 동안 다른 쪽이 계속 움직일 수 있다.
 
+### 1-13. 프로그램·프로세스·스레드 — 용어를 층으로 세우기
+
+멀티스레드로 들어가기 전에 겹쳐 쓰기 쉬운 세 단어를 층으로 정리해 둔다.
+
+| 용어 | 뜻 |
+| --- | --- |
+| 프로그램 | 실행 가능한 코드들의 집합 — 아직 돌지 않는 파일 상태 |
+| 프로세스 | **실행 중인** 프로그램 — 메모리를 받아 올라간 상태 |
+| 스레드 | 하나의 프로세스 안에서 **코드를 실행하는 최소 단위 흐름** |
+
+바깥에서 안으로 좁혀 들어가는 관계다. 파일이 실행되면 프로세스가 되고, 그 프로세스 안에서 실제로 코드를 한 줄씩 밟아 나가는 것이 스레드다.
+
+두 가지 이상의 작업을 동시에 처리하는 것을 **멀티태스킹**이라 하고, 그 방식이 다시 둘로 갈린다.
+
+| 방식 | 구조 |
+| --- | --- |
+| 멀티 프로세스 | 운영체제가 **여러 프로세스**를 동시에 실행 |
+| 멀티 스레드 | 하나의 프로세스 안에서 **여러 흐름**을 동시에 실행 |
+
+브라우저와 음악 재생기를 함께 켜 두는 것이 앞쪽, 브라우저 하나가 화면을 그리면서 동시에 파일을 내려받는 것이 뒤쪽이다. 자바에서 다루는 것은 뒤쪽 — **같은 프로세스 안의 여러 흐름**이다. 같은 메모리를 공유하기 때문에 흐름끼리 데이터를 주고받기 쉽고, 같은 이유로 서로의 데이터를 망가뜨릴 위험도 함께 생긴다(3-6).
+
+### 1-14. 새 흐름을 만드는 세 가지 방법
+
+새 흐름이 할 일은 **`run()` 메소드 안에 적는다.** 그리고 그 흐름을 실제로 띄우는 것은 **`start()`** 다. 방법이 셋이지만 결국 이 두 메소드로 수렴한다.
+
+| 메소드 | 하는 일 | 어디에 있나 |
+| --- | --- | --- |
+| `run()` | 새 흐름이 처리할 코드의 시작점 | `Runnable` 의 추상 메소드 |
+| `start()` | 새 흐름을 만들어 그 안에서 `run()` 을 부른다 | **`Thread` 클래스** |
+
+`start()` 가 `Thread` 에만 있다는 점이 세 방법의 모양을 가른다. `Runnable` 만 만들어서는 흐름을 띄울 수 없고, 반드시 `Thread` 객체에 실어야 한다.
+
+**① 익명 구현체 — `new Runnable() { }`**
+
+```java
+Runnable runnable = new Runnable() {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("새로운 첫번째 스레드: " + i);
+            try { Thread.sleep(1000); } catch (Exception e) { }
+        }
+    }
+};
+Thread thread1 = new Thread(runnable);
+thread1.start();
+```
+
+인터페이스는 직접 `new` 할 수 없는데 `new Runnable() { }` 이 성립하는 이유는, 저 중괄호가 **이름 없는 구현 클래스를 그 자리에서 정의**한 것이기 때문이다 — [[Java day11 인터페이스]] 에서 정리한 익명 구현체가 실제로 쓰이는 대표 자리다. 한 번만 쓸 흐름이면 클래스 파일을 따로 만들 필요가 없다.
+
+**② 구현체 클래스 — `implements Runnable`**
+
+```java
+class 작업스레드2 implements Runnable {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("2번째 스레드: " + i);
+            try { Thread.sleep(1000); } catch (Exception e) { }
+        }
+    }
+}
+
+작업스레드2 작업 = new 작업스레드2();
+Thread thread2 = new Thread(작업);
+thread2.start();
+```
+
+`Runnable` 을 구현한 클래스를 따로 두고, 그 인스턴스를 `Thread` 생성자에 넘긴다. 띄우는 절차는 ①과 같고 **할 일을 이름 있는 클래스로 분리**했다는 점만 다르다. 같은 작업을 여러 곳에서 띄우거나 코드가 길어지면 이쪽이 낫다.
+
+**③ Thread 상속 — `extends Thread`**
+
+```java
+class 작업스레드3 extends Thread {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("3번째 스레드: " + i);
+            try { Thread.sleep(1000); } catch (Exception e) { }
+        }
+    }
+}
+
+작업스레드3 thread3 = new 작업스레드3();
+thread3.start();
+```
+
+`Thread` 를 상속하면 `start()` 를 물려받으므로 **`Thread` 객체를 따로 만들 필요가 없다.** 자기 자신이 이미 스레드라서 `thread3.start()` 로 바로 띄운다. 코드가 가장 짧다.
+
+셋을 나란히 두면 이렇다.
+
+| 방법 | 할 일을 두는 곳 | 띄우는 법 |
+| --- | --- | --- |
+| ① 익명 구현체 | `new Runnable() { run() }` | `new Thread(runnable).start()` |
+| ② 구현체 클래스 | `class X implements Runnable` | `new Thread(new X()).start()` |
+| ③ 상속 | `class X extends Thread` | `new X().start()` |
+
+가장 짧은 것은 ③인데, 실무에서 권장되는 것은 **②(그리고 ①)** 다. 이유는 [[Java day10 상속과 다형성]] 에서 본 자바의 제약에 있다 — **클래스는 하나만 상속할 수 있다.** `extends Thread` 를 써 버리면 그 클래스는 다른 부모를 가질 수 없고, 이미 다른 클래스를 상속 중이면 아예 쓸 수 없다. 반면 인터페이스는 개수 제한이 없어서 `implements Runnable` 은 언제든 덧붙일 수 있다.
+
+"할 일(`Runnable`)"과 "실행 수단(`Thread`)"이 분리된다는 점도 ②의 장점이다. 같은 `Runnable` 을 스레드로 띄울 수도, 나중에 스레드 풀에 맡길 수도 있다(3-7).
+
+### 1-15. 실행 순서는 보장되지 않는다
+
+세 흐름을 모두 띄우고 나면 프로그램 안에 흐름이 **넷**이 된다.
+
+```java
+thread1.start();   // main / 1번
+thread2.start();   // main / 1번 / 2번
+thread3.start();   // main / 1번 / 2번 / 3번
+```
+
+출력을 보면 세 스레드의 줄이 뒤섞여 나온다. 여기서 잡아 둘 핵심은 **병렬 처리는 처리 순서를 보장하지 않는다**는 것이다. 어느 흐름이 먼저 CPU를 잡을지는 운영체제가 정하므로, 같은 코드를 다시 돌려도 출력 순서가 달라질 수 있다.
+
+`start()` 와 `run()` 의 차이도 이 자리에서 분명해진다.
+
+| 호출 | 결과 |
+| --- | --- |
+| `thread.start()` | **새 흐름을 만들어** 그 안에서 `run()` 실행 — 호출한 쪽은 바로 다음 줄로 |
+| `thread.run()` | 그냥 메소드 호출 — **현재 흐름에서** 실행되고 끝날 때까지 기다린다 |
+
+`run()` 을 직접 부르면 스레드가 하나도 늘지 않는다. 문법 오류가 아니라 조용히 단일 스레드로 도는 형태가 되어서, 겉보기엔 동작하는데 병렬이 아닌 상태가 된다. 흐름을 띄우는 것은 언제나 `start()` 다.
+
+`main` 이 마지막 줄까지 내려가도 프로그램이 바로 끝나지 않는다는 점도 확인해 둔다. **다른 흐름이 아직 돌고 있으면 JVM은 기다린다.** main 스레드는 흐름 하나일 뿐이지 프로그램 전체의 수명이 아니다.
+
+### 1-16. 시계 스레드 — 끝나지 않는 흐름
+
+`Runnable` 구현체 방식(②)을 그대로 써서 계속 도는 흐름을 하나 만든다.
+
+```java
+class 시계스레드 implements Runnable {
+    @Override
+    public void run() {
+        while (true) {
+            System.out.println(LocalTime.now());
+            try { Thread.sleep(1000); } catch (Exception e) { }
+        }
+    }
+}
+
+시계스레드 runnable = new 시계스레드();
+Thread thread1 = new Thread(runnable);
+thread1.start();
+```
+
+`LocalTime.now()` 가 현재 시각을 돌려주고, 1초 자고 다시 찍는 것을 무한히 반복한다. `java.time` 패키지의 클래스라 `new` 대신 `now()` 라는 static 메소드로 인스턴스를 얻는다.
+
+`while (true)` 를 main에 그대로 뒀다면 프로그램이 그 자리에 갇혀 다른 일을 전혀 못 한다. **별도 흐름에 실었기 때문에** main은 곧장 다음 줄로 내려가고, 시계는 뒤에서 계속 돈다. 1-12에서 확인한 단일 스레드의 한계를 실제로 푸는 형태가 이것이다.
+
+화면 있는 프로그램에서 시계·타이머·자동 갱신이 이 구조로 만들어진다. 초 단위로 갱신되는 부분을 흐름 하나에 맡겨 두고, 사용자의 클릭은 다른 흐름이 받는다.
+
+끝나지 않는 흐름을 만들 때 함께 알아 둘 점도 있다.
+
+- 무한 루프 스레드는 **스스로 끝나지 않으므로** 종료 조건을 어떻게 줄지 미리 정해 두는 편이 안전하다. 반복 조건을 `while (실행중)` 같은 플래그로 두고 바깥에서 내리는 방식이 흔하다
+- 프로그램을 끝내야 하는데 이런 흐름이 남아 있으면 JVM이 종료되지 않는다. 배경 작업 성격이면 `setDaemon(true)` 로 표시해 두면 main이 끝날 때 함께 정리된다
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. entrySet — 키와 값을 한 번에 꺼내기
@@ -490,6 +645,41 @@ System.out.println(pq.poll());   // 10 — 가장 작은 값
 
 정렬 기준이 필요하다는 점에서 `TreeSet`·`TreeMap` 과 같은 부류다. 담기는 타입이 `Comparable` 을 구현하고 있거나 생성자에 `Comparator` 를 넘겨야 한다. 급한 작업을 먼저 처리하는 대기열, 최단 경로 탐색 같은 자리에 쓰인다.
 
+### 2-10. Runnable은 람다로 줄일 수 있다
+
+`Runnable` 은 추상 메소드가 `run()` 하나뿐인 인터페이스다. [[Java day14 제네릭]] 의 `forEach` 에서 쓴 람다가 여기에도 그대로 들어간다.
+
+```java
+new Thread(() -> {
+    for (int i = 1; i <= 5; i++) {
+        System.out.println("람다 스레드: " + i);
+        try { Thread.sleep(1000); } catch (Exception e) { }
+    }
+}).start();
+```
+
+1-14의 ①(익명 구현체)과 완전히 같은 동작인데 `new Runnable()`·`@Override`·`public void run()` 세 줄이 사라진다. 추상 메소드가 하나뿐인 인터페이스를 **함수형 인터페이스**라 부르고, 이런 타입 자리에는 람다를 그대로 놓을 수 있다. 짧은 작업이면 이 형태가 가장 읽기 쉽다.
+
+### 2-11. 스레드에 이름을 달고 상태를 확인하기
+
+흐름이 여러 개가 되면 출력만 봐서는 어느 흐름이 찍은 줄인지 알기 어렵다. 스레드에는 이름이 붙어 있다.
+
+```java
+System.out.println(Thread.currentThread().getName());   // main
+Thread t = new Thread(runnable, "시계");
+System.out.println(t.getName());                        // 시계
+```
+
+| 메소드 | 하는 일 |
+| --- | --- |
+| `Thread.currentThread()` | 지금 이 코드를 실행 중인 스레드 객체 |
+| `getName()`·`setName()` | 스레드 이름 — 기본은 `Thread-0`, `Thread-1`… |
+| `isAlive()` | 아직 돌고 있으면 `true` |
+| `join()` | 그 스레드가 끝날 때까지 **현재 흐름을 기다리게** 한다 |
+| `setDaemon(true)` | 배경 스레드로 표시 — main이 끝나면 함께 종료 |
+
+디버깅할 때 출력 앞에 `Thread.currentThread().getName()` 을 붙여 두면 어느 흐름의 줄인지 바로 보인다. `join()` 은 1-15에서 본 "순서를 보장하지 않는다"를 부분적으로 되돌리는 장치라, 여러 흐름의 결과를 모아 써야 할 때 쓰인다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 해시 테이블이 빠른 이유
@@ -523,7 +713,7 @@ System.out.println(pq.poll());   // 10 — 가장 작은 값
 
 ### 3-5. 흐름을 여러 개 두면 — 멀티스레드로 가는 길
 
-1-12에서 흐름이 하나뿐이라 `sleep` 동안 아무것도 못 한다는 것을 확인했다. 흐름을 늘리는 방법이 다음 단계다.
+1-12에서 흐름이 하나뿐이라 `sleep` 동안 아무것도 못 한다는 것을 확인했고, 1-14에서 흐름을 늘리는 세 가지 방법까지 봤다. 정리해 두면 이렇다.
 
 - `Thread` 클래스를 상속하거나 `Runnable` 인터페이스를 구현해 새 흐름을 만들고 `start()` 로 띄운다
 - `Runnable` 은 추상 메소드가 하나뿐이라 람다로도 쓸 수 있다 — `new Thread(() -> { ... }).start();`
@@ -531,7 +721,49 @@ System.out.println(pq.poll());   // 10 — 가장 작은 값
 
 컬렉션에서 `Vector`·`HashTable` 이 "동기화 지원"이라고 붙어 있던 이유가 여기서 이어진다. 여러 흐름이 같은 목록을 건드릴 때를 대비한 옛 방식이고, 지금은 `ConcurrentHashMap` 처럼 목적에 맞게 만든 컬렉션이나 `ExecutorService` 로 흐름 자체를 관리하는 쪽을 쓴다.
 
-### 3-6. 다음에 볼 키워드
+### 3-6. 같은 데이터를 동시에 건드리면 — 공유 자원과 동기화
+
+멀티스레드가 어려워지는 지점은 흐름을 만드는 문법이 아니라 **흐름들이 같은 메모리를 공유한다**는 사실에 있다(1-13). 흐름이 각자 따로 놀 때는 문제가 없지만, 같은 변수를 함께 고치기 시작하면 어긋난다.
+
+```java
+count = count + 1;
+```
+
+한 줄로 보이지만 실제로는 "읽고 → 더하고 → 쓴다" 세 단계다. 두 흐름이 이 사이에서 교차하면 둘 다 같은 값을 읽고 각자 1을 더해 같은 값을 써 버려서, 두 번 더했는데 1만 늘어난다. 이런 상태를 **경쟁 상태(race condition)** 라고 부른다.
+
+막는 기본 장치가 `synchronized` 다. 한 번에 한 흐름만 들어갈 수 있는 구간을 만든다.
+
+```java
+public synchronized void 증가() { count++; }
+
+synchronized (공유객체) { /* 한 흐름씩만 */ }
+```
+
+메소드에 붙이면 그 메소드 전체가, 블록으로 쓰면 그 구간만 잠긴다. 대신 잠긴 구간은 흐름들이 줄을 서므로 병렬의 이점이 줄어들어, **꼭 필요한 범위만 최소로 감싸는** 것이 요령이다. 서로가 서로의 잠금을 기다려 둘 다 멈추는 교착 상태(deadlock)도 여기서 생기는 문제다.
+
+`Stack` 이 `Vector` 를 상속해 느리다고 했던 것(2-7), `HashTable` 이 `HashMap` 에 밀렸다는 것(2-3)이 전부 이 잠금 비용 이야기다. **전부 잠가 두면 안전하지만 느리다** — 그래서 지금은 잠금 없는 클래스를 기본으로 두고, 공유가 실제로 필요한 자리에만 동시성 도구를 쓴다.
+
+### 3-7. 스레드를 직접 만들지 않는 방식 — 스레드 풀
+
+`new Thread()` 로 흐름을 만드는 것은 공짜가 아니다. 요청이 올 때마다 새 스레드를 만들면 만드는 비용이 쌓이고, 수가 통제되지 않으면 오히려 느려진다.
+
+그래서 실무에서는 **미리 만들어 둔 스레드 몇 개를 돌려 쓰는** 방식을 택한다.
+
+```java
+ExecutorService pool = Executors.newFixedThreadPool(4);
+pool.submit(runnable);
+pool.shutdown();
+```
+
+`Runnable` 만 넘기고 실행 수단은 풀에 맡긴다 — 1-14에서 ②를 권한 이유가 여기서 드러난다. "할 일"과 "그 일을 어떤 흐름이 처리할지"가 분리돼 있으면, 나중에 실행 방식만 갈아끼울 수 있다.
+
+exam3 주석에 적어 둔 톰캣·스프링 이야기가 정확히 이 구조다. 웹 서버는 요청 하나를 스레드 하나에 맡겨 처리하는데, 그 스레드를 요청마다 새로 만드는 것이 아니라 풀에서 꺼내 쓰고 되돌려 놓는다. 서버 설정의 `max-threads` 같은 항목이 이 풀 크기다.
+
+- 결과를 받아야 하면 `Runnable` 대신 `Callable<T>` 와 `Future<T>` 를 쓴다
+- 비동기 흐름을 이어 붙일 때는 `CompletableFuture`
+- 자바의 최신 흐름은 훨씬 가볍게 만들 수 있는 가상 스레드(virtual thread) 쪽으로 이어진다
+
+### 3-8. 다음에 볼 키워드
 
 - `Map.Entry`·`entrySet()` 순회와 두 인자 `forEach`
 - `getOrDefault`·`putIfAbsent`·`computeIfAbsent`·`merge` 로 null 처리 줄이기
@@ -544,7 +776,14 @@ System.out.println(pq.poll());   // 10 — 가장 작은 값
 - `PriorityQueue` 와 우선순위 기준(`Comparable`·`Comparator`)
 - 호출 스택·스택 트레이스·`StackOverflowError`
 - `Thread`·`Runnable` 로 흐름 만들기, `start()` 와 `run()` 의 차이
+- 프로그램·프로세스·스레드, 멀티프로세스와 멀티스레드
+- 익명 구현체·구현체 클래스·`extends Thread` 세 방식과 단일 상속 제약
+- 함수형 인터페이스와 람다로 쓰는 `Runnable`
+- `getName()`·`isAlive()`·`join()`·`setDaemon()` 등 `Thread` 메소드
+- 경쟁 상태(race condition)·`synchronized`·교착 상태(deadlock)
+- `ExecutorService`·스레드 풀, `Callable`·`Future`·`CompletableFuture`
 - `synchronized`·`ExecutorService`·`ConcurrentHashMap` 등 동시성 도구
+- `LocalTime`·`LocalDate`·`LocalDateTime` 등 `java.time` 패키지
 - 스트림 API — `filter`·`map`·`collect`·`groupingBy`
 - JSON 라이브러리(Jackson·Gson)로 `Map`·DTO ↔ JSON 변환
 - `Optional<T>` 로 없는 값 다루기
@@ -553,8 +792,9 @@ System.out.println(pq.poll());   // 10 — 가장 작은 값
 
 - `2026B_BE/src/day15/exam/exam1.java` (제네릭 타입의 결정 시점 복습, 컬렉션 프레임워크 세 갈래 정리, `Map` 인터페이스와 `HashMap` 선언, 엔트리 개념과 JSON 대응, `put` 의 키 중복 덮어쓰기, `get`·`size`·`containsKey`·`containsValue`, `keySet`·`values`, `remove`·`clear`·`isEmpty`, 일반 for문 불가와 `keySet()` 경유 순회, 향상된 for문과 `forEach` 람다)
 - `2026B_BE/src/day15/exam/exam2.java` (스택의 후입선출(LIFO)과 `push`·`pop`, `while (!isEmpty())` 순회, 브라우저 뒤로가기·실행 취소 활용처, 큐의 선입선출(FIFO)과 `offer`·`poll`, `Queue` 인터페이스를 `LinkedList` 로 구현하는 이유, 대기표·인쇄 대기열 활용처)
-- `2026B_BE/src/day15/exam/exam3.java` (단일 스레드와 실행 흐름의 개념, `main` 메소드가 제공하는 main 스레드, `java.awt.Toolkit` 의 `getDefaultToolkit()`·`beep()`, `Thread.sleep(밀리초)` 로 현재 스레드 일시정지, 검사 예외라 필수인 `try-catch`, 반복문과 결합한 일정 간격 실행)
+- `2026B_BE/src/day15/exam/exam3.java` (단일 스레드와 실행 흐름의 개념, `main` 메소드가 제공하는 main 스레드, `java.awt.Toolkit` 의 `getDefaultToolkit()`·`beep()`, `Thread.sleep(밀리초)` 로 현재 스레드 일시정지, 검사 예외라 필수인 `try-catch`, 반복문과 결합한 일정 간격 실행, 프로그램·프로세스·스레드의 층 구분과 멀티태스킹 두 방식, 멀티스레드 구현 세 가지(익명 구현체·`implements Runnable`·`extends Thread`), `run()` 과 `start()` 의 역할 분담, 병렬 처리의 순서 미보장)
+- `2026B_BE/src/day15/exam/exam4.java` (`Runnable` 구현체로 만든 시계 스레드, `LocalTime.now()` 로 현재 시각 조회, `while (true)` 무한 루프를 별도 흐름에 실어 main을 막지 않기)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
