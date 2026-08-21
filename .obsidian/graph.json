@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "코드",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -207,6 +207,6 @@
   "repelStrength": 17.3451207072424,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.1729543910554332,
-  "close": true
+  "scale": 0.9367963112535367,
+  "close": false
 }
