@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day16 — 스레드 동기화
 
 > 실습 파일: `day16/exam/exam1.java`(스레드와 멀티스레드의 정의·동기화와 비동기화의 대비·같은 객체를 참조하는 두 작업 스레드·`synchronized` 메소드로 공유 자원 보호) · `day16/exam/exam2.java`(스레드 풀의 목적과 구조·`ThreadPoolExecutor`·`Runnable` 작업 객체·`submit` 으로 요청 배정·풀 상태 조회·`shutdown` 종료 예약)
-> 허브: [[Java MOC]] · 이전: [[Java day15 Map과 HashMap]]
+> 허브: [[Java MOC]] · 이전: [[Java day15 Map과 HashMap]] · 다음: [[Java Spring Boot 프로젝트 생성(분석)]]
 
 [[Java day15 Map과 HashMap]] 에서 흐름을 여러 개 띄우는 방법까지 봤다. 거기서 마지막에 남겨 둔 문제가 하나 있었다 — **여러 흐름이 같은 데이터를 건드리면 값이 어긋난다**는 것. 이번에는 그 장면을 계산기 하나로 실제로 재현하고, 막는 장치인 `synchronized` 를 붙여 결과가 어떻게 달라지는지 확인한다.
 
@@ -743,4 +743,4 @@ new ThreadPoolExecutor(
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[SQL day05 외래키 CASCADE와 조인]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[SQL day05 외래키 CASCADE와 조인]] · [[KDT_2026 학습 지도]]

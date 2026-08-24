@@ -47,6 +47,9 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
                                                                     │
                                                                     ▼
                                                         day16 공유 자원·경쟁 상태·synchronized
+                                                                    │
+                                                                    ▼
+                                                        Spring Boot 프로젝트 생성 — 웹 애플리케이션의 시작
 ```
 
 | day | 노트 | 핵심 |
@@ -74,6 +77,12 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 ## 주제별 심화
 
 - [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] — 다형성, 컴파일타임 vs 런타임 바인딩
+
+## 스프링 (2026B_Spring)
+
+| 노트 | 핵심 |
+| --- | --- |
+| [[Java Spring Boot 프로젝트 생성(분석)]] | 스프링 부트 프로젝트의 뼈대 — `src/main`·`src/test` 고정 구조, `build.gradle` 의 플러그인·툴체인·의존성 선언, 스타터(`spring-boot-starter-webmvc`)와 버전 자동 관리, 내장 톰캣과 실행 가능한 jar, 그레이들 래퍼로 빌드 환경 고정, `@SpringBootApplication` 의 세 애노테이션과 컴포넌트 스캔 범위, `SpringApplication.run()` 이 하는 일, `application.properties` 로 설정 분리, `@SpringBootTest` 의 `contextLoads`, 컨트롤러·의존성 주입·빈 스코프와 무상태 설계, 요청이 지나가는 계층 |
 
 ## 종합
 
