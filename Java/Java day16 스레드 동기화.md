@@ -7,12 +7,14 @@ tags: [학습, java]
 
 # Java day16 — 스레드 동기화
 
-> 실습 파일: `day16/exam/exam1.java`(스레드와 멀티스레드의 정의·동기화와 비동기화의 대비·같은 객체를 참조하는 두 작업 스레드·`synchronized` 메소드로 공유 자원 보호)
+> 실습 파일: `day16/exam/exam1.java`(스레드와 멀티스레드의 정의·동기화와 비동기화의 대비·같은 객체를 참조하는 두 작업 스레드·`synchronized` 메소드로 공유 자원 보호) · `day16/exam/exam2.java`(스레드 풀의 목적과 구조·`ThreadPoolExecutor`·`Runnable` 작업 객체·`submit` 으로 요청 배정·풀 상태 조회·`shutdown` 종료 예약)
 > 허브: [[Java MOC]] · 이전: [[Java day15 Map과 HashMap]]
 
 [[Java day15 Map과 HashMap]] 에서 흐름을 여러 개 띄우는 방법까지 봤다. 거기서 마지막에 남겨 둔 문제가 하나 있었다 — **여러 흐름이 같은 데이터를 건드리면 값이 어긋난다**는 것. 이번에는 그 장면을 계산기 하나로 실제로 재현하고, 막는 장치인 `synchronized` 를 붙여 결과가 어떻게 달라지는지 확인한다.
 
 코드 자체는 짧다. 계산기 하나, 스레드 둘, 메소드 하나가 전부다. 그런데 여기에 멀티스레드에서 어려운 부분이 거의 다 들어 있다.
+
+뒤쪽 절반(1-8 이후)은 방향이 다르다. 앞에서 본 것이 "흐름끼리 부딪히는 문제"였다면, 이번에는 **흐름을 몇 개나 띄울 것인가** 하는 문제다. 지금까지는 필요할 때마다 `new` 로 스레드를 만들어 썼는데, 요청이 몰리는 환경에서는 그 방식 자체가 부담이 된다. 그래서 미리 만들어 두고 돌려 쓰는 **스레드 풀**을 콜센터 상담 시뮬레이션으로 확인한다.
 
 ## 1. 배운 내용
 
@@ -216,6 +218,168 @@ day15에서 흐름을 나눠 얻은 것과, 이번에 확인한 대가를 나란
 
 세 줄이 서로를 물고 있다. 멀티스레드 설계가 어려운 이유는 문법이 아니라 이 맞바꿈을 어디서 끊을지 정하는 일에 있다. 실무의 방향은 대체로 **공유를 줄이고, 꼭 공유해야 하는 지점만 최소로 잠근다** 쪽이다.
 
+### 1-8. 스레드 풀 — 흐름을 미리 만들어 두고 돌려 쓰기
+
+여기서부터는 다른 문제다. 지금까지는 스레드가 필요할 때마다 `new 스레드1()` 처럼 하나씩 만들었다. 요청이 두세 개면 괜찮은데, 1-1의 웹서버처럼 요청이 초당 수백 개씩 들어오면 이야기가 달라진다.
+
+**스레드 풀은 매번 새 스레드를 만들지 않고, 미리 일정한 수의 스레드를 풀(pool)에 만들어 두고 재사용하는 방식**이다. 목적은 하나로 정리된다 — **과부하 방지**.
+
+| 방식 | 흐름 |
+| --- | --- |
+| 매번 생성 | 요청 → 스레드 생성 → 처리 → 스레드 소멸 (요청 수만큼 스레드) |
+| 스레드 풀 | 요청 → **대기 중인 스레드에 배정** → 처리 → **스레드는 풀로 복귀** (스레드 수는 고정) |
+
+스레드를 만드는 일 자체가 공짜가 아니라는 것이 출발점이다. 스레드 하나마다 자기 스택 메모리를 잡고([[Java day15 Map과 HashMap]] 3-4), OS 수준의 등록 작업이 따라붙는다. 요청 1000개에 스레드 1000개를 만들면 일하는 시간보다 만들고 없애는 시간이 더 커지고, 메모리도 함께 밀린다.
+
+구조는 **선입선출(queue)** 이다 — [[Java day15 Map과 HashMap]] 1-11에서 정리한 `Queue` 의 성질이 그대로 쓰인다.
+
+```
+요청 5 4 3 2 1 →  [작업 큐]  →  ┌ 스레드A (작업 중)
+                                ├ 스레드B (작업 중)
+                                └ 스레드C (작업 중)
+```
+
+- 먼저 들어온 요청부터 **대기 중인 스레드**가 가져가 처리한다
+- 대기 중인 스레드가 없으면 요청은 큐에서 **대기(wait) 상태**로 기다린다
+- 스레드가 작업을 끝내면 큐에서 다음 요청을 꺼내 처리한다
+
+풀의 크기가 곧 **동시에 처리할 수 있는 최대 개수**가 된다. 요청이 아무리 몰려도 스레드 수는 그 이상 늘지 않으니, 서버가 감당할 수 있는 선을 숫자로 정해 두는 셈이다.
+
+### 1-9. 풀 만들기 — Executors와 ThreadPoolExecutor
+
+실습에서는 콜센터를 흉내 낸다. 상담원(스레드) 3명이 고객(요청)을 순서대로 받는 구조다.
+
+```java
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
+ThreadPoolExecutor poolExecutor =
+        (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+```
+
+한 줄에 두 가지가 들어 있다.
+
+| 요소 | 역할 |
+| --- | --- |
+| `Executors` | 풀을 만들어 주는 **팩토리 클래스** — 목적별 메소드를 갖고 있다 |
+| `newFixedThreadPool(3)` | 크기가 3으로 **고정된** 풀을 만든다 |
+| `ThreadPoolExecutor` | 실제 풀 구현 클래스 — 상태 조회 메소드를 갖고 있다 |
+| `(ThreadPoolExecutor)` 캐스팅 | 반환 타입이 `ExecutorService` 라 다운캐스팅해서 받는다 |
+
+`Executors.newFixedThreadPool()` 의 반환 타입은 상위 인터페이스인 `ExecutorService` 다. 그대로 받으면 작업을 넣고 종료하는 기본 동작만 쓸 수 있고, 풀의 내부 상태(작업 중인 스레드 수 등)를 들여다보려면 구현 클래스인 `ThreadPoolExecutor` 로 내려서 받아야 한다. [[Java day10 상속과 다형성]] 의 다운캐스팅과 [[Java day11 인터페이스]] 의 "인터페이스로 받고 구현체로 갈아 끼운다"가 여기서 함께 쓰인다.
+
+### 1-10. 작업 객체 — Runnable 구현체 하나가 요청 하나
+
+풀에 넣는 것은 스레드가 아니라 **작업**이다. 작업은 `Runnable` 을 구현한 클래스로 만든다.
+
+```java
+class CallTask implements Runnable {
+    private Random random = new Random();
+    private int id;                       // 요청 식별용
+
+    public CallTask(int id) { this.id = id; }
+
+    @Override
+    public void run() {
+        String threadName = Thread.currentThread().getName();
+        try {
+            System.out.println(threadName + "상담원이 고객통화 시작됨 고객 id: " + id);
+            Thread.sleep(6000 + random.nextInt(6000));   // 6~12초
+        } catch (Exception e) {
+            System.out.println("상담원이 고객통화 종료됨");
+        }
+    }
+}
+```
+
+[[Java day15 Map과 HashMap]] 1-14에서 정리한 멀티스레드 구현 세 가지 중 **`Runnable` 구현** 방식이다. 스레드 풀에서는 이 방식이 강제되는 셈인데, 이유가 분명하다.
+
+| | `extends Thread` | `implements Runnable` |
+| --- | --- | --- |
+| 정체 | **흐름 그 자체** | **흐름이 할 일**(작업 명세) |
+| 스레드 풀 | 못 쓴다 — 풀은 흐름을 이미 갖고 있다 | 쓴다 — 할 일만 넘기면 된다 |
+
+풀에는 스레드가 이미 3개 만들어져 있으니, 넘겨야 하는 것은 새 흐름이 아니라 **"이걸 해 달라"는 지시서**다. `Runnable` 이 정확히 그 지시서다. 1-3에서 `extends Thread` 를 쓴 것과 갈리는 지점이고, 실무에서 `Runnable` 을 권하는 이유이기도 하다.
+
+몇 가지를 더 짚어 둔다.
+
+- **`Thread.currentThread().getName()`** — 지금 이 `run()` 을 실행하고 있는 스레드의 이름을 가져온다. 풀에서는 `pool-1-thread-1` 같은 이름이 붙어서, 같은 스레드가 여러 작업을 **재사용**되는 것을 눈으로 확인할 수 있다. 스레드 풀이 도는 모습을 보려면 이 한 줄이 가장 중요하다
+- **생성자로 받은 `id`** — 작업마다 다른 값을 들고 있어야 하니 필드로 잡는다. 여기서 각 작업 객체가 자기 상태만 갖는 형태가 되어, 1-3에서 본 공유 자원 문제가 애초에 생기지 않는다(2-2의 "무상태·비공유" 방향)
+- **`Random`** — 상담 시간을 6~12초로 흩뜨려, 상담원마다 끝나는 시점이 달라지게 만든다. 균일하면 풀이 도는 모습이 잘 안 보인다
+
+### 1-11. 요청 배정과 풀 상태 들여다보기
+
+만든 작업을 풀에 넘긴다.
+
+```java
+CallTask task = new CallTask(i);   // i번째 요청 생성
+poolExecutor.submit(task);         // 스레드 풀에 배정
+```
+
+`submit()` 이 하는 일은 **작업을 큐에 넣는 것**까지다. 실제로 언제 실행되는지는 풀이 정한다 — 대기 중인 스레드가 있으면 바로, 없으면 큐에서 기다렸다가. `start()` 로 흐름을 직접 띄우던 것과 달리, **실행 시점의 결정권이 풀로 넘어간다.**
+
+풀이 지금 어떤 상태인지는 조회 메소드로 확인한다.
+
+```java
+int 작업중인스레드수 = poolExecutor.getActiveCount();
+int 대기중인스레드수 = poolExecutor.getCorePoolSize();
+int 대기중인요청수  = poolExecutor.getQueue().size();
+```
+
+| 메소드 | 반환하는 값 |
+| --- | --- |
+| `getActiveCount()` | 지금 **작업을 실행 중인** 스레드 수 |
+| `getCorePoolSize()` | 풀의 **기본 크기**(설정값) — 여기서는 3으로 고정 |
+| `getPoolSize()` | 현재 풀에 **만들어져 있는** 스레드 수 |
+| `getQueue().size()` | 큐에서 **대기 중인 작업** 수 |
+| `getCompletedTaskCount()` | 지금까지 **끝난 작업** 수 |
+
+세 지표를 함께 보면 풀의 상태가 한눈에 잡힌다. 고정 크기 3인 풀이라면 `getActiveCount()` 는 0~3 사이에서만 움직이고, 요청이 그보다 빨리 들어오면 넘치는 만큼이 `getQueue().size()` 로 쌓인다. **처리 속도보다 요청이 빠르면 큐가 계속 길어진다**는 것이 이 실습에서 눈으로 확인되는 부분이다.
+
+- 요청 간격 3초, 상담 시간 6~12초, 상담원 3명 — 들어오는 속도가 처리 속도를 앞서므로 큐가 쌓인다
+- 대기 중인 스레드 수를 알고 싶으면 `getPoolSize() - getActiveCount()` 로 계산한다. `getCorePoolSize()` 는 실시간 상태가 아니라 설정값 쪽이다
+
+### 1-12. 종료 — shutdown은 "예약"이다
+
+작업을 다 넣었으면 풀을 닫는다.
+
+```java
+poolExecutor.shutdown();   // 20개 배정 후 종료 예약
+```
+
+`shutdown()` 은 **즉시 멈추는 것이 아니라 종료를 예약하는 것**이다.
+
+| 메소드 | 동작 |
+| --- | --- |
+| `shutdown()` | 새 작업은 더 받지 않고, **이미 들어온 작업은 전부 끝낸 뒤** 종료 |
+| `shutdownNow()` | 실행 중인 작업에 인터럽트를 걸고 **즉시** 종료 시도, 대기 중인 작업 목록 반환 |
+| `awaitTermination(t, unit)` | 종료될 때까지 지정 시간만큼 기다린다 |
+| `isShutdown()` / `isTerminated()` | 종료 요청됨 / 실제로 다 끝남 |
+
+종료를 반드시 불러 줘야 하는 이유가 있다. 풀의 스레드는 **비데몬 스레드**라, 작업이 없어도 JVM이 살아 있는 한 대기 상태로 남는다. `shutdown()` 을 부르지 않으면 main이 끝나도 프로그램이 종료되지 않는다. [[Java day15 Map과 HashMap]] 2-12에서 타이머 스레드에 플래그를 두고 껐던 것과 같은 이야기 — **띄운 흐름은 끄는 방법까지 함께 만들어 둔다.**
+
+### 1-13. 정리 — 콜센터 그림으로
+
+이번 실습의 비유를 그대로 두면 구조가 오래 남는다.
+
+| 코드 | 콜센터 |
+| --- | --- |
+| `newFixedThreadPool(3)` | 상담원 3명을 고용 |
+| `CallTask` | 고객 한 명의 상담 요청 |
+| `submit(task)` | 대기열에 고객 등록 |
+| `getActiveCount()` | 지금 통화 중인 상담원 수 |
+| `getQueue().size()` | 대기실에서 기다리는 고객 수 |
+| `shutdown()` | 오늘 접수 마감 — 대기 고객은 다 받고 퇴근 |
+
+앞부분(1-1~1-7)과 이어 보면 멀티스레드를 다루는 두 축이 갖춰진다.
+
+| 문제 | 장치 |
+| --- | --- |
+| 흐름끼리 같은 데이터를 건드려 값이 어긋난다 | `synchronized` — 잠금 |
+| 흐름을 무한정 만들어 자원이 밀린다 | 스레드 풀 — 개수 제한 |
+
+실무에서 스레드를 직접 `new` 하는 코드를 보기 어려운 이유가 여기 있다. 흐름의 개수는 풀이 관리하고, 개발자는 **작업(`Runnable`)을 정의해서 넘기는 일**에 집중한다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. synchronized 블록 — 필요한 줄만 잠그기
@@ -338,6 +502,81 @@ synchronized (공유객체) {
 
 다만 싱글톤 자체가 문제는 아니다. **필드에 상태를 들고 있지 않으면** 여러 흐름이 같은 객체의 메소드를 동시에 불러도 어긋날 것이 없다. 지금까지 만든 DAO들이 필드 없이 메소드만 갖고 있었던 것이 결과적으로 안전한 형태였던 셈이다. 이런 객체를 **무상태(stateless)** 라고 부르고, 서버 쪽 클래스를 설계할 때의 기본 방침이 된다.
 
+### 2-7. Executors의 팩토리 메소드 — 풀 고르기
+
+`newFixedThreadPool` 말고도 목적별로 준비된 것들이 있다.
+
+| 메소드 | 성격 | 쓰는 자리 |
+| --- | --- | --- |
+| `newFixedThreadPool(n)` | 크기 고정 n개 | 동시 처리량을 정해 두고 싶을 때 — 가장 흔하다 |
+| `newCachedThreadPool()` | 필요하면 늘리고, 60초 놀면 회수 | 짧은 작업이 불규칙하게 몰릴 때 |
+| `newSingleThreadExecutor()` | 스레드 1개 | **순서 보장**이 필요할 때 — 큐에 넣은 순서대로 |
+| `newScheduledThreadPool(n)` | 지연·주기 실행 | 몇 초 뒤에 / 몇 초마다 반복 |
+| `newWorkStealingPool()` | CPU 코어 수에 맞춰 작업 훔치기 | 계산량이 많은 병렬 작업 |
+
+`newSingleThreadExecutor()` 는 이름과 달리 동기화의 대안이 되기도 한다. 상태를 건드리는 작업을 전부 이 풀 하나에 몰아넣으면 **한 번에 하나씩만** 실행되니, 락을 걸지 않아도 어긋날 일이 없다. "잠그는 대신 한 줄로 세운다"는 접근이다.
+
+`newScheduledThreadPool` 은 [[Java day15 Map과 HashMap]] 2-11의 시계 스레드처럼 `while` + `sleep` 으로 만들던 주기 작업을 대신한다.
+
+```java
+ScheduledExecutorService s = Executors.newScheduledThreadPool(1);
+s.scheduleAtFixedRate(작업, 0, 1, TimeUnit.SECONDS);   // 1초마다
+```
+
+### 2-8. submit과 execute — 결과를 돌려받기
+
+작업을 넣는 방법이 둘이다.
+
+| 메소드 | 매개변수 | 반환 | 예외가 나면 |
+| --- | --- | --- | --- |
+| `execute(Runnable)` | `Runnable` | 없음 | 그대로 밖으로 터진다 |
+| `submit(Runnable)` | `Runnable` | `Future<?>` | `Future` 안에 담긴다 |
+| `submit(Callable<T>)` | `Callable<T>` | `Future<T>` | `Future` 안에 담긴다 |
+
+`Runnable` 의 `run()` 은 반환값이 없다(`void`). 계산 결과를 받아야 하면 `Callable<T>` 를 쓴다.
+
+```java
+Callable<Integer> 작업 = () -> { return 1 + 2; };
+Future<Integer> future = poolExecutor.submit(작업);
+Integer 결과 = future.get();     // 끝날 때까지 기다렸다가 받는다
+```
+
+`Future` 는 **아직 오지 않은 결과를 담아 두는 상자**다. `submit()` 은 상자를 즉시 돌려주고, `get()` 을 부르는 순간 작업이 끝날 때까지 기다린다. [[Java day14 제네릭]] 의 타입 파라미터가 여기서 반환 타입을 정하는 자리로 쓰인다.
+
+`submit()` 을 쓰면 작업 안에서 난 예외가 밖으로 드러나지 않고 `Future` 에 담긴다는 점은 함께 기억해 둘 만하다. `get()` 을 부르지 않으면 예외가 조용히 묻히므로, 결과를 안 쓸 작업이라도 예외 처리는 `run()` 안에서 마무리하는 편이 안전하다.
+
+### 2-9. 풀에 넣을 작업을 만드는 세 가지 모양
+
+`Runnable` 구현체는 형태를 바꿔 쓸 수 있다 — [[Java day11 인터페이스]] 에서 정리한 구현 방식이 그대로 적용된다.
+
+```java
+// ① 클래스로 선언 — 생성자로 값을 받아야 할 때
+class CallTask implements Runnable { /* ... */ }
+
+// ② 익명 구현체 — 한 번만 쓸 때
+poolExecutor.submit(new Runnable() {
+    @Override public void run() { /* ... */ }
+});
+
+// ③ 람다 — Runnable은 메소드가 하나뿐이라 가능
+poolExecutor.submit(() -> { /* ... */ });
+```
+
+메소드가 하나뿐인 인터페이스를 **함수형 인터페이스**라고 부르고, 이런 인터페이스만 람다로 줄여 쓸 수 있다. `Runnable`·`Callable`·`Comparator` 가 대표적이다. 실습처럼 `id` 같은 값을 들고 있어야 하면 ①이 편하고, 상태 없이 한 번 쓰고 마는 작업이면 ③이 짧다.
+
+### 2-10. 풀 크기를 얼마로 잡을까
+
+고정 풀을 쓰기로 했으면 다음 질문은 숫자다. 작업의 성격에 따라 기준이 갈린다.
+
+| 작업 성격 | 기준 | 이유 |
+| --- | --- | --- |
+| CPU 위주(계산·인코딩) | 코어 수 내외 | 흐름을 늘려도 CPU가 하나씩만 처리한다 |
+| I/O 위주(DB·파일·네트워크) | 코어 수보다 크게 | 기다리는 동안 다른 작업을 할 수 있다 |
+
+코어 수는 `Runtime.getRuntime().availableProcessors()` 로 얻는다. 실습의 상담 작업처럼 대부분을 기다리는 데 쓰는 작업이라면 풀을 코어 수보다 크게 잡아도 낭비가 아니다 — 스레드가 CPU를 붙잡고 있는 게 아니라 자고 있기 때문이다.
+
+풀이 너무 크면 스레드 전환 비용과 메모리가 늘고, 너무 작으면 큐가 계속 길어진다. 1-11의 세 지표를 찍어 보면서 맞춰 가는 것이 실제 방법이다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 한 줄도 원자적이지 않다
@@ -423,7 +662,49 @@ count++;
 
 특히 마지막 줄을 이어 두면 그림이 넓어진다. 같은 행을 두 요청이 동시에 수정할 때 생기는 문제는 이번에 본 것과 구조가 같고, 해법도 락이라는 이름으로 같이 등장한다. 애플리케이션에서 아무리 잠가도 DB 쪽이 열려 있으면 소용이 없어서, 실무에서는 두 층을 함께 본다.
 
-### 3-6. 다음에 볼 키워드
+### 3-6. ThreadPoolExecutor를 직접 만들면 보이는 것
+
+`Executors.newFixedThreadPool(3)` 은 편의 메소드이고, 안에서는 생성자를 부른다.
+
+```java
+new ThreadPoolExecutor(
+        3,                              // corePoolSize   — 기본 유지 개수
+        3,                              // maximumPoolSize— 최대 개수
+        0L, TimeUnit.MILLISECONDS,      // keepAliveTime  — 여분 스레드 유지 시간
+        new LinkedBlockingQueue<>()     // workQueue      — 작업 대기 큐
+);
+```
+
+다섯 자리가 곧 풀의 성격을 정한다.
+
+| 자리 | 뜻 |
+| --- | --- |
+| `corePoolSize` | 놀아도 유지하는 스레드 수 |
+| `maximumPoolSize` | 큐가 꽉 찼을 때까지 늘릴 수 있는 상한 |
+| `keepAliveTime` | core를 넘는 스레드가 놀 때 회수하기까지의 시간 |
+| `workQueue` | 대기 작업을 담는 큐 — [[Java day15 Map과 HashMap]] 의 `Queue` |
+| `ThreadFactory` | 스레드 이름·데몬 여부를 정한다 (선택) |
+
+고정 풀은 core와 max를 같은 값으로 두고 큐를 무제한으로 잡은 형태다. **큐가 무제한이라는 점**이 중요한 성질인데, 요청이 처리 속도보다 계속 빠르면 큐가 메모리를 밀어낼 때까지 자란다. 그래서 실무에서는 큐 크기에 상한을 두는 쪽이 안전하다고 본다.
+
+`ThreadFactory` 로 스레드 이름을 바꿔 두면 1-10에서 찍었던 `getName()` 출력이 `상담원-1` 처럼 읽히게 되어, 로그를 볼 때 도움이 된다.
+
+### 3-7. 큐가 꽉 차면 — 거부 정책
+
+큐에 상한을 두고 그마저 꽉 차면 풀은 새 작업을 **거부**한다. 어떻게 거부할지는 정책으로 고른다.
+
+| 정책 | 동작 |
+| --- | --- |
+| `AbortPolicy`(기본) | `RejectedExecutionException` 을 던진다 |
+| `CallerRunsPolicy` | **작업을 넣은 쪽**이 직접 실행한다 — 자연스럽게 속도가 조절된다 |
+| `DiscardPolicy` | 조용히 버린다 |
+| `DiscardOldestPolicy` | 큐에서 가장 오래된 것을 버리고 넣는다 |
+
+`CallerRunsPolicy` 가 흥미로운 자리다. 작업을 넣던 흐름이 직접 처리하느라 잠시 멈추게 되니, **넣는 속도가 저절로 느려진다.** 이런 식으로 뒤에서 앞으로 압력을 되돌리는 방식을 배압(back pressure)이라고 부른다.
+
+거부까지 생각해 두는 이유는 1-8의 목적과 이어진다. 스레드 풀은 무한히 받아 주는 장치가 아니라 **감당할 수 있는 선을 정해 두는 장치**라, 선을 넘었을 때 어떻게 할지가 설계의 일부다.
+
+### 3-8. 다음에 볼 키워드
 
 - 경쟁 상태(race condition)·공유 자원·임계 영역(critical section)
 - `synchronized` 메소드와 블록, 인스턴스 락과 클래스 락(static)
@@ -442,11 +723,24 @@ count++;
 - `ExecutorService`·`CompletableFuture`·가상 스레드
 - 서버 환경의 싱글톤과 무상태 — 스프링 빈이 기본적으로 싱글톤인 이유
 - DB 트랜잭션·격리 수준·낙관적/비관적 락
+- 스레드 풀(thread pool)과 과부하 방지, 선입선출 작업 큐
+- `Executors` 팩토리 — `newFixedThreadPool`·`newCachedThreadPool`·`newSingleThreadExecutor`·`newScheduledThreadPool`
+- `ExecutorService` 와 `ThreadPoolExecutor`, 인터페이스로 받고 구현체로 다운캐스팅
+- `submit()` 과 `execute()`, `Runnable` 과 `Callable<T>`, `Future<T>`·`get()`
+- `Thread.currentThread().getName()` 으로 스레드 재사용 확인하기
+- `getActiveCount`·`getPoolSize`·`getCorePoolSize`·`getQueue().size()`·`getCompletedTaskCount`
+- `shutdown()`·`shutdownNow()`·`awaitTermination()` 과 비데몬 스레드
+- `ThreadPoolExecutor` 생성자 파라미터 — core/max/keepAlive/workQueue/ThreadFactory
+- 거부 정책 — `AbortPolicy`·`CallerRunsPolicy`·`DiscardPolicy` 와 배압(back pressure)
+- 함수형 인터페이스와 람다로 작업 넘기기
+- 풀 크기 산정 — CPU 위주 작업과 I/O 위주 작업, `availableProcessors()`
+- `scheduleAtFixedRate` 로 주기 작업 돌리기
 
 ## 실습 파일
 
 - `2026B_BE/src/day16/exam/exam1.java` (스레드와 멀티스레드의 정의, 웹서버가 멀티스레드로 요청을 처리하는 구조와 장단점, 동기화(락·대기 상태·무결성)와 비동기화의 대비, 계산기 하나를 두 스레드가 함께 참조하는 공유 자원 구성, `extends Thread` 로 만든 작업 스레드 둘, `Thread.sleep` 으로 틈을 벌려 경쟁 상태를 재현하기, `synchronized` 메소드로 한 스레드씩만 점유시키기, `this` 가 가리키는 대상과 멤버 변수·메소드의 할당 차이)
+- `2026B_BE/src/day16/exam/exam2.java` (스레드 풀의 목적인 과부하 방지, 선입선출 큐로 대기 요청을 처리하는 구조, `Executors.newFixedThreadPool(3)` 으로 고정 크기 풀 구축과 `ThreadPoolExecutor` 다운캐스팅, `implements Runnable` 로 만든 작업 객체 `CallTask` 와 생성자로 받은 식별자, `Thread.currentThread().getName()` 으로 담당 스레드 확인, `Random` 으로 흩뜨린 처리 시간, `submit()` 으로 요청 배정, `getActiveCount`·`getCorePoolSize`·`getQueue().size()` 로 풀 상태 조회, `shutdown()` 으로 종료 예약, 콜센터 상담 시뮬레이션 구성)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[SQL day05 외래키 CASCADE와 조인]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[SQL day05 외래키 CASCADE와 조인]] · [[KDT_2026 학습 지도]]
