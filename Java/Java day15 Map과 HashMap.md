@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java day15 — Map과 HashMap
 
 > 실습 파일: `day15/exam/exam1.java`(제네릭 타입 복습·컬렉션 세 갈래 정리·Map 인터페이스와 HashMap·엔트리 조작 메소드·keySet 순회), `exam2.java`(Stack의 LIFO·Queue의 FIFO 구현), `exam3.java`(단일 스레드와 main 스레드·Thread.sleep·멀티스레드 구현 세 가지), `exam4.java`(Runnable 구현체로 만든 시계 스레드·플래그로 껐다 켜는 타이머 스레드·main 흐름이 입력으로 다른 흐름을 제어)
-> 허브: [[Java MOC]] · 이전: [[Java day14 제네릭]]
+> 허브: [[Java MOC]] · 이전: [[Java day14 제네릭]] · 다음: [[Java day16 스레드 동기화]]
 
 day14에서 컬렉션 프레임워크의 세 갈래를 늘어놓고 `List` 와 `Set` 을 실습으로 확인했다. 남은 하나가 `Map` 이다. 앞의 둘이 "값을 죽 늘어놓는" 구조였다면 `Map` 은 **값에 이름표를 붙여 담는** 구조라, 꺼내는 방식부터 달라진다.
 
@@ -907,4 +907,4 @@ exam3 주석에 적어 둔 톰캣·스프링 이야기가 정확히 이 구조�
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]] · [[KDT_2026 학습 지도]]
