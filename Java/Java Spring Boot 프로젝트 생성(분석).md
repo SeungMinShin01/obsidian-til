@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java — Spring Boot 프로젝트 생성
 
 > 실습 파일: `2026B_Spring/springweb/build.gradle` · `settings.gradle` · `gradle/wrapper/gradle-wrapper.properties` · `src/main/java/com/example/SpringwebApplication.java` · `src/main/resources/application.properties` · `src/test/java/com/example/SpringwebApplicationTests.java`
-> 허브: [[Java MOC]] · 이전: [[Java day16 스레드 동기화]]
+> 허브: [[Java MOC]] · 이전: [[Java day16 스레드 동기화]] · 다음: [[Java Spring day01 서블릿과 HTTP 메소드]]
 
 여기서부터 저장소가 하나 늘었다. `2026B_BE` 는 순수 자바로 콘솔 프로그램을 만들던 자리였고, 새로 생긴 `2026B_Spring` 은 **웹 애플리케이션**을 만드는 자리다. 아직 화면도 요청 처리도 없고 뼈대만 있는 상태라, 이번에는 만들어진 파일 하나하나가 무엇을 맡는지부터 정리해 둔다.
 
@@ -567,4 +567,4 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day09 MVC 종합예제]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day14 게시판 CRUD]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day09 MVC 종합예제]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day14 게시판 CRUD]] · [[KDT_2026 학습 지도]]
