@@ -55,7 +55,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
                                                         Spring day01 서블릿 — 요청을 받는 자리
                                                                     │
                                                                     ▼
-                                                        Spring day02 스프링 진입점 + 계층 이식
+                                                        Spring day02 스프링 진입점 + 계층 이식 + 등록 요청
 ```
 
 | day | 노트 | 핵심 |
@@ -90,7 +90,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 | --- | --- |
 | [[Java Spring Boot 프로젝트 생성(분석)]] | 스프링 부트 프로젝트의 뼈대 — `src/main`·`src/test` 고정 구조, `build.gradle` 의 플러그인·툴체인·의존성 선언, 스타터(`spring-boot-starter-webmvc`)와 버전 자동 관리, 내장 톰캣과 실행 가능한 jar, 그레이들 래퍼로 빌드 환경 고정, `@SpringBootApplication` 의 세 애노테이션과 컴포넌트 스캔 범위, `SpringApplication.run()` 이 하는 일, `application.properties` 로 설정 분리, `@SpringBootTest` 의 `contextLoads`, 컨트롤러·의존성 주입·빈 스코프와 무상태 설계, 요청이 지나가는 계층 |
 | [[Java Spring day01 서블릿과 HTTP 메소드]] | **서블릿** — 자바 클래스에 HTTP를 붙이는 규격과 서블릿 컨테이너(톰캣), `jakarta.servlet` 패키지, `extends HttpServlet` 으로 규격 물려받기, 생명주기 `init`·`service`·`destroy` 와 호출 횟수, `service` 가 `doXXX` 를 갈라 부르는 구조, `doGet`·`doPost`·`doPut`·`doDelete` 와 CRUD 대응, `@WebServlet` 주소 매핑, `HttpServletRequest`·`HttpServletResponse` 로 값을 꺼내고 응답 쓰기, 상태 코드·포워드와 리다이렉트·세션과 스코프·필터, 단일 인스턴스와 멀티스레드 안전성, 프론트 컨트롤러(`DispatcherServlet`)로 이어지는 자리, 안전성과 멱등성 |
-| [[Java Spring day02 스프링 부트 실행과 계층 이식]] | **스프링 진입점과 계층 이식** — 프레임워크와 라이브러리의 차이, 애노테이션이 코드에 의미를 붙이는 방식, `@SpringBootApplication` 의 내장 톰캣 세팅과 컴포넌트 자동 등록, `SpringApplication.run(클래스.class)` 로 시동 걸기와 `ApplicationContext`, 8080 포트와 `localhost`·`127.0.0.1`·포트 충돌, 패키지로 나눈 Controller·Model(Dao·Dto) 계층, `BaseDao` 상속으로 JDBC 연동 공통화와 `protected` 접근 범위, `Class.forName` 드라이버 로드, 싱글톤과 `BaseDao` 상속을 겹쳐 쓴 `BoardDao`, DB 컬럼과 짝을 이루는 DTO와 기본 생성자, `sample.sql` 의 `AUTO_INCREMENT`·`PRIMARY KEY`, 연결 정보를 `application.properties` 로 빼기, `DataSource` 와 커넥션 풀, 스프링 빈과 의존성 주입, Service 계층·`JdbcTemplate`·JPA·트랜잭션으로 이어지는 자리 |
+| [[Java Spring day02 스프링 부트 실행과 계층 이식]] | **스프링 진입점과 계층 이식, 등록 요청 잇기** — 프레임워크와 라이브러리의 차이, 애노테이션이 코드에 의미를 붙이는 방식, `@SpringBootApplication` 의 내장 톰캣 세팅과 컴포넌트 자동 등록, `SpringApplication.run(클래스.class)` 로 시동 걸기와 `ApplicationContext`, 8080 포트와 `localhost`·`127.0.0.1`·포트 충돌, 패키지로 나눈 Controller·Model(Dao·Dto) 계층, `@Controller`·`@RestController` 와 HTTP Content-Type, `@PostMapping` 으로 메소드마다 주소 붙이기, 매개변수 DTO에 요청 값이 채워지는 커맨드 객체 바인딩, `BaseDao` 상속으로 JDBC 연동 공통화와 `protected` 접근 범위, `Class.forName` 드라이버 로드, 싱글톤과 `BaseDao` 상속을 겹쳐 쓴 `BoardDao`, `PreparedStatement` 의 `?` 바인딩과 SQL 인젝션·`executeUpdate` 반환값으로 성공 판정, DB 컬럼과 짝을 이루는 DTO와 기본 생성자, `sample.sql` 의 `AUTO_INCREMENT`·`PRIMARY KEY`, 연결 정보를 `application.properties` 로 빼기, `DataSource` 와 커넥션 풀, 스프링 빈과 의존성 주입, `@ResponseBody`·`ResponseEntity`·로거와 예외 처리 모으기, Service 계층·`JdbcTemplate`·JPA·트랜잭션으로 이어지는 자리 |
 
 ## 종합
 

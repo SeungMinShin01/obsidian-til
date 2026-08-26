@@ -23,7 +23,7 @@ tags: [학습, java]
 | `Model/Dto/BoardDto.java` | 표 한 줄을 담는 그릇 |
 | `sample.sql` | 실습용 DB·테이블 준비 |
 
-[[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 한 가지다.
+[[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 마지막에는 등록 요청 하나가 브라우저에서 DB까지 닿는다.
 
 ## 1. 배운 내용
 
@@ -177,7 +177,7 @@ day02/
 
 ```java
 public class BaseDao {
-    private String url = "jdbc:mysql://127.0.0.1:3306/mydb";
+    private String url = "jdbc:mysql://127.0.0.1:3306/mydb0813";
     private String user = "root";
     private String password = "****";   // 실습용 로컬 값
 
@@ -235,6 +235,8 @@ DAO가 여러 개로 늘어나도 연동 코드를 한 번만 쓰면 된다는 �
 
 지금은 주소·계정·비밀번호가 자바 파일 안에 문자열로 들어 있다. 실습에서는 편하지만, 값이 바뀔 때마다 컴파일을 다시 해야 하고 **소스와 함께 저장소에 올라간다**는 성질이 따라온다. 설정 파일로 빼는 방법은 2-2에 정리한다.
 
+연결 정보에서 자주 걸리는 자리를 미리 적어 두면, URL 끝의 **DB 이름이 스크립트로 만든 DB와 같아야 한다**는 것이다. 실습마다 DB를 새로 만들다 보면 스크립트 쪽만 이름이 바뀌기 쉬운데, 이때 나오는 오류는 접속 실패가 아니라 "그런 DB가 없다"라 원인이 눈에 잘 띄지 않는다. 값이 한 군데에만 있어야 어긋나지 않는다는 점이 설정을 밖으로 빼는 또 다른 이유가 된다.
+
 ### 1-8. BoardDao — 상속과 싱글톤을 겹쳐 쓴다
 
 ```java
@@ -268,30 +270,179 @@ DAO를 싱글톤으로 두는 이유가 여기서 더 분명해진다. `BaseDao`
 
 이 방식은 클래스가 처음 로드될 때 인스턴스가 만들어진다(이른 초기화). 쓰이든 안 쓰이든 미리 만들어지는 대신, [[Java day16 스레드 동기화]] 에서 본 경쟁 상태를 신경 쓰지 않아도 된다는 성질이 따라온다. 여러 스레드가 동시에 `getInstance()` 를 불러도 이미 만들어진 것을 돌려주기만 하기 때문이다.
 
-### 1-9. BoardController — DAO를 붙잡는 자리
+### 1-9. BoardController — 웹 기능을 애노테이션으로 단다
 
 ```java
+@Controller
 public class BoardController {
     private BoardDao bd = BoardDao.getInstance();
+
+    // [1] 등록
+    @PostMapping("/board/save")
+    public boolean save(BoardDto boardDto) {
+        boolean result = bd.save(boardDto);
+        return result;
+    }
 }
 ```
 
-한 줄뿐이지만 배선의 시작점이다. 컨트롤러가 DAO를 **직접 만들지 않고 `getInstance()` 로 받아 온다**는 점이 요점이다.
+컨트롤러가 DAO를 **직접 만들지 않고 `getInstance()` 로 받아 온다**는 것이 배선의 시작점이고, 그 위에 웹 기능이 얹혔다.
+
+**① 서블릿 기능을 상속 대신 표시로 받는다**
+
+[[Java Spring day01 서블릿과 HTTP 메소드]] 에서는 `HttpServlet` 을 물려받아 `doGet`·`doPost` 를 덮어써야 했다. 스프링에서는 클래스 위에 `@Controller` 를 붙이는 것으로 같은 자리를 만든다.
+
+| | 서블릿 방식 | 스프링 방식 |
+| --- | --- | --- |
+| 웹 기능 얻기 | `extends HttpServlet` | `@Controller` |
+| 요청 구분 | `doGet`·`doPost` 재정의 | 메소드마다 매핑 표시 |
+| 주소 지정 | `@WebServlet("/board")` — 클래스에 하나 | 메소드마다 따로 |
+
+갈리는 지점이 분명하다. 상속은 [[Java day10 상속과 다형성]] 에서 정리한 대로 부모를 하나밖에 못 두는데, 표시는 그런 제약이 없다. 게시판을 처리하려고 부모 자리를 써 버리는 대신, 클래스는 비워 두고 라벨만 붙이는 방식이다.
+
+**② @Controller와 @RestController**
+
+둘 다 요청을 받는 자리지만, 메소드가 돌려준 값을 해석하는 방식이 다르다.
+
+| 표시 | 반환값을 무엇으로 보는가 |
+| --- | --- |
+| `@Controller` | 보여 줄 **화면(뷰)의 이름** |
+| `@RestController` | **데이터 그 자체** (주로 JSON) |
+
+`@RestController` 는 `@Controller` + `@ResponseBody` 를 합쳐 둔 것이다. 값을 그대로 응답 본문으로 내보내고 싶으면 클래스에 `@RestController` 를 쓰거나 메소드에 `@ResponseBody` 를 붙인다(2-8).
+
+**③ Content-Type — 몸통에 실린 것이 무엇인지 알리는 규칙**
+
+HTTP는 데이터를 실어 보낼 때 그 형태를 헤더로 함께 알려 준다. 받는 쪽은 이 값을 보고 어떻게 읽을지 정한다.
+
+| Content-Type | 실리는 형태 |
+| --- | --- |
+| `text/html` | HTML 문서 |
+| `application/json` | `{"content":"안녕하세요","writer":"유재석"}` |
+| `application/x-www-form-urlencoded` | `content=안녕하세요&writer=유재석` (폼 기본값) |
+| `multipart/form-data` | 파일이 섞인 폼 |
+
+목록에 **DTO라는 형태는 없다**는 점이 요점이다. 네트워크로 오가는 것은 어디까지나 문자열이고, DTO는 그 문자열을 받은 쪽에서 담아 두는 자바 그릇이다. 문자열 ↔ 객체를 옮기는 일은 스프링이 맡는다(⑤).
+
+**④ @PostMapping — 메소드마다 주소를 붙인다**
+
+[[Java Spring day01 서블릿과 HTTP 메소드]] 1-6의 HTTP 방식과 CRUD 표가 그대로 짝을 이룬다.
+
+| 표시 | HTTP 방식 | 쓰는 자리 |
+| --- | --- | --- |
+| `@GetMapping` | GET | 조회 |
+| `@PostMapping` | POST | 등록 |
+| `@PutMapping` | PUT | 수정 |
+| `@DeleteMapping` | DELETE | 삭제 |
+
+넷 다 `@RequestMapping(value = "...", method = RequestMethod.POST)` 의 줄임 표기다.
+
+주소와 방식이 **함께** 자리를 정한다는 점을 봐 둔다. `/board/save` 라는 같은 주소라도 GET으로 오는 것과 POST로 오는 것은 다른 메소드가 받는다. 콘솔 게시판에서 메뉴 번호로 갈랐던 자리가 웹에서는 이 두 값으로 갈린다.
+
+**⑤ 매개변수로 DTO를 받는다 — 커맨드 객체**
+
+메소드 매개변수에 DTO를 두면, 스프링이 요청에 실려 온 값을 **이름을 맞춰** 채워 준다.
 
 ```
-BoardController  ──getInstance()──▶  BoardDao  ──상속──▶  BaseDao  ──JDBC──▶  MySQL
+POST /board/save
+content=안녕하세요&writer=유재석
+        │
+        ├─ new BoardDto()             ← 기본 생성자로 빈 객체
+        ├─ setContent("안녕하세요")    ← 이름이 같은 setter를 찾아 부른다
+        └─ setWriter("유재석")
+                │
+                ▼
+        save(BoardDto boardDto) 로 전달
 ```
 
-[[Java day09 MVC 종합예제]] · [[Java day12 종합예제 JDBC DAO]] 에서 만든 배선과 같다. 여기에 앞으로 [[Java Spring day01 서블릿과 HTTP 메소드]] 의 `doGet`·`doPost` 자리가 붙으면 웹 요청이 DB까지 닿는 한 줄이 완성된다.
+1-12에서 기본 생성자와 setter를 남겨 둔 이유가 여기서 드러난다. 값을 다 아는 상태에서 한 번에 만드는 것이 아니라 **빈 객체를 만들어 두고 하나씩 채우는** 흐름이라, 매개변수 없는 생성자가 있어야 시작할 수 있다. setter를 이름으로 찾아 부르는 것은 [[Java day13 Object 클래스와 리플렉션]] 의 자리다.
 
-컨트롤러가 DAO를 필드로 들고 있다는 점은 함께 기억해 둘 만하다. 컨트롤러 객체도 보통 하나만 만들어져 여러 요청이 공유하므로, **여기에 요청별 데이터를 담으면 안 된다** — day01 1-4에서 정리한 무상태 원칙이다. DAO처럼 요청과 무관하게 계속 같은 것을 쓰는 값만 필드로 둔다.
+그래서 **필드 이름과 폼의 `name` 이 같아야** 값이 들어온다. 이름으로 짝을 짓는 방식이라 철자가 어긋나면 그 값만 조용히 비어 있게 된다.
 
-### 1-10. sample.sql — 표를 먼저 만든다
+**⑥ 요청이 DB까지 닿는 한 줄**
+
+```
+브라우저 ──POST /board/save──▶ BoardController ──save()──▶ BoardDao ──상속──▶ BaseDao ──JDBC──▶ MySQL
+```
+
+[[Java day09 MVC 종합예제]] · [[Java day12 종합예제 JDBC DAO]] 에서 만든 배선의 입구만 콘솔에서 웹으로 바뀐 형태다.
+
+컨트롤러가 DAO를 필드로 들고 있다는 점은 함께 기억해 둘 만하다. 컨트롤러 객체도 보통 하나만 만들어져 여러 요청이 공유하므로, **여기에 요청별 데이터를 담으면 안 된다** — day01 1-4에서 정리한 무상태 원칙이다. 요청마다 달라지는 값은 매개변수로 받고(⑤), DAO처럼 요청과 무관한 것만 필드로 둔다.
+
+### 1-10. BoardDao — 등록 기능을 채운다
+
+컨트롤러가 부를 자리가 생겼으니 DAO에 실제 SQL이 들어간다.
+
+```java
+public boolean save(BoardDto boardDto) {
+    try {
+        // 1. SQL 작성
+        String sql = "insert into board( content , writer ) values( ? , ? )";
+        // 2. SQL 기재 — 자바가 아니라 MySQL 서버로 보낼 문장이다
+        PreparedStatement ps = conn.prepareStatement(sql);
+        // 3. 비워 둔 자리에 값 채우기
+        ps.setString(1, boardDto.getContent());
+        ps.setString(2, boardDto.getWriter());
+        // 4. 실행
+        int result = ps.executeUpdate();
+        // 5. 결과 판정
+        if (result == 1) {
+            return true;
+        }
+    } catch (SQLException e) {
+        System.out.println(e);
+    }
+    return false;
+}
+```
+
+[[Java day12 예외 처리와 JDBC]] 에서 정리한 다섯 단계가 그대로 나온다. 단계별로 짚을 것이 하나씩 있다.
+
+**① SQL은 자바 문법이 아니다**
+
+`sql` 은 그저 문자열이다. 자바는 이 문장을 해석하지 않고 **MySQL 서버로 보내기만** 한다. 그래서 SQL이 틀려도 컴파일은 통과하고, 실행할 때 서버가 거절하면서 예외가 된다. 컴파일러가 잡아 주지 않는 영역이라 문자열을 만들 때 특히 조심한다.
+
+**② `?` 로 비워 두고 나중에 채운다**
+
+`PreparedStatement` 는 **뼈대를 먼저 보내 두고 값을 따로 채우는** 방식이다.
+
+| | 문자열을 이어 붙이는 방식 | `?` 바인딩 |
+| --- | --- | --- |
+| 따옴표·이스케이프 | 직접 챙긴다 | 라이브러리가 처리 |
+| 타입 변환 | 직접 맞춘다 | `setString`·`setInt` 로 지정 |
+| 값이 문장 구조를 바꾸는 것 | 막을 수 없다 | 막힌다 |
+
+세 번째 줄이 핵심이다. 값을 이어 붙여 문장을 만들면 값 안에 든 따옴표나 SQL 조각이 **문장 구조 자체를 바꿔 버릴 수 있다.** `?` 로 비워 두면 뼈대가 이미 정해진 뒤에 값이 들어가므로 값은 값으로만 남는다. 이것이 SQL 인젝션을 막는 기본 방법이라, 사용자 입력이 SQL에 닿는 자리에서는 예외 없이 이 형태를 쓴다.
+
+인덱스가 **1부터** 시작한다는 점도 봐 둔다. [[Java day04 제어문과 배열]] 의 배열과 반대라 헷갈리기 쉬운 자리다.
+
+**③ 실행 메소드가 둘로 갈린다**
+
+| 메소드 | 쓰는 SQL | 반환 |
+| --- | --- | --- |
+| `executeUpdate()` | `insert`·`update`·`delete` | 바뀐 줄 수 (`int`) |
+| `executeQuery()` | `select` | `ResultSet` |
+
+등록은 표를 바꾸는 쪽이라 `executeUpdate()` 다. 돌려주는 숫자가 **실제로 바뀐 줄 수**라, 한 줄을 넣었으면 1이 온다. `result == 1` 로 성공을 판정하는 형태가 여기서 나온다.
+
+`update`·`delete` 에서는 이 숫자가 더 쓸모 있다. 조건에 맞는 줄이 없으면 오류가 아니라 **0**이 오기 때문에, 예외가 나지 않아도 "아무것도 안 바뀌었다"를 이 값으로 알 수 있다.
+
+**④ 성공 여부를 `boolean` 으로 돌려준다**
+
+DAO가 `boolean` 을 돌려주면 컨트롤러는 SQL을 몰라도 결과만 보고 다음을 정할 수 있다. [[Java day09 MVC 종합예제]] 에서 계층을 나눈 목적이 이 반환 타입에 드러난다 — 위 계층은 **무슨 일이 됐는지**만 알고, 어떻게 했는지는 아래에 남는다.
+
+**⑤ `SQLException` 은 검사 예외다**
+
+JDBC 메소드들은 `SQLException` 을 던지도록 선언돼 있어서, `try-catch` 로 감싸지 않으면 컴파일이 되지 않는다. [[Java day12 예외 처리와 JDBC]] 에서 정리한 검사 예외의 성질이다.
+
+`catch` 에서 출력만 하고 넘어가는 형태는 실습에서 흐름을 보기 편하지만, 문제가 콘솔에만 남고 부른 쪽은 `false` 하나만 받게 된다는 성질이 따라온다. 실제로는 로그로 남기거나 예외를 감싸 올려 보내는 쪽으로 간다(2-9).
+
+### 1-11. sample.sql — 표를 먼저 만든다
 
 ```sql
-DROP DATABASE IF EXISTS mydb;
-CREATE DATABASE mydb;
-USE mydb;
+DROP DATABASE IF EXISTS mydb0826;
+CREATE DATABASE mydb0826;
+USE mydb0826;
 
 CREATE TABLE board(
     no int AUTO_INCREMENT,
@@ -315,7 +466,7 @@ values ( "안녕하세요", "유재석" ), ( "하하", "강호동" );
 
 `DROP` 을 앞에 둔 형태가 실습 스크립트의 관용구다. 몇 번을 실행해도 항상 같은 상태에서 시작하므로 `#멱등성` 을 가진다. 다만 **있던 데이터가 사라진다**는 뜻이기도 해서, 실습용 DB에서만 쓰는 형태다.
 
-### 1-11. DTO와 표가 짝을 이룬다
+### 1-12. DTO와 표가 짝을 이룬다
 
 ```java
 public class BoardDto {
@@ -351,11 +502,11 @@ public class BoardDto {
 | 기본 생성자 `BoardDto()` | 빈 객체를 만들고 setter로 채울 때 |
 | 전체 생성자 | 값이 다 있을 때 한 번에 |
 
-기본 생성자를 남겨 두는 습관은 앞으로 계속 쓰인다(2-5). [[Java day06 생성자와 콘솔 게시판]] 에서 정리한 대로 생성자를 하나라도 직접 만들면 기본 생성자가 자동으로 생기지 않으므로, 필요하면 직접 적어 둬야 한다.
+기본 생성자를 남겨 두는 습관은 앞으로 계속 쓰인다. 1-9 ⑤에서 본 커맨드 객체 바인딩이 이미 그 자리이고, 같은 방식이 쓰이는 곳은 2-5에 모아 뒀다. [[Java day06 생성자와 콘솔 게시판]] 에서 정리한 대로 생성자를 하나라도 직접 만들면 기본 생성자가 자동으로 생기지 않으므로, 필요하면 직접 적어 둬야 한다.
 
 `toString()` 재정의는 [[Java day13 Object 클래스와 리플렉션]] 의 자리다. 객체를 그대로 출력했을 때 주소 대신 내용이 보이게 하는 것이라, 콘솔로 확인하며 만드는 동안 특히 편하다.
 
-### 1-12. 정리 — 콘솔 프로젝트가 웹 프로젝트로 옮겨졌다
+### 1-13. 정리 — 웹 요청이 DB까지 닿았다
 
 지금까지의 흐름을 이어 두면 이렇다.
 
@@ -365,18 +516,20 @@ public class BoardDto {
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하기 |
 | [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
 | [[Java Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
-| **이번** | 스프링 진입점 + 계층 구조를 프로젝트에 옮겨 놓기 |
+| **이번** | 스프링 진입점 + 계층 이식 + 등록(C) 한 줄 잇기 |
 
-바뀐 것은 `main` 한 줄뿐이고 아래는 그대로다.
+바뀐 것은 `main` 한 줄과 컨트롤러의 표시뿐이고 아래는 그대로다.
 
 | | 콘솔 프로젝트 | 스프링 프로젝트 |
 | --- | --- | --- |
 | `main` | 메뉴를 돌리는 반복문 | `SpringApplication.run()` |
 | 끝나는 시점 | 사용자가 종료를 고를 때 | 서버를 내릴 때까지 계속 |
 | 입력 | `Scanner` | HTTP 요청 |
+| 요청 구분 | 메뉴 번호 | 주소 + HTTP 방식 |
+| 값을 담는 일 | `Scanner` 로 읽어 직접 `set` | 스프링이 이름을 맞춰 채운다 |
 | DAO·DTO | — | **그대로** |
 
-아직 컨트롤러에 주소가 붙어 있지 않아 브라우저에서 게시판을 볼 수는 없다. 다음 단계는 그 자리를 잇는 일이 된다.
+[[개념 - CRUD]] 네 가지 중 등록(Create) 하나가 이어졌다. 조회·수정·삭제는 같은 모양을 반복하는 일이라, 다음 단계는 나머지 셋을 채우고 결과를 화면으로 돌려주는 자리가 된다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -532,11 +685,12 @@ public class BoardController {
 
 ### 2-5. 기본 생성자가 필요한 자리
 
-1-11에서 남겨 둔 기본 생성자는 앞으로 계속 쓰인다. 라이브러리들이 **빈 객체를 만들어 두고 값을 채워 넣는** 방식으로 동작하기 때문이다.
+1-12에서 남겨 둔 기본 생성자는 앞으로 계속 쓰인다. 라이브러리들이 **빈 객체를 만들어 두고 값을 채워 넣는** 방식으로 동작하기 때문이다.
 
 | 자리 | 하는 일 |
 | --- | --- |
-| JSON → 객체 변환 | 빈 객체를 만들고 setter로 채운다 |
+| 폼·쿼리스트링 → 커맨드 객체 | 빈 객체를 만들고 setter로 채운다 (1-9 ⑤) |
+| JSON → 객체 변환 | 같은 흐름 |
 | `ResultSet` → DTO | 같은 흐름 |
 | JPA 엔티티 | 기본 생성자를 요구한다 |
 
@@ -563,46 +717,131 @@ src/main/resources/
 spring.sql.init.mode=always
 ```
 
-새로 받은 사람이 스크립트를 따로 실행하지 않아도 같은 상태에서 시작한다는 것이 값어치다. 1-10에서 `DROP` 을 앞에 둔 것과 같은 목적이 프로젝트 수준으로 올라온 셈이다.
+새로 받은 사람이 스크립트를 따로 실행하지 않아도 같은 상태에서 시작한다는 것이 값어치다. 1-11에서 `DROP` 을 앞에 둔 것과 같은 목적이 프로젝트 수준으로 올라온 셈이다.
 
 다만 뜰 때마다 실행되므로 **데이터가 매번 초기화된다.** 개발·테스트 환경에서만 켜 두는 설정이다.
 
-### 2-7. DAO에 메소드를 채워 나가는 순서
+### 2-7. 나머지 CRUD를 채워 나가는 순서
 
-지금 `BoardDao` 는 뼈대만 있고 CRUD 메소드가 비어 있다. [[Java day12 종합예제 JDBC DAO]] 에서 만든 형태를 그대로 옮기면 이렇게 채워진다.
+1-10에서 등록 하나를 채웠으니 나머지 셋은 같은 다섯 단계를 반복한다. [[Java day12 종합예제 JDBC DAO]] 에서 만든 형태를 그대로 옮기면 이렇게 짝이 맞는다.
+
+| DAO 메소드 | SQL | 실행 | 반환 | 컨트롤러 매핑 |
+| --- | --- | --- | --- | --- |
+| `save` | `insert` | `executeUpdate` | 성공 여부 | `@PostMapping` |
+| `findAll` | `select` | `executeQuery` | `List<BoardDto>` | `@GetMapping` |
+| `update` | `update` | `executeUpdate` | 성공 여부 | `@PutMapping` |
+| `delete` | `delete` | `executeUpdate` | 성공 여부 | `@DeleteMapping` |
+
+조회만 모양이 다르다. `ResultSet` 을 받아 한 줄씩 꺼내 담아야 하기 때문이다.
 
 ```java
-public boolean write(BoardDto dto) {
+public List<BoardDto> findAll() {
+    List<BoardDto> list = new ArrayList<>();
     try {
-        String sql = "insert into board(content, writer) values(?, ?)";
+        String sql = "select * from board";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, dto.getContent());
-        ps.setString(2, dto.getWriter());
-        return ps.executeUpdate() == 1;
-    } catch (Exception e) {
-        System.out.println("등록 실패" + e);
-        return false;
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new BoardDto(rs.getInt("no"), rs.getString("content"), rs.getString("writer")));
+        }
+    } catch (SQLException e) {
+        System.out.println(e);
+    }
+    return list;
+}
+```
+
+담는 그릇은 [[Java day14 제네릭]] 의 `List<BoardDto>` 다. 결과가 없을 때 `null` 대신 **빈 리스트를 돌려주는** 편이 부르는 쪽이 편하다 — 받은 자리에서 바로 반복문을 돌려도 되기 때문이다.
+
+`rs.next()` 가 커서를 한 줄씩 옮기면서 더 읽을 줄이 있는지 알려 준다는 점, 컬럼을 이름으로 꺼낼 수 있다는 점이 [[Java day12 예외 처리와 JDBC]] 의 자리다.
+
+번호 하나로 찾는 형태에서는 조건에도 `?` 를 쓴다.
+
+```java
+String sql = "select * from board where no = ?";
+```
+
+값이 들어가는 자리라면 조건절이든 값 목록이든 같은 규칙이 적용된다(1-10 ②).
+
+### 2-8. 메소드가 돌려준 값이 응답이 되게 하기
+
+`@Controller` 는 메소드가 돌려준 값을 **화면 이름**으로 읽는다(1-9 ②). 그래서 문자열이나 `boolean` 을 그대로 응답 본문으로 보내고 싶으면 그 해석을 바꿔 줘야 한다.
+
+```java
+@Controller
+public class BoardController {
+
+    @PostMapping("/board/save")
+    @ResponseBody                      // 이 메소드의 반환값은 데이터다
+    public boolean save(BoardDto boardDto) { ... }
+}
+```
+
+```java
+@RestController                        // 클래스 전체가 데이터 응답
+public class BoardController { ... }
+```
+
+| 쓰는 것 | 범위 |
+| --- | --- |
+| `@ResponseBody` | 메소드 하나 |
+| `@RestController` | 클래스 전체 |
+
+화면을 돌려주는 메소드와 데이터를 돌려주는 메소드가 섞여 있으면 앞쪽을, 전부 데이터면 뒤쪽을 쓴다. 요즘 화면을 자바스크립트가 그리는 구조에서는 서버가 데이터만 내보내는 형태가 흔해서 `@RestController` 를 자주 본다.
+
+반환값이 JSON으로 바뀌는 일은 스프링이 라이브러리(Jackson)로 처리한다. 이때 객체에서 값을 꺼내는 데 getter가 쓰이므로, DTO에 getter를 갖춰 두는 것이 그대로 이어진다(1-12).
+
+성공 여부만 `true`/`false` 로 보내는 형태는 단순해서 좋지만, 실패한 이유를 담을 자리가 없다는 성질이 따라온다. 상태 코드까지 함께 정하고 싶으면 `ResponseEntity` 를 쓴다.
+
+```java
+return ResponseEntity.ok(result);                        // 200
+return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();   // 400
+```
+
+[[Java Spring day01 서블릿과 HTTP 메소드]] 2-3에서 정리한 상태 코드를 코드에서 직접 고르는 자리다.
+
+### 2-9. 예외를 콘솔 출력으로 끝내지 않기
+
+`catch` 에서 `System.out.println` 만 하고 넘어가면 실습에서는 흐름이 보이지만, 세 가지가 아쉬워진다.
+
+| 아쉬운 점 | 실제로는 |
+| --- | --- |
+| 콘솔에만 남는다 | 로그 파일·수집 도구로 남긴다 |
+| 언제·어디서인지 모른다 | 로거가 시각·클래스 이름을 붙여 준다 |
+| 부른 쪽은 `false` 만 받는다 | 예외를 감싸 올려 보낸다 |
+
+로거를 쓰면 이렇게 된다.
+
+```java
+private static final Logger log = LoggerFactory.getLogger(BoardDao.class);
+
+catch (SQLException e) {
+    log.error("게시글 등록 실패", e);
+}
+```
+
+| | `System.out.println` | 로거 |
+| --- | --- | --- |
+| 끄고 켜기 | 코드를 고쳐야 한다 | 설정으로 단계 조절 |
+| 단계 구분 | 없다 | `error`·`warn`·`info`·`debug` |
+| 남는 곳 | 콘솔 | 파일·외부 수집 도구 |
+
+예외 객체를 두 번째 인자로 넘기면 스택 트레이스가 함께 남는다는 점이 요점이다. 문자열로 이어 붙이면 메시지만 남고 **어디서 났는지가 사라진다.**
+
+한 단계 더 가면, DAO에서 난 예외를 위 계층이 판단할 수 있게 올려 보낸다. 스프링에서는 컨트롤러 밖에서 한 번에 받는 자리를 따로 둘 수 있다.
+
+```java
+@RestControllerAdvice
+public class ErrorHandler {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handle(Exception e) {
+        log.error("처리 중 오류", e);
+        return ResponseEntity.status(500).body("서버 오류");
     }
 }
 ```
 
-| 메소드 | SQL | 반환 |
-| --- | --- | --- |
-| `write` | `insert` | 성공 여부 |
-| `read` | `select` | `List<BoardDto>` |
-| `update` | `update` | 성공 여부 |
-| `delete` | `delete` | 성공 여부 |
-
-`executeUpdate()` 는 바뀐 줄 수를, `executeQuery()` 는 `ResultSet` 을 돌려준다는 갈림이 [[Java day12 예외 처리와 JDBC]] 의 자리다. 값을 `?` 로 비워 두고 `setXXX` 로 채우는 형태를 지키면 타입 변환과 따옴표 처리를 라이브러리가 맡아 준다.
-
-조회 결과를 담을 때는 [[Java day14 제네릭]] 의 `List<BoardDto>` 를 쓴다.
-
-```java
-List<BoardDto> list = new ArrayList<>();
-while (rs.next()) {
-    list.add(new BoardDto(rs.getInt("no"), rs.getString("content"), rs.getString("writer")));
-}
-```
+예외 처리 코드가 메소드마다 흩어지지 않고 한곳에 모인다는 것이 값어치다. [[Java day12 예외 처리와 JDBC]] 에서 정리한 "예외는 처리할 수 있는 곳까지 올려 보낸다"가 웹 계층에서 나타난 형태다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -771,6 +1010,17 @@ com.example                   com.example
 - 내장 톰캣과 포트, `server.port` 설정과 포트 충돌 해결
 - `localhost` · `127.0.0.1` 루프백 주소, 포트 번호의 역할
 - 패키지로 계층 나누기 — Controller·Service·Repository(DAO)·DTO
+- `@Controller` 와 `@RestController`, `@ResponseBody` 의 범위 차이
+- 서블릿 상속 방식과 애노테이션 방식의 갈림, 단일 상속 제약
+- HTTP Content-Type — `text/html`·`application/json`·폼 인코딩·`multipart/form-data`
+- `@RequestMapping` 과 `@GetMapping`·`@PostMapping`·`@PutMapping`·`@DeleteMapping`
+- 커맨드 객체 바인딩 — 요청 파라미터 이름과 필드 이름 맞추기
+- `ResponseEntity` 로 상태 코드까지 정하기
+- `PreparedStatement` 의 `?` 바인딩과 SQL 인젝션, 인덱스가 1부터인 점
+- `executeUpdate()` 반환값(바뀐 줄 수)으로 성공·0건 판정하기
+- `ResultSet` 과 `rs.next()`, 컬럼 이름으로 값 꺼내기
+- 로거(`Logger`·`log.error`)와 `System.out.println` 의 차이, 스택 트레이스 남기기
+- `@RestControllerAdvice`·`@ExceptionHandler` 로 예외 처리 모으기
 - `protected` 와 상속 관계에서의 접근 범위
 - `Class.forName()` 으로 드라이버 로드, `DriverManager.getConnection()`
 - 부모 생성자가 먼저 불리는 순서와 공통 초기화
@@ -791,12 +1041,12 @@ com.example                   com.example
 ## 실습 파일
 
 - `2026B_Spring/springweb/src/main/example/day02/AppStart.java` (프레임워크의 성격, 애노테이션이 코드에 의미를 붙이는 방식, `@SpringBootApplication` 의 내장 톰캣 세팅과 컴포넌트 자동 등록, `SpringApplication.run(클래스.class)` 로 시동 걸기, 클래스 메타정보를 넘기는 이유, 8080 포트와 `localhost`·`127.0.0.1`, 동시 실행이 안 되는 이유)
-- `2026B_Spring/springweb/src/main/example/day02/Controller/BoardController.java` (컨트롤러가 DAO를 `getInstance()` 로 받아 필드로 잡아 두는 배선)
+- `2026B_Spring/springweb/src/main/example/day02/Controller/BoardController.java` (컨트롤러가 DAO를 `getInstance()` 로 받아 필드로 잡아 두는 배선, `@Controller` 로 웹 기능을 상속 대신 표시로 받기, `@Controller` 와 `@RestController` 의 갈림, HTTP Content-Type과 DTO의 자리, `@PostMapping` 으로 메소드마다 주소·방식 붙이기, 매개변수 DTO에 요청 값이 이름으로 채워지는 커맨드 객체 바인딩, 컨트롤러를 무상태로 두는 이유)
 - `2026B_Spring/springweb/src/main/example/day02/Model/Dao/BaseDao.java` (여러 DAO에 JDBC 연동을 상속으로 물려주기, `private`·`protected` 로 나눈 접근 범위, `Class.forName` 으로 드라이버 로드, `DriverManager.getConnection` 으로 연결, 생성자에서 연동을 실행해 자식이 자동으로 연결되게 하기)
-- `2026B_Spring/springweb/src/main/example/day02/Model/Dao/BoardDao.java` (`BaseDao` 상속과 싱글톤을 겹쳐 쓰기, `private` 생성자·`static final` 인스턴스·`getInstance`, 연결 하나를 돌려쓰는 이유)
+- `2026B_Spring/springweb/src/main/example/day02/Model/Dao/BoardDao.java` (`BaseDao` 상속과 싱글톤을 겹쳐 쓰기, `private` 생성자·`static final` 인스턴스·`getInstance`, 연결 하나를 돌려쓰는 이유, 등록 SQL을 다섯 단계로 실행하기, SQL이 자바가 아니라 서버로 보내는 문자열이라는 점, `?` 로 비워 두고 `setString` 으로 채우기와 SQL 인젝션, `executeUpdate` 가 돌려주는 줄 수로 성공 판정, `SQLException` 검사 예외 처리)
 - `2026B_Spring/springweb/src/main/example/day02/Model/Dto/BoardDto.java` (DB 컬럼과 필드를 짝지은 DTO, 캡슐화와 getter·setter, 기본 생성자와 전체 생성자, `toString` 재정의)
 - `2026B_Spring/springweb/src/main/example/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day04 제어문과 배열]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
