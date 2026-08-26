@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/example/day01
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day01
 작성일: 2026-08-25
 tags: [학습, java]
 ---
 
 # Java Spring day01 — 서블릿과 HTTP 메소드
 
-> 실습 파일: `2026B_Spring/springweb/src/main/example/day01/BoardController.java`(서블릿의 정체와 `HttpServlet` 상속·생명주기 메소드 `init`·`service`·`destroy` 재정의·HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 자리 잡기·`@WebServlet` 으로 주소 등록)
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day01/BoardController.java`(서블릿의 정체와 `HttpServlet` 상속·생명주기 메소드 `init`·`service`·`destroy` 재정의·HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 자리 잡기·`@WebServlet` 으로 주소 등록)
 > 허브: [[Java MOC]] · 이전: [[Java Spring Boot 프로젝트 생성(분석)]] · 다음: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
 
 [[Java Spring Boot 프로젝트 생성(분석)]] 에서 프로젝트 뼈대를 만들고 `main` 하나로 내장 톰캣이 뜨는 것까지 봤다. 그런데 서버만 떠 있고 브라우저에서 무엇을 요청해도 받아 줄 자리가 없었다. 이번에는 그 **요청을 받는 자리**를 처음 만든다.
@@ -224,7 +224,9 @@ public class BoardController extends HttpServlet { ... }
 
 스프링 부트에서 이 애노테이션을 쓰려면 시작 클래스에 `@ServletComponentScan` 을 붙여 서블릿을 찾게 해 줘야 한다. [[Java Spring Boot 프로젝트 생성(분석)]] 1-6의 `@ComponentScan` 이 스프링 빈을 찾는 것과 별개로, 서블릿은 따로 훑어야 하기 때문이다.
 
-패키지 위치도 함께 짚어 둔다. 실습의 클래스는 `example.day01` 패키지에 있는데, 시작 클래스는 `com.example` 이다. 스캔 범위 밖이라 자동으로는 잡히지 않는 자리이므로, 서블릿을 등록하려면 스캔 범위를 맞추거나 등록용 설정을 따로 두게 된다.
+패키지 위치도 함께 짚어 둔다. 실습의 클래스는 `day01` 패키지에 있는데, 시작 클래스는 `com.example` 이다. 스캔 범위 밖이라 자동으로는 잡히지 않는 자리이므로, 서블릿을 등록하려면 스캔 범위를 맞추거나 등록용 설정을 따로 두게 된다.
+
+이 클래스는 처음에 `src/main/example/day01` 에 두었다가 나중에 `src/main/java/day01` 로 옮겼다. 그레이들이 소스로 인식하는 기본 경로가 `src/main/java` 라, 그 밖에 두면 컴파일 대상에 들어가지 않는다. 패키지 선언도 위치에 맞춰 `package day01;` 이 된다 — 자바에서 **패키지 이름과 폴더 경로는 같아야 한다**는 규칙이 소스 루트를 기준으로 적용되는 자리다. 뒤이어 만드는 `day02` 패키지가 `src/main/java` 아래에 바로 놓인 것도 같은 규칙을 따른 결과다([[Java Spring day02 스프링 부트 실행과 계층 이식]] 1-6).
 
 ### 1-8. 정리 — 요청이 도착하는 자리를 만들었다
 
@@ -559,7 +561,7 @@ JSP도 결국 서블릿으로 변환되어 실행된다 — 두 방식이 다른
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/example/day01/BoardController.java` (컨트롤러에 HTTP를 붙이는 수단으로서의 서블릿, `jakarta.servlet` 패키지 임포트, `extends HttpServlet` 으로 규격 물려받기, 생명주기 메소드 `init`·`service`·`destroy` 오버라이딩과 각각의 호출 시점, HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 재정의 자리 잡기, `HttpServletRequest`·`HttpServletResponse` 를 매개변수로 받는 구조, `@WebServlet` 으로 주소 등록하기, doXXX 안에서 DAO를 불러 처리하는 배치)
+- `2026B_Spring/springweb/src/main/java/day01/BoardController.java` (컨트롤러에 HTTP를 붙이는 수단으로서의 서블릿, `jakarta.servlet` 패키지 임포트, `extends HttpServlet` 으로 규격 물려받기, 생명주기 메소드 `init`·`service`·`destroy` 오버라이딩과 각각의 호출 시점, HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 재정의 자리 잡기, `HttpServletRequest`·`HttpServletResponse` 를 매개변수로 받는 구조, `@WebServlet` 으로 주소 등록하기, doXXX 안에서 DAO를 불러 처리하는 배치)
 
 ## 관련 노트
 
