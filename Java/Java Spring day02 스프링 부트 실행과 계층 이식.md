@@ -7,12 +7,12 @@ tags: [학습, java]
 
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dto/BoardDto.java`, `sample.sql`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]]
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
 
-파일 여섯 개가 나오는데 역할이 뚜렷하게 갈린다.
+파일이 여럿 나오는데 역할이 뚜렷하게 갈린다. 앞의 여섯이 게시판 한 벌이고, 뒤의 셋은 같은 구조를 대기명단에 한 번 더 쓴 것이다.
 
 | 파일 | 자리 |
 | --- | --- |
@@ -22,8 +22,11 @@ tags: [학습, java]
 | `Model/Dao/BoardDao.java` | 게시판 DB 처리 담당 |
 | `Model/Dto/BoardDto.java` | 표 한 줄을 담는 그릇 |
 | `sample.sql` | 실습용 DB·테이블 준비 |
+| `Controller/WaitingController.java` | 대기명단 요청을 받는 자리 (1-20) |
+| `Model/Dao/WaitingDao.java` | 대기명단 DB 처리 담당 (1-20) |
+| `Model/Dto/WaitingDto.java` | 대기명단 한 줄을 담는 그릇 (1-19) |
 
-[[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 먼저 등록 요청 하나가 브라우저에서 DB까지 닿고, 이어서 조회·수정·삭제를 같은 모양으로 채워 [[개념 - CRUD]] 네 가지가 모두 웹 요청으로 이어진다(1-13~1-16).
+[[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 먼저 등록 요청 하나가 브라우저에서 DB까지 닿고, 이어서 조회·수정·삭제를 같은 모양으로 채워 [[개념 - CRUD]] 네 가지가 모두 웹 요청으로 이어진다(1-13~1-16). 마지막으로 그 한 벌을 대기명단이라는 다른 주제에 통째로 다시 써 보면서, 계층을 나눠 둔 값어치를 표가 늘어나는 쪽에서도 확인한다(1-18~1-20).
 
 ## 1. 배운 내용
 
@@ -741,7 +744,280 @@ mainClass = 'day02.AppStart'   →  day02 패키지 아래만 스캔
 
 [[Java Spring Boot 프로젝트 생성(분석)]] 에서 정리한 `build.gradle` 이 빌드·실행 설정을 담는 자리라는 것이 실제로 쓰인 형태다.
 
-### 1-18. 정리 — 웹 요청이 DB까지 닿았다
+### 1-18. WAITING — 표를 하나 더 만든다
+
+게시판 한 벌이 다 돌아가고 나서, 같은 프로젝트에 **대기명단**이라는 다른 주제를 하나 더 붙인다. 카페나 식당에서 전화번호와 인원수를 적어 두고 순서를 기다리는 그 명단이다.
+
+```sql
+CREATE TABLE WAITING(
+    WNO INT PRIMARY KEY AUTO_INCREMENT,
+    PHONE_NUMBER VARCHAR(50) NOT NULL,
+    HEAD_COUNT INT NOT NULL
+)
+
+INSERT INTO waiting ( `PHONE_NUMBER` , `HEAD_COUNT` )
+    VALUES ( "010-1111-2222" , 2),( "010-0101-2020" , 5);
+```
+
+`board` 를 만들 때와 같은 스크립트에 이어 붙였다. 새로 나오는 것이 셋이다.
+
+**① 제약을 컬럼 뒤에 바로 붙이는 표기**
+
+`board` 에서는 컬럼을 다 적은 뒤 `constraint PRIMARY KEY( no )` 로 따로 뺐는데, 여기서는 `WNO INT PRIMARY KEY AUTO_INCREMENT` 처럼 컬럼 정의 안에 붙였다.
+
+| 표기 | 형태 | 성질 |
+| --- | --- | --- |
+| 컬럼 뒤에 붙이기 | `WNO INT PRIMARY KEY` | 짧다. 컬럼 하나짜리 제약에만 쓸 수 있다 |
+| 따로 빼기 | `constraint PRIMARY KEY( no )` | 이름을 붙일 수 있고, **여러 컬럼을 묶은 키**도 만들 수 있다 |
+
+결과는 같다. 다만 기본키를 두 컬럼 이상으로 묶어야 하는 순간이 오면 뒤쪽 표기밖에 쓸 수 없어서, 익혀 둘 때 둘 다 봐 두는 편이 낫다. [[SQL day02 테이블과 제약조건]] 에서 정리한 자리다.
+
+**② `NOT NULL` — 비워 둘 수 없는 컬럼**
+
+`PHONE_NUMBER` 와 `HEAD_COUNT` 에 붙었다. 값이 없는 줄이 아예 들어가지 못하게 막는 제약이다.
+
+| 제약 | 막는 것 |
+| --- | --- |
+| `PRIMARY KEY` | 중복 + `NULL` (둘 다) |
+| `NOT NULL` | `NULL` 만 |
+| `UNIQUE` | 중복만 |
+
+대기명단에서 전화번호나 인원수가 비어 있으면 명단으로서 쓸모가 없으니, 그 규칙을 **표 쪽에 못 박아 둔** 것이다. 자바에서 검사할 수도 있지만, 표에 걸어 두면 어느 경로로 들어오든 지켜진다는 차이가 있다.
+
+**③ 백틱으로 감싼 컬럼 이름**
+
+```sql
+INSERT INTO waiting ( `PHONE_NUMBER` , `HEAD_COUNT` ) ...
+```
+
+MySQL에서 백틱(`` ` ``)은 **이 이름은 식별자다**라고 알리는 따옴표다. 이름이 예약어와 겹치거나(`order`·`group` 같은 것) 공백·한글이 들어 있을 때 필요하다.
+
+여기서는 겹치는 이름이 아니라 없어도 되지만, 붙여 둬도 뜻은 달라지지 않는다. 큰따옴표(`"…"`)는 값을 감싸는 것이고 백틱은 이름을 감싸는 것이라, **자리가 다르다**는 점만 갈라 두면 헷갈리지 않는다.
+
+**④ 표가 둘이 되어도 초기화는 한 줄로**
+
+스크립트 맨 앞의 `DROP DATABASE IF EXISTS mydb0826` 이 그대로 남아 있다. DB를 통째로 지우고 다시 만드는 형태라 표가 몇 개로 늘어나든 앞 한 줄이 전부 초기화한다. 1-11에서 정리한 `#멱등성` 이 표를 더해도 유지되는 이유다.
+
+### 1-19. WaitingDto — 컬럼 이름과 필드 이름이 다를 때
+
+```java
+public class WaitingDto {
+    String pNumber;
+    int hCount;
+    int wno;
+
+    public WaitingDto() { }
+
+    public WaitingDto(int wno, String pNumber, int hcount) { ... }
+
+    public String getpNumber() { return pNumber; }
+    public void setpNumber(String pNumber) { this.pNumber = pNumber; }
+    public int gethCount() { return hCount; }
+    public void sethCount(int hCount) { this.hCount = hCount; }
+    // getWno · setWno · toString
+}
+```
+
+1-12의 `BoardDto` 와 뼈대는 같다. 기본 생성자 + 전체 생성자 + getter·setter + `toString` 이다. 갈리는 지점은 **이름**이다.
+
+| DB 컬럼 | 타입 | DTO 필드 | 타입 |
+| --- | --- | --- | --- |
+| `WNO` | `INT` | `wno` | `int` |
+| `PHONE_NUMBER` | `VARCHAR(50)` | `pNumber` | `String` |
+| `HEAD_COUNT` | `INT` | `hCount` | `int` |
+
+`BoardDto` 는 `no`·`content`·`writer` 가 컬럼 이름과 그대로 같았는데, 여기서는 `PHONE_NUMBER` ↔ `pNumber` 처럼 **가리키는 것은 같고 이름은 다르다.** 이름으로 짝을 짓는 자리가 여럿이라, 어디서 무엇을 기준으로 맞춰야 하는지 갈라 둘 필요가 생긴다.
+
+**① `ResultSet` 에서 꺼낼 때는 컬럼 이름을 쓴다**
+
+```java
+waitingDto.setpNumber(rs.getString("PHONE_NUMBER"));
+```
+
+`rs.getString(...)` 에 넘기는 문자열은 **DB가 아는 이름**이다. 여기서 오는 값을 어느 필드에 담을지는 그 옆의 setter가 정한다. 두 이름이 달라도 되는 이유가 이 한 줄 안에 둘이 나란히 있기 때문이다 — 옮겨 담는 코드를 손으로 쓰고 있으니 사이에서 이름을 바꿔 줄 수 있다.
+
+이름이 같을 때(`BoardDto`)는 이 자리가 눈에 띄지 않는데, 달라지고 나서야 **DTO는 표를 그대로 베낀 것이 아니라 옮겨 담는 그릇**이라는 성질이 드러난다.
+
+**② 요청에서 받을 때는 자바 쪽 이름을 쓴다**
+
+1-9 ⑤의 커맨드 객체 바인딩은 요청에 실려 온 이름을 보고 **setter를 찾아 부른다.** 그래서 요청이 맞춰야 하는 것은 DB 컬럼이 아니라 자바 쪽 이름이다.
+
+```
+POST /waiting/insert
+pNumber=010-1111-2222&hCount=2
+        │
+        ├─ setpNumber("010-1111-2222")
+        └─ sethCount(2)
+```
+
+`PHONE_NUMBER=...` 로 보내면 값이 들어오지 않는다. DB 컬럼 이름은 DAO 안에서 끝나고 **밖으로는 나가지 않는다**는 것이 요점이다.
+
+```
+브라우저      ──  pNumber · hCount        (자바 프로퍼티 이름)
+컨트롤러·DTO  ──  pNumber · hCount
+DAO          ──  여기서 이름이 바뀐다
+DB           ──  PHONE_NUMBER · HEAD_COUNT (컬럼 이름)
+```
+
+**③ 프로퍼티 이름은 필드가 아니라 getter·setter가 정한다**
+
+스프링이 이름을 맞출 때 실제로 보는 것은 필드가 아니라 **메소드**다. `get`·`set` 을 떼고 남은 부분으로 이름을 만드는 자바빈 규약을 따른다.
+
+| 메소드 | 떼고 남은 것 | 프로퍼티 이름 |
+| --- | --- | --- |
+| `getContent` | `Content` | `content` (첫 글자를 내린다) |
+| `getpNumber` | `pNumber` | `pNumber` (이미 소문자라 그대로) |
+
+첫 글자가 이미 소문자면 그대로 두는 규칙이라 `pNumber` 가 된다. 필드 이름과 우연히 같아서 눈에 잘 안 띄는데, **기준은 어디까지나 메소드 이름**이다. 필드 이름만 바꾸고 setter 이름을 그대로 두면 바인딩은 예전 이름으로 계속 동작한다.
+
+이런 자리에서 이름이 어긋나면 값이 조용히 비어 있게 되고, 오류가 아니라 "왜 안 들어오지"로 나타나서 원인을 찾기 번거롭다. 필드 이름을 `phone`·`headCount` 처럼 **평범한 카멜 표기 한 덩어리**로 두면 getter 이름이 `getPhone`·`getHeadCount` 로 규약과 딱 맞아떨어져서, 이 규칙을 따로 신경 쓰지 않아도 된다. 이름을 줄이지 않는 편이 이 대목에서는 편하다.
+
+**④ 필드에 접근제한자를 적지 않으면**
+
+`private` 없이 `String pNumber;` 라고만 쓰면 default(같은 패키지 안에서만 접근) 범위가 된다. [[Java day08 접근제한자와 static]] 에서 정리한 네 단계 중 아무것도 적지 않았을 때의 자리다.
+
+| 적은 것 | 범위 |
+| --- | --- |
+| `private` | 그 클래스 안 |
+| (없음) | 같은 패키지 |
+| `protected` | 같은 패키지 + 자식 |
+| `public` | 어디서나 |
+
+DTO는 `Model.Dto` 패키지에 혼자 있어서 지금은 차이가 드러나지 않는다. 다만 캡슐화의 기본형은 **필드는 `private`, 통로는 getter·setter** 라, 습관으로는 `private` 을 적어 두는 편이 뜻이 분명하다. getter·setter를 다 갖춰 두고 필드도 열려 있으면 통로가 둘이 되는 셈이라 어느 쪽으로 값이 바뀌었는지 추적하기 어려워진다.
+
+### 1-20. WaitingDao·WaitingController — 구조를 한 벌 더 쓴다
+
+```java
+public class WaitingDao extends BaseDao {
+    private WaitingDao() { }
+    private final static WaitingDao instance = new WaitingDao();
+    public static WaitingDao getInstance() { return instance; }
+
+    public boolean InsertList(WaitingDto waitingDto) {
+        try {
+            String sql = "INSERT INTO WAITING( PHONE_NUMBER , HEAD_COUNT ) VALUES( ? , ? );";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, waitingDto.getpNumber());
+            ps.setInt(2, waitingDto.gethCount());
+            int result = ps.executeUpdate();
+            if (result == 1) return true;
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+    // findAll · updateList · deleteList
+}
+```
+
+```java
+@RestController
+public class WaitingController {
+    private WaitingDao wd = WaitingDao.getInstance();
+
+    @PostMapping("waiting/insert")
+    public boolean InsertList(WaitingDto waitingDto) { return wd.InsertList(waitingDto); }
+
+    @GetMapping("waiting/findall")
+    public ArrayList<WaitingDto> findAll() { return wd.findAll(); }
+
+    @PutMapping("waiting/update")
+    public boolean updateList(WaitingDto waitingDto) { return wd.updateList(waitingDto); }
+
+    @DeleteMapping("waiting/delete")
+    public boolean deleteList(String pNumber) { return wd.deleteList(pNumber); }
+}
+```
+
+1-8·1-10·1-14~1-16에서 만든 것과 **모양이 그대로 겹친다.** 새 개념은 거의 없고, 대신 표가 하나 늘 때 무엇이 늘고 무엇이 그대로인지가 드러난다.
+
+**① 도메인마다 세 벌, 공용은 한 벌**
+
+| 파일 | 표가 늘면 |
+| --- | --- |
+| `BaseDao` | **그대로** — 연동은 한 번만 쓴다 |
+| `AppStart` | **그대로** |
+| `sample.sql` | 표 정의만 덧붙인다 |
+| `<이름>Dto` | 하나 더 |
+| `<이름>Dao` | 하나 더 |
+| `<이름>Controller` | 하나 더 |
+
+1-7에서 연동을 부모로 뺀 값어치가 여기서 나온다. `WaitingDao` 에는 접속 코드가 한 줄도 없는데 `conn` 을 바로 쓴다. 상속으로 물려받았기 때문이고, DAO가 셋 넷으로 늘어도 연결 정보는 여전히 한 군데에만 있다.
+
+싱글톤도 그대로 겹쳐 있다([[개념 - 싱글톤]]). `private final static` 처럼 수식어 순서를 바꿔 적어도 뜻은 같다 — 자바는 수식어의 순서를 가리지 않는다. 다만 `public static final` 처럼 **접근제한자를 앞에 두는 순서**가 관례라, 읽는 사람 눈에 익은 쪽으로 맞춰 두면 편하다.
+
+**② 컨트롤러가 둘이 되어도 등록은 자동이다**
+
+`@RestController` 를 붙여 두기만 하면 1-3의 컴포넌트 스캔이 둘 다 찾아 등록한다. 서블릿 시절처럼 "이 클래스도 등록해 달라"고 어딘가에 적을 필요가 없다.
+
+대신 **주소가 겹치면 안 된다**는 조건이 따라온다. 두 컨트롤러가 같은 주소 + 같은 방식을 맡으면 어느 쪽이 받을지 정할 수 없어서, 서버가 뜨는 시점에 실패한다. 실행 중에 나는 오류가 아니라 시작할 때 걸린다는 점이 오히려 다행인 자리다.
+
+주소를 `/board/...`·`/waiting/...` 처럼 **앞머리를 도메인 이름으로 나눠** 두면 겹칠 일이 없다. 이 앞머리를 메소드마다 적는 대신 클래스에 한 번만 적는 방법도 있다(2-14).
+
+**③ 주소 앞의 `/`**
+
+`"/board/save"` 와 `"waiting/insert"` 처럼 슬래시가 있는 것과 없는 것이 섞여 있는데, 스프링은 없으면 붙여서 해석한다. 둘 다 같은 곳을 가리키므로 동작은 같다.
+
+다만 목록을 훑을 때 눈이 걸리므로 프로젝트 안에서는 한쪽으로 맞춰 두는 편이 낫다. **슬래시로 시작하는 쪽**이 절대 경로임이 분명해서 더 자주 쓰인다.
+
+**④ 조건절에 무엇을 쓰는가 — 대리키와 자연키**
+
+게시판과 갈리는 지점이 여기다.
+
+| | 게시판 | 대기명단 |
+| --- | --- | --- |
+| 수정 조건 | `where no = ?` | `where PHONE_NUMBER = ?` |
+| 삭제 조건 | `where no = ?` | `where PHONE_NUMBER = ?` |
+| 쓰는 값 | 번호 (`AUTO_INCREMENT`) | 전화번호 |
+
+`no`·`wno` 처럼 **줄을 가리키려고 새로 만든 번호**를 대리키라고 한다. 전화번호처럼 원래 뜻이 있는 값으로 가리키면 자연키다.
+
+자연키를 조건으로 쓰면 주소가 읽기 좋다는 장점이 있다. 대기명단은 손님이 자기 번호로 취소하는 흐름이 자연스러워서, 번호표를 따로 기억하게 하는 것보다 편하기도 하다.
+
+대신 성질 둘이 따라온다.
+
+- **값이 바뀔 수 있다** — 번호를 잘못 적어 고치면 그 줄을 가리키던 기준 자체가 달라진다
+- **유일하다는 보장이 없다** — 같은 번호로 두 번 등록되면 조건에 여러 줄이 걸린다
+
+두 번째가 1-15 ④와 맞물린다. `executeUpdate()` 는 **바뀐 줄 수**를 돌려주므로, 조건에 두 줄이 걸리면 2가 온다. `result == 1` 로 성공을 판정하는 코드는 이때 `false` 를 돌려주는데, 실제로는 **두 줄이 이미 바뀐 뒤**다.
+
+| 조건에 걸린 줄 | 반환 | `result == 1` | 실제 |
+| --- | --- | --- | --- |
+| 0 | 0 | `false` | 아무 일도 없었다 |
+| 1 | 1 | `true` | 뜻대로 |
+| 2 이상 | 2 이상 | `false` | **이미 여럿이 바뀌었다** |
+
+세 번째 줄이 조심할 자리다. `false` 라는 같은 답이 정반대의 두 상황에서 나온다. 조건으로 쓰는 컬럼이 유일해야 한다면 표에 `UNIQUE` 제약을 걸어 **애초에 중복이 들어가지 못하게** 막는 편이 안전하다.
+
+```sql
+PHONE_NUMBER VARCHAR(50) NOT NULL UNIQUE
+```
+
+제약을 표에 걸어 두면 중복 등록은 등록 시점에 예외로 걸리고, 수정·삭제는 언제나 한 줄만 대상이 된다. **어느 컬럼으로 한 줄을 가리킬 것인가**를 정하는 일이 표를 설계하는 첫 단추라는 것이 여기서 드러난다. 정리는 2-13에 따로 뒀다.
+
+**⑤ 삭제가 값 하나를 받는 자리**
+
+```java
+@DeleteMapping("waiting/delete")
+public boolean deleteList(String pNumber) { return wd.deleteList(pNumber); }
+```
+
+1-16 ①과 같은 단일 값 바인딩인데, 타입이 `int` 가 아니라 `String` 이다. 전화번호를 숫자로 두지 않은 것은 `010-1111-2222` 처럼 하이픈이 섞이고 맨 앞의 `0` 이 사라지면 안 되기 때문이다 — [[Java day01 자바 구조와 자료형]] 에서 정리한 "숫자로 보이지만 문자열로 다뤄야 하는 값"의 대표 사례다.
+
+기본형과 갈리는 성질도 하나 있다. 값이 안 들어왔을 때 `int` 는 담을 것이 없어 문제가 되지만, `String` 은 `null` 이 들어온다. 그러면 `where PHONE_NUMBER = null` 이 되어 예외 없이 0건으로 끝난다 — SQL에서 `NULL` 은 `=` 로 비교되지 않기 때문이다. 조용히 아무 일도 안 일어나는 쪽이라, 필수 값이면 `@RequestParam` 으로 못 박아 두는 편이 낫다(1-16 ①).
+
+**⑥ 요청 넷이 그대로 한 벌 더**
+
+| HTTP | 주소 | 컨트롤러 | DAO | SQL |
+| --- | --- | --- | --- | --- |
+| POST | `waiting/insert` | `InsertList` | `InsertList` | `insert` |
+| GET | `waiting/findall` | `findAll` | `findAll` | `select` |
+| PUT | `waiting/update` | `updateList` | `updateList` | `update` |
+| DELETE | `waiting/delete` | `deleteList` | `deleteList` | `delete` |
+
+1-16의 표와 주소·이름만 다르고 골격이 같다. [[개념 - CRUD]] 네 가지가 도메인마다 한 벌씩 생기는 형태라, 이 반복이 눈에 보이기 시작하는 것이 3-3의 `JdbcTemplate`·JPA로 넘어가는 계기가 된다.
+
+### 1-21. 정리 — 웹 요청이 DB까지 닿았다
 
 지금까지의 흐름을 이어 두면 이렇다.
 
@@ -751,7 +1027,7 @@ mainClass = 'day02.AppStart'   →  day02 패키지 아래만 스캔
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하기 |
 | [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
 | [[Java Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
-| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 |
+| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 |
 
 바뀐 것은 `main` 한 줄과 컨트롤러의 표시뿐이고 아래는 그대로다.
 
@@ -772,6 +1048,16 @@ mainClass = 'day02.AppStart'   →  day02 패키지 아래만 스캔
 ```
 
 콘솔 게시판에서 만든 배선이 그대로 있고, 입구가 `Scanner` 에서 HTTP로, 출구가 `println` 에서 JSON으로 바뀐 것이 전부다. 계층을 나눠 두면 입출구가 바뀌어도 아래가 그대로라는 것을 두 번째로 확인한 셈이다.
+
+여기에 대기명단을 붙이면서(1-18~1-20) 한 방향을 더 봤다. 앞의 확인이 **입출구가 바뀌어도 아래가 그대로**였다면, 이번은 **표가 늘어도 늘어나는 것은 셋뿐**이라는 쪽이다.
+
+```
+                    ┌── BoardController ── BoardDao ──┐
+브라우저 ──HTTP──▶  │                                  ├── BaseDao ──JDBC──▶ MySQL
+                    └── WaitingController ─ WaitingDao ┘
+```
+
+`BaseDao` 와 `AppStart` 는 손대지 않았고, 도메인마다 Dto·Dao·Controller가 한 벌씩 늘었다. 반대로 말하면 **표가 늘 때마다 같은 모양을 세 번씩 다시 쓰게 된다**는 뜻이기도 해서, 이 반복을 줄이는 방향이 3-3의 `JdbcTemplate`·JPA다.
 
 남은 것은 두 방향이다. 하나는 **요청을 실제로 보내 보는 일** — 브라우저 주소창으로는 GET밖에 못 보내서 PUT·DELETE를 확인하려면 도구가 필요하다(2-11). 다른 하나는 **손으로 한 배선을 스프링에게 맡기는 일** — `getInstance()` 대신 주입(2-4), 연결 정보는 설정 파일로(2-2)다.
 
@@ -1165,6 +1451,114 @@ curl -X POST "http://localhost:8080/board/save" -d "content=테스트&writer=나
 
 응답이 `true`/`false` 로만 오므로, 실제로 바뀌었는지는 `GET /board/findall` 을 한 번 더 불러 확인하는 흐름이 된다. 1-15 ④에서 정리한 대로 **`false` 는 오류가 아니라 "해당하는 줄이 없었다"** 일 수 있다는 점을 함께 본다.
 
+### 2-12. 컬럼 이름과 필드 이름을 맞추는 방법들
+
+1-19에서 `PHONE_NUMBER` ↔ `pNumber` 를 손으로 옮겨 담았다. 이 짝짓기를 다루는 방법이 층마다 하나씩 있다.
+
+**① SQL 쪽에서 별칭을 준다**
+
+```sql
+SELECT WNO AS wno, PHONE_NUMBER AS pNumber, HEAD_COUNT AS hCount FROM WAITING
+```
+
+`as` 로 결과 컬럼의 이름을 바꿔 두면 `rs.getString("pNumber")` 로 꺼낼 수 있다. 조회 결과에만 붙는 이름이라 표 자체는 그대로다. 자동 매핑 도구를 쓸 때 이름을 맞춰 주는 흔한 방법이다.
+
+**② 매핑 도구에 이름을 알려 준다**
+
+JPA에서는 애노테이션으로 짝을 적어 둔다.
+
+```java
+@Column(name = "PHONE_NUMBER")
+private String phone;
+```
+
+3-3에서 본 방향이다. 손으로 옮겨 담는 코드가 사라지는 대신, 어긋난 이름을 **표시로 적어 두는** 자리가 생긴다.
+
+**③ 스네이크와 카멜을 자동으로 바꾼다**
+
+DB는 `HEAD_COUNT` 처럼 밑줄로 단어를 잇는 스네이크 표기를, 자바는 `headCount` 처럼 카멜 표기를 쓰는 것이 관례다. 규칙이 정해져 있으니 도구들이 자동으로 바꿔 주기도 한다.
+
+| 표기 | 예 | 주로 쓰는 곳 |
+| --- | --- | --- |
+| 스네이크 | `head_count` | DB 컬럼 |
+| 카멜 | `headCount` | 자바 필드·메소드 |
+| 파스칼 | `HeadCount` | 자바 클래스 |
+| 케밥 | `head-count` | URL·설정 파일 |
+
+JSON으로 내보낼 때 이름을 바꾸는 것도 같은 이야기다.
+
+```java
+@JsonProperty("phone_number")
+private String phone;
+```
+
+**④ 그냥 이름을 같게 둔다**
+
+가장 손이 덜 가는 방법이다. 표를 새로 설계할 수 있는 상황이면 컬럼 이름과 필드 이름이 규칙만큼만 다르게(스네이크↔카멜) 두는 편이, 위 셋 중 어느 것도 필요 없게 만든다. 이미 있는 DB에 맞춰야 할 때 ①~③이 쓰인다.
+
+### 2-13. 자연키와 대리키 — 무엇으로 한 줄을 가리킬까
+
+1-20 ④에서 갈린 자리를 정리해 둔다.
+
+| | 대리키 (surrogate) | 자연키 (natural) |
+| --- | --- | --- |
+| 값의 뜻 | 없다 — 가리키려고 만든 번호 | 있다 — 전화번호·주민번호·이메일 |
+| 예 | `no`·`wno` (`AUTO_INCREMENT`) | `PHONE_NUMBER` |
+| 바뀌는가 | 안 바뀐다 | 바뀔 수 있다 |
+| 유일한가 | 보장된다 | 표에 `UNIQUE` 를 걸어야 보장된다 |
+| 노출 | 순서·개수가 드러난다 | 개인정보가 주소에 실릴 수 있다 |
+
+실무에서는 **대리키를 기본키로 두고, 자연키에는 `UNIQUE` 를 거는** 형태가 흔하다. 둘의 장점을 나눠 갖는 방식이다.
+
+```sql
+CREATE TABLE WAITING(
+    WNO INT PRIMARY KEY AUTO_INCREMENT,
+    PHONE_NUMBER VARCHAR(50) NOT NULL UNIQUE,
+    HEAD_COUNT INT NOT NULL
+);
+```
+
+이렇게 두면 수정·삭제 조건에 어느 쪽을 써도 한 줄만 걸린다. 다른 표가 이 표를 참조할 때는 값이 바뀌지 않는 `WNO` 를 쓰는 편이 안전하다 — 자연키를 외래키로 쓰면 값이 바뀔 때 참조하는 쪽까지 함께 고쳐야 한다. [[SQL day05 외래키 CASCADE와 조인]] 에서 정리한 자리와 이어진다.
+
+주소에 무엇이 드러나는지도 함께 본다.
+
+```
+DELETE /waiting/delete?pNumber=010-1111-2222   ← 전화번호가 주소에 남는다
+DELETE /waiting/delete?wno=3                    ← 번호만 남는다
+```
+
+주소는 브라우저 기록·서버 로그·중간 장비에 그대로 남는 자리라, 개인정보에 해당하는 값을 실어 보내는 것은 피하는 편이 낫다. 실습에서는 눈에 잘 안 띄지만 습관을 들여 둘 자리다.
+
+### 2-14. 공통 앞머리를 클래스에 한 번만 적기
+
+1-20 ②에서 주소를 도메인 이름으로 나눴는데, 그 앞머리를 메소드마다 반복해 적고 있다. 클래스에 `@RequestMapping` 을 붙이면 한 번만 적어도 된다.
+
+```java
+@RestController
+@RequestMapping("/waiting")
+public class WaitingController {
+
+    @PostMapping("/insert")
+    public boolean insert(WaitingDto waitingDto) { ... }
+
+    @GetMapping("/findall")
+    public ArrayList<WaitingDto> findAll() { ... }
+}
+```
+
+클래스에 붙은 주소와 메소드에 붙은 주소가 **이어 붙어** 최종 주소가 된다.
+
+```
+@RequestMapping("/waiting")  +  @PostMapping("/insert")  →  /waiting/insert
+```
+
+두 가지가 편해진다.
+
+- 앞머리를 바꿀 때 한 줄만 고치면 된다
+- 클래스 이름만 보고 이 컨트롤러가 맡은 영역을 알 수 있다
+
+`@RequestMapping` 은 클래스와 메소드 양쪽에 쓸 수 있는 표시라, 클래스에 붙으면 **공통 앞머리**로, 메소드에 붙으면 그 메소드의 주소로 읽힌다(1-9 ④). 클래스 쪽에는 HTTP 방식을 지정하지 않고 주소만 두는 것이 보통이다 — 방식은 메소드마다 다르기 때문이다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 자동 설정이 실제로 하는 일
@@ -1373,6 +1767,21 @@ com.example                   com.example
 - GET 외의 요청을 보내 보는 방법 — `fetch`·`curl`·API 테스트 도구
 - `main` 이 여럿일 때 `build.gradle` 의 `springBoot { mainClass }` 지정
 - PUT과 PATCH의 갈림 — 전체 교체와 부분 수정
+- 표를 늘릴 때 도메인마다 Dto·Dao·Controller 한 벌씩, 공용 `BaseDao` 는 그대로
+- 컬럼 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, 복합 기본키
+- `NOT NULL`·`UNIQUE`·`PRIMARY KEY` 가 각각 막는 것
+- MySQL 백틱(`` ` ``)으로 식별자 감싸기, 예약어와 겹치는 이름
+- DB 컬럼 이름과 자바 필드 이름이 다를 때 짝짓는 자리 — `ResultSet` 은 컬럼 이름, 요청 바인딩은 프로퍼티 이름
+- 자바빈 프로퍼티 이름 규약 — 기준은 필드가 아니라 getter·setter 이름
+- 스네이크·카멜·파스칼·케밥 표기와 자동 변환, `as` 별칭·`@Column`·`@JsonProperty`
+- 접근제한자를 적지 않았을 때의 default 범위
+- 대리키와 자연키 — 무엇으로 한 줄을 가리킬지 정하기, 자연키에 `UNIQUE` 걸기
+- `executeUpdate()` 가 2 이상을 돌려주는 상황과 `result == 1` 판정의 한계
+- 개인정보를 주소(쿼리 스트링)에 싣지 않기
+- 컨트롤러가 여럿일 때 주소 충돌과 시작 시점 실패
+- `@RequestMapping` 을 클래스에 붙여 공통 앞머리 두기
+- 전화번호처럼 숫자로 보이지만 문자열로 다뤄야 하는 값
+- SQL에서 `NULL` 은 `=` 로 비교되지 않는다는 성질
 
 ## 실습 파일
 
@@ -1381,9 +1790,12 @@ com.example                   com.example
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dao/BaseDao.java` (여러 DAO에 JDBC 연동을 상속으로 물려주기, `private`·`protected` 로 나눈 접근 범위, `Class.forName` 으로 드라이버 로드, `DriverManager.getConnection` 으로 연결, 생성자에서 연동을 실행해 자식이 자동으로 연결되게 하기)
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dao/BoardDao.java` (`BaseDao` 상속과 싱글톤을 겹쳐 쓰기, `private` 생성자·`static final` 인스턴스·`getInstance`, 연결 하나를 돌려쓰는 이유, 등록 SQL을 다섯 단계로 실행하기, SQL이 자바가 아니라 서버로 보내는 문자열이라는 점, `?` 로 비워 두고 `setString`·`setInt` 로 채우기와 SQL 인젝션, `executeUpdate` 가 돌려주는 줄 수로 성공·0건 판정, `executeQuery` 와 `ResultSet` 커서를 `while (rs.next())` 로 훑기, 줄마다 새 DTO를 만들어 리스트에 담기, 컬럼을 이름으로 꺼내기, 결과가 없을 때 빈 리스트를 돌려주기, `update`·`delete` 의 조건절과 `?` 인덱스 순서, `SQLException` 검사 예외 처리)
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dto/BoardDto.java` (DB 컬럼과 필드를 짝지은 DTO, 캡슐화와 getter·setter, 기본 생성자와 전체 생성자, JSON 변환에 getter가 쓰이는 자리, `toString` 재정의)
-- `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기)
+- `2026B_Spring/springweb/src/main/java/day02/Controller/WaitingController.java` (같은 컨트롤러 구조를 두 번째 도메인에 한 벌 더 쓰기, 컨트롤러가 둘이어도 컴포넌트 스캔이 자동으로 등록하는 점과 주소가 겹칠 때 시작 시점에 실패하는 성질, 주소 앞머리를 도메인 이름으로 나누기와 앞 슬래시 표기, 매핑 넷과 CRUD 짝짓기 반복, `String` 값 하나를 받는 단일 매개변수 바인딩)
+- `2026B_Spring/springweb/src/main/java/day02/Model/Dao/WaitingDao.java` (`BaseDao` 상속으로 연동 코드 없이 `conn` 쓰기, 싱글톤 세 요소 반복과 수식어 순서, 조건절에 자연키(전화번호)를 쓸 때의 성질, `executeUpdate` 가 2 이상을 돌려줄 수 있는 상황과 `result == 1` 판정의 한계, `UNIQUE` 제약으로 애초에 중복을 막기, 컬럼 이름을 문자열로 적어 `ResultSet` 에서 꺼내기)
+- `2026B_Spring/springweb/src/main/java/day02/Model/Dto/WaitingDto.java` (DB 컬럼 이름과 자바 필드 이름이 다를 때 어디서 무엇을 기준으로 짝을 짓는지, `ResultSet` 은 컬럼 이름·요청 바인딩은 프로퍼티 이름, 자바빈 프로퍼티 이름을 getter·setter가 정한다는 규약, 접근제한자를 적지 않았을 때의 default 범위, 전화번호를 `String` 으로 두는 이유)
+- `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기, 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, `NOT NULL` 로 빈 값 막기, 백틱으로 식별자 감싸기, 표가 늘어도 초기화는 앞 한 줄로)
 - `2026B_Spring/springweb/build.gradle` (`main` 을 가진 클래스가 여럿일 때 `springBoot { mainClass }` 로 실행할 진입점 고르기, 고른 진입점의 패키지가 곧 컴포넌트 스캔 범위가 되는 점)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[KDT_2026 학습 지도]]
