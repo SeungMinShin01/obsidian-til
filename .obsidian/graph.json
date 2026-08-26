@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "기술",
+  "search": "CS",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -207,6 +207,6 @@
   "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.86098410955215,
-  "close": true
+  "scale": 0.8609841095521478,
+  "close": false
 }
