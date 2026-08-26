@@ -802,18 +802,18 @@ MySQL에서 백틱(`` ` ``)은 **이 이름은 식별자다**라고 알리는 �
 
 ```java
 public class WaitingDto {
-    String pNumber;
-    int hCount;
-    int wno;
+    private String pNumber;
+    private int hCount;
+    private int wno;
 
     public WaitingDto() { }
 
     public WaitingDto(int wno, String pNumber, int hcount) { ... }
 
-    public String getpNumber() { return pNumber; }
-    public void setpNumber(String pNumber) { this.pNumber = pNumber; }
-    public int gethCount() { return hCount; }
-    public void sethCount(int hCount) { this.hCount = hCount; }
+    public String getPNumber() { return pNumber; }
+    public void setPNumber(String pNumber) { this.pNumber = pNumber; }
+    public int getHCount() { return hCount; }
+    public void setHCount(int hCount) { this.hCount = hCount; }
     // getWno · setWno · toString
 }
 ```
@@ -831,7 +831,7 @@ public class WaitingDto {
 **① `ResultSet` 에서 꺼낼 때는 컬럼 이름을 쓴다**
 
 ```java
-waitingDto.setpNumber(rs.getString("PHONE_NUMBER"));
+waitingDto.setPNumber(rs.getString("PHONE_NUMBER"));
 ```
 
 `rs.getString(...)` 에 넘기는 문자열은 **DB가 아는 이름**이다. 여기서 오는 값을 어느 필드에 담을지는 그 옆의 setter가 정한다. 두 이름이 달라도 되는 이유가 이 한 줄 안에 둘이 나란히 있기 때문이다 — 옮겨 담는 코드를 손으로 쓰고 있으니 사이에서 이름을 바꿔 줄 수 있다.
@@ -844,37 +844,60 @@ waitingDto.setpNumber(rs.getString("PHONE_NUMBER"));
 
 ```
 POST /waiting/insert
-pNumber=010-1111-2222&hCount=2
+PNumber=010-1111-2222&HCount=2
         │
-        ├─ setpNumber("010-1111-2222")
-        └─ sethCount(2)
+        ├─ setPNumber("010-1111-2222")
+        └─ setHCount(2)
 ```
 
 `PHONE_NUMBER=...` 로 보내면 값이 들어오지 않는다. DB 컬럼 이름은 DAO 안에서 끝나고 **밖으로는 나가지 않는다**는 것이 요점이다.
 
 ```
-브라우저      ──  pNumber · hCount        (자바 프로퍼티 이름)
-컨트롤러·DTO  ──  pNumber · hCount
+브라우저      ──  PNumber · HCount         (자바 프로퍼티 이름)
+컨트롤러·DTO  ──  pNumber · hCount         (필드 이름)
 DAO          ──  여기서 이름이 바뀐다
 DB           ──  PHONE_NUMBER · HEAD_COUNT (컬럼 이름)
 ```
+
+바깥으로 나가는 이름이 필드 이름과도 다르다는 점이 눈에 띈다. 왜 `PNumber` 가 되는지는 ③에서 정리한다.
 
 **③ 프로퍼티 이름은 필드가 아니라 getter·setter가 정한다**
 
 스프링이 이름을 맞출 때 실제로 보는 것은 필드가 아니라 **메소드**다. `get`·`set` 을 떼고 남은 부분으로 이름을 만드는 자바빈 규약을 따른다.
 
-| 메소드 | 떼고 남은 것 | 프로퍼티 이름 |
+규칙은 `get`·`set` 을 뗀 뒤 **첫 글자를 소문자로 내리는 것**인데, 예외가 하나 붙어 있다. **앞의 두 글자가 모두 대문자면 그대로 둔다**는 조항이다. `URL`·`ID` 처럼 약어로 시작하는 이름이 `uRL` 로 뭉개지는 것을 막으려고 들어간 규칙이다.
+
+| 메소드 | 떼고 남은 것 | 앞 두 글자 | 프로퍼티 이름 |
+| --- | --- | --- | --- |
+| `getContent` | `Content` | `Co` | `content` (첫 글자를 내린다) |
+| `getWno` | `Wno` | `Wn` | `wno` |
+| `getPNumber` | `PNumber` | `PN` — **둘 다 대문자** | `PNumber` (그대로) |
+| `getHCount` | `HCount` | `HC` — **둘 다 대문자** | `HCount` (그대로) |
+
+그래서 필드가 `pNumber` 인데 바깥으로 나가는 이름은 `PNumber` 가 된다. **기준은 어디까지나 메소드 이름**이라, 필드 이름만 바꾸고 getter·setter 이름을 그대로 두면 바인딩은 메소드 쪽 이름으로 계속 동작한다.
+
+한 글자 약어를 앞에 둔 이름이 까다로운 것은 이 규칙을 **라이브러리마다 다르게 적용**하기 때문이다. 폼 바인딩은 위의 자바빈 규약을 그대로 따르는데, 반환값을 JSON으로 바꾸는 쪽(Jackson)은 **앞에 붙은 대문자를 이어지는 데까지 내리는** 방식이라 결과가 갈린다.
+
+| 메소드 | 요청으로 받을 때 (자바빈) | JSON으로 나갈 때 (Jackson) |
 | --- | --- | --- |
-| `getContent` | `Content` | `content` (첫 글자를 내린다) |
-| `getpNumber` | `pNumber` | `pNumber` (이미 소문자라 그대로) |
+| `getContent` | `content` | `content` |
+| `getPNumber` | `PNumber` | `pnumber` |
+| `getHCount` | `HCount` | `hcount` |
 
-첫 글자가 이미 소문자면 그대로 두는 규칙이라 `pNumber` 가 된다. 필드 이름과 우연히 같아서 눈에 잘 안 띄는데, **기준은 어디까지나 메소드 이름**이다. 필드 이름만 바꾸고 setter 이름을 그대로 두면 바인딩은 예전 이름으로 계속 동작한다.
+같은 필드가 **들어올 때와 나갈 때 다른 이름**이 되는 셈이라, 등록은 `PNumber` 로 보내야 하는데 전체조회 결과에는 `pnumber` 로 찍히는 상황이 나온다. 1-13에서 정리한 "오가는 것은 문자열이고 DTO는 안쪽 그릇"이 이 대목에서 실감이 난다 — 그릇의 이름과 문자열의 이름은 별개고, 그 사이를 잇는 규칙이 방향마다 따로 있다.
 
-이런 자리에서 이름이 어긋나면 값이 조용히 비어 있게 되고, 오류가 아니라 "왜 안 들어오지"로 나타나서 원인을 찾기 번거롭다. 필드 이름을 `phone`·`headCount` 처럼 **평범한 카멜 표기 한 덩어리**로 두면 getter 이름이 `getPhone`·`getHeadCount` 로 규약과 딱 맞아떨어져서, 이 규칙을 따로 신경 쓰지 않아도 된다. 이름을 줄이지 않는 편이 이 대목에서는 편하다.
+이름이 어긋나면 값이 조용히 비어 있게 되고, 오류가 아니라 "왜 안 들어오지"로 나타나서 원인을 찾기 번거롭다. 애초에 걸리지 않는 방법은 **한 글자 약어로 시작하지 않는 것**이다. `phone`·`headCount` 처럼 평범한 카멜 표기 한 덩어리로 두면 getter가 `getPhone`·`getHeadCount` 가 되어 두 규칙이 모두 `phone`·`headCount` 로 떨어진다. 이름을 줄이지 않는 편이 이 대목에서는 편하다.
 
-**④ 필드에 접근제한자를 적지 않으면**
+이름을 그대로 두고 맞추는 방법도 있다. 나가는 쪽은 `@JsonProperty`, 들어오는 쪽은 `@RequestParam` 으로 못 박으면 규칙과 무관하게 원하는 이름을 쓸 수 있다.
 
-`private` 없이 `String pNumber;` 라고만 쓰면 default(같은 패키지 안에서만 접근) 범위가 된다. [[Java day08 접근제한자와 static]] 에서 정리한 네 단계 중 아무것도 적지 않았을 때의 자리다.
+```java
+@JsonProperty("pNumber")
+public String getPNumber() { return pNumber; }
+```
+
+**④ 필드는 `private`, 통로는 getter·setter**
+
+`BoardDto` 와 마찬가지로 세 필드 모두 `private` 이다. 접근제한자를 아예 적지 않으면 default(같은 패키지 안에서만 접근) 범위가 되는데, [[Java day08 접근제한자와 static]] 에서 정리한 네 단계를 다시 놓고 보면 이렇다.
 
 | 적은 것 | 범위 |
 | --- | --- |
@@ -883,7 +906,9 @@ DB           ──  PHONE_NUMBER · HEAD_COUNT (컬럼 이름)
 | `protected` | 같은 패키지 + 자식 |
 | `public` | 어디서나 |
 
-DTO는 `Model.Dto` 패키지에 혼자 있어서 지금은 차이가 드러나지 않는다. 다만 캡슐화의 기본형은 **필드는 `private`, 통로는 getter·setter** 라, 습관으로는 `private` 을 적어 두는 편이 뜻이 분명하다. getter·setter를 다 갖춰 두고 필드도 열려 있으면 통로가 둘이 되는 셈이라 어느 쪽으로 값이 바뀌었는지 추적하기 어려워진다.
+DTO는 `Model.Dto` 패키지에 혼자 있어서 default로 두든 `private` 으로 두든 지금 당장 동작이 달라지지는 않는다. 그래도 `private` 을 적어 두는 편이 나은 이유는 **통로를 하나로 묶어 두는 것**이라서다. getter·setter를 다 갖춰 놓고 필드까지 열려 있으면 값을 바꾸는 길이 둘이 되어, 나중에 검증이나 로그를 setter에 넣어도 필드로 직접 들어오는 쪽은 그 길을 비껴간다.
+
+③에서 본 프로퍼티 이름 규칙과도 맞물린다. 스프링이 보는 것은 메소드 이름이라, 필드를 닫아 두면 **바깥에서 드나드는 길이 getter·setter 하나로 고정**된다. 이름을 어디서 맞춰야 하는지 따질 자리도 그만큼 한 곳으로 줄어든다.
 
 ### 1-20. WaitingDao·WaitingController — 구조를 한 벌 더 쓴다
 
@@ -897,8 +922,8 @@ public class WaitingDao extends BaseDao {
         try {
             String sql = "INSERT INTO WAITING( PHONE_NUMBER , HEAD_COUNT ) VALUES( ? , ? );";
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, waitingDto.getpNumber());
-            ps.setInt(2, waitingDto.gethCount());
+            ps.setString(1, waitingDto.getPNumber());
+            ps.setInt(2, waitingDto.getHCount());
             int result = ps.executeUpdate();
             if (result == 1) return true;
         } catch (SQLException e) {
