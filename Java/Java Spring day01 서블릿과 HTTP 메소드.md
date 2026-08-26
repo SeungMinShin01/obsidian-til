@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java Spring day01 — 서블릿과 HTTP 메소드
 
 > 실습 파일: `2026B_Spring/springweb/src/main/example/day01/BoardController.java`(서블릿의 정체와 `HttpServlet` 상속·생명주기 메소드 `init`·`service`·`destroy` 재정의·HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 자리 잡기·`@WebServlet` 으로 주소 등록)
-> 허브: [[Java MOC]] · 이전: [[Java Spring Boot 프로젝트 생성(분석)]]
+> 허브: [[Java MOC]] · 이전: [[Java Spring Boot 프로젝트 생성(분석)]] · 다음: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
 
 [[Java Spring Boot 프로젝트 생성(분석)]] 에서 프로젝트 뼈대를 만들고 `main` 하나로 내장 톰캣이 뜨는 것까지 봤다. 그런데 서버만 떠 있고 브라우저에서 무엇을 요청해도 받아 줄 자리가 없었다. 이번에는 그 **요청을 받는 자리**를 처음 만든다.
 
@@ -563,4 +563,4 @@ JSP도 결국 서블릿으로 변환되어 실행된다 — 두 방식이 다른
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day06 생성자와 콘솔 게시판]] · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[HTML day02 문서 구조와 미디어]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day06 생성자와 콘솔 게시판]] · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[HTML day02 문서 구조와 미디어]] · [[KDT_2026 학습 지도]]
