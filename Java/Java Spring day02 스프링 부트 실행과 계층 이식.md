@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `src/main/resources/static/day02/index.js`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `src/main/resources/static/day02/index.js`, `src/main/resources/static/day02/index2.html`, `src/main/resources/static/day02/index2.js`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]]
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
@@ -26,7 +26,9 @@ tags: [학습, java]
 | `Model/Dao/WaitingDao.java` | 대기명단 DB 처리 담당 (1-20) |
 | `Model/Dto/WaitingDto.java` | 대기명단 한 줄을 담는 그릇 (1-19) |
 | `resources/static/day02/index.html` | 서버가 내보내는 화면 — 비어 있던 View 자리 (1-21) |
-| `resources/static/day02/index.js` | 화면에서 서버를 부르는 코드 — axios (1-22·1-23) |
+| `resources/static/day02/index.js` | 화면에서 서버를 부르는 코드 — axios (1-22~1-24) |
+| `resources/static/day02/index2.html` | 대기명단 화면 — 같은 골격을 한 벌 더 (1-25) |
+| `resources/static/day02/index2.js` | 대기명단 화면에서 서버를 부르는 코드 (1-25) |
 
 [[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 먼저 등록 요청 하나가 브라우저에서 DB까지 닿고, 이어서 조회·수정·삭제를 같은 모양으로 채워 [[개념 - CRUD]] 네 가지가 모두 웹 요청으로 이어진다(1-13~1-16). 마지막으로 그 한 벌을 대기명단이라는 다른 주제에 통째로 다시 써 보면서, 계층을 나눠 둔 값어치를 표가 늘어나는 쪽에서도 확인한다(1-18~1-20).
 
@@ -1494,7 +1496,223 @@ html += `<tr>
 
 반복되는 모양이 보이면 그 다음은 묶는 일이다. 주소의 앞머리(`/board`)가 매번 되풀이되고, 실패했을 때의 처리도 함수마다 똑같이 적힌다. axios는 기본 주소나 공통 처리를 한곳에 모아 둘 수 있어서 요청이 늘수록 그쪽이 편해진다(2-17).
 
-### 1-24. 정리 — 웹 요청이 화면까지 한 바퀴 돌았다
+### 1-24. 삭제 — 화면 쪽 네 갈래가 다 이어진다
+
+1-23의 마지막에 "남은 삭제도 같은 모양"이라고 적어 둔 자리를 채운다.
+
+```javascript
+async function boardDelete(no) {
+  // no : 삭제할 게시물번호 / 클릭한 게시물번호
+  // 1. 삭제처리
+  const response = await axios.delete(`/board/delete?no=${no}`);
+  // 2. 결과
+  if (response.data == true) {
+    alert("삭제 성공");
+    boardFindAll();
+  } else {
+    alert("삭제 실패");
+  }
+}
+```
+
+**① 값을 모으는 단계가 통째로 빠진다**
+
+1-23에서 정리한 틀이 **값 얻기 → 요청 → 결과 판정 → 재조회** 넷이었는데, 삭제에는 첫 단계가 없다. 지울 대상만 정해지면 실어 보낼 값이 더 없기 때문이다.
+
+| 함수 | 값을 얻는 곳 | 보내는 값 |
+| --- | --- | --- |
+| `boardSave()` | 입력칸 `.value` | `content`·`writer` |
+| `boardUpdate(no)` | 매개변수 + `prompt` | `no`·`content` |
+| `boardDelete(no)` | **매개변수만** | `no` |
+
+수정에서 `prompt` 가 맡던 자리가 사라지고, 대상을 가리키는 매개변수 하나만 남은 모양이다. 함수가 짧아진 만큼 **대상을 어떻게 넘겨받는가**가 전부라, 1-23 ②에서 정리한 `onclick` 에 번호를 박아 넣는 자리가 그대로 쓰인다.
+
+```javascript
+html += `<tr>
+  ...
+  <td><button onclick="boardDelete(${게시물객체.no})">삭제</button></td>
+</tr>`;
+```
+
+**② 매핑 넷이 화면과 하나씩 짝을 이뤘다**
+
+1-23 ③에 "남은 자리"로 두었던 줄이 채워진다.
+
+| 화면 함수 | axios | 서버 매핑 | SQL |
+| --- | --- | --- | --- |
+| `boardFindAll()` | `.get` | `@GetMapping("/board/findall")` | `select` |
+| `boardSave()` | `.post` | `@PostMapping("/board/save")` | `insert` |
+| `boardUpdate(no)` | `.put` | `@PutMapping("/board/update")` | `update` |
+| `boardDelete(no)` | `.delete` | `@DeleteMapping("/board/delete")` | `delete` |
+
+`axios.delete` 로 보내는 요청도 주소창으로는 만들 수 없는 방식이다(2-11). PUT에 이어 DELETE까지 화면 코드로 확인하게 되면서, 1-16에서 짝지어 둔 매핑 넷이 전부 실제로 오가는 요청이 된다.
+
+**③ 되돌릴 수 없는 요청이라는 성질**
+
+등록·수정과 갈리는 지점이 하나 있다. 지운 줄은 되돌아오지 않는다. 화면 쪽에서 흔히 두는 안전장치가 `confirm` 한 번이다(1-23 ①의 표).
+
+```javascript
+if (!confirm("삭제할까요?")) return;
+```
+
+`confirm` 은 `true`·`false` 를 돌려주므로 취소를 누르면 요청을 보내기 전에 함수를 끝낼 수 있다. 값을 물어보는 `prompt` 와 자리는 같은데 쓰임이 다르다 — 하나는 값을 받고, 하나는 진행 여부를 받는다.
+
+**④ 실패로 보이는 두 상황**
+
+`response.data` 가 `false` 로 오는 경우가 둘이다. 1-15 ④에서 정리한 그대로다.
+
+| 상황 | 서버에서 일어난 일 | 화면에 뜨는 것 |
+| --- | --- | --- |
+| 없는 번호로 요청 | 조건에 맞는 줄이 없어 0건 | 삭제 실패 |
+| SQL 오류 | 예외가 잡혀 `false` 반환 | 삭제 실패 |
+
+같은 메시지가 뜨지만 서버 쪽 사정은 다르다. 화면에서 이 둘을 갈라 보이려면 `boolean` 하나로는 부족해서, 상태 코드나 메시지를 함께 돌려주는 쪽으로 가게 된다(2-8·2-9).
+
+### 1-25. index2 — 같은 화면을 대기명단에 한 벌 더
+
+1-18~1-20에서 서버 쪽 계층을 대기명단에 한 벌 더 썼는데, 화면은 게시판 것만 있었다. 여기에 `index2.html`·`index2.js` 를 더하면 대기명단도 브라우저에서 다룰 수 있게 된다.
+
+```
+src/main/resources/static/day02/
+├── index.html   ── index.js    (게시판)
+└── index2.html  ── index2.js   (대기명단)
+```
+
+**① 화면이 늘면 파일이 는다**
+
+1-21에서 정리한 대로 `static/` 아래의 폴더 구조가 그대로 주소가 되므로, 파일을 하나 더 두는 것만으로 새 주소가 생긴다.
+
+| 파일 | 주소 |
+| --- | --- |
+| `static/day02/index.html` | `http://127.0.0.1:8080/day02/index.html` |
+| `static/day02/index2.html` | `http://127.0.0.1:8080/day02/index2.html` |
+
+컨트롤러를 하나 더 만들 때 `@RestController` 만 붙이면 됐던 것처럼(1-20 ②), 화면도 **파일을 놓는 것으로 등록이 끝난다.** 다만 `index.html` 만은 폴더 주소(`/day02/`)로 들어와도 열리는 기본 문서 이름이라, `index2.html` 은 파일 이름까지 적어야 닿는다.
+
+**② 마크업은 골격이 같고 이름만 다르다**
+
+```html
+전화번호: <input type="text" class="pNumber" /> <br />
+인원수: <input type="text" class="hCount" /> <br />
+<button onclick="waitingInsert()">등록</button>
+...
+<tbody class="boardList">
+...
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="index2.js"></script>
+```
+
+1-21의 게시판 화면과 자리마다 짝이 맞는다.
+
+| 자리 | 게시판 | 대기명단 |
+| --- | --- | --- |
+| 입력칸 | `.content` · `.writer` | `.pNumber` · `.hCount` |
+| 등록 버튼 | `onclick="boardSave()"` | `onclick="waitingInsert()"` |
+| 표 제목 | 번호·작성자·내용·비고 | 번호·전화번호·인원수·비고 |
+| 채울 자리 | `<tbody class="boardList">` | `<tbody class="boardList">` |
+| 부르는 스크립트 | `index.js` | `index2.js` |
+
+`<tbody>` 의 클래스 이름만 양쪽이 같다. 페이지가 서로 다른 문서라 `querySelector` 가 잡는 범위도 그 문서 안이라, 같은 이름을 써도 섞이지 않는다. 화면마다 "채울 자리"를 가리키는 이름을 통일해 두면 자바스크립트 쪽 첫 줄이 늘 같은 모양이 된다는 편의가 따라온다.
+
+**③ 함수 이름에 도메인을 붙인다**
+
+```javascript
+waitingFindAll()   waitingInsert()   waitingUpdate()   waitingDelete()
+```
+
+게시판 쪽이 `board…` 였으니 대기명단은 `waiting…` 이다. 이름 앞머리를 도메인으로 나누는 것이 서버 쪽 주소를 `/board/…`·`/waiting/…` 로 갈라 둔 것(1-20 ②)과 같은 방식이다.
+
+자바스크립트에서 `function` 으로 선언한 함수는 그 문서 전체에서 하나의 이름으로 잡힌다([[JS day10 함수]]). 파일을 나눠 두어도 **같은 페이지에서 두 파일을 함께 부르면 이름이 겹칠 수 있다**는 뜻이라, 앞머리를 나눠 두면 나중에 한 페이지에 둘을 얹어도 부딪히지 않는다. 지금은 페이지마다 자기 스크립트 하나씩만 부르는 구조라 문제가 드러나지 않는데, 이름을 미리 갈라 두는 값어치가 그 지점에서 나온다.
+
+**④ 대상을 가리키는 방법이 게시판과 다르다**
+
+```javascript
+async function waitingUpdate() {
+  const pNumber = prompt("전화번호 입력: ");
+  const hCount = prompt("수정할 인원수:");
+  const response = await axios.put(`/waiting/update?pNumber=${pNumber}&hCount=${hCount}`);
+  ...
+}
+
+async function waitingDelete() {
+  const pNumber = prompt("전화번호 입력: ");
+  const response = await axios.delete(`/waiting/delete?pNumber=${pNumber}`);
+  ...
+}
+```
+
+게시판의 `boardUpdate(no)`·`boardDelete(no)` 는 대상을 **매개변수로** 받았는데, 여기서는 두 함수 다 매개변수가 없고 전화번호를 물어본다. 1-20 ④의 대리키·자연키 갈림이 화면 쪽에서 나타난 모양이다.
+
+| | 게시판 | 대기명단 |
+| --- | --- | --- |
+| 조건 컬럼 | `no` (대리키) | `PHONE_NUMBER` (자연키) |
+| 화면이 대상을 얻는 곳 | `onclick` 에 박아 둔 번호 | `prompt` 로 물어본 값 |
+| 사람이 그 값을 아는가 | 몰라도 된다 | 자기 번호라 안다 |
+
+두 방식의 성격이 여기서 갈린다. 대리키는 사람이 기억할 값이 아니라서 **화면이 대신 들고 있다가 넘겨주는** 쪽이고, 자연키는 사람이 이미 아는 값이라 **직접 물어보는** 쪽이 자연스럽다. 카페에서 대기를 취소할 때 번호표 대신 전화번호를 대는 흐름 그대로다.
+
+다만 물어보는 방식은 표에 그려 둔 줄과 무관하게 값을 받는다는 성질이 따라온다. 표의 어느 줄에서 버튼을 눌러도 결과가 같아지므로, 줄과 대상을 묶으려면 게시판처럼 `onclick` 에 그 줄의 값을 박아 넘기는 쪽이 확실하다.
+
+```javascript
+<button onclick="waitingUpdate('${waiting.pNumber}')">수정</button>
+```
+
+자연키가 문자열이라 따옴표로 감싸야 한다는 점만 번호와 다르다. 감싸지 않으면 `010-1111-2222` 가 이름이 아니라 뺄셈처럼 읽힌다.
+
+**⑤ 화면에서 꺼내는 이름은 JSON 쪽 규칙을 따른다**
+
+표를 그리는 반복문에서 객체의 값을 꺼내 쓰는 자리다.
+
+```javascript
+const waiting = waitingList[index];
+html += `<tr><td> ${waiting.wno} </td> ... </tr>`;
+```
+
+1-22에서 정리한 대로 **JSON의 키가 곧 화면에서 쓰는 이름**이 된다. 게시판은 필드 이름과 컬럼 이름이 같았고 JSON 키도 그대로여서 이 자리가 조용히 지나갔는데, 대기명단은 1-19 ③에서 본 것처럼 방향마다 이름 규칙이 갈린다. `getPNumber` 같은 한 글자 약어로 시작하는 이름은 요청으로 받을 때(`PNumber`)와 JSON으로 나갈 때가 다르게 떨어져서, 화면에서 무엇으로 꺼내야 하는지 짐작만으로는 맞추기 어렵다.
+
+```
+DB          PHONE_NUMBER
+필드         pNumber
+요청 이름     PNumber      ← 보낼 때 쓰는 이름
+JSON 키      ?            ← 화면에서 꺼낼 때 쓰는 이름
+```
+
+확인하는 방법은 간단하다. 브라우저에서 `/waiting/findall` 주소를 직접 열거나 개발자 도구 Network 탭에서 응답 본문을 한 번 보면 실제 키가 그대로 보인다. 이름이 어긋나면 오류가 아니라 `undefined` 가 표에 찍히는 식이라, **화면이 비었을 때 제일 먼저 볼 자리**가 여기다. 값이 안 보이면 요청이 실패한 것인지, 왔는데 이름이 안 맞는 것인지부터 갈라 놓고 본다.
+
+애초에 걸리지 않으려면 1-19 ③의 결론대로 필드 이름을 한 글자 약어로 시작하지 않게 두거나, `@JsonProperty` 로 나가는 이름을 못 박아 두면 된다.
+
+**⑥ 입력칸에서 꺼낸 값은 언제나 문자열이다**
+
+```javascript
+const hCount = document.querySelector(".hCount").value;
+await axios.post(`/waiting/insert?pNumber=${pNumber}&hCount=${hCount}`);
+```
+
+`HEAD_COUNT` 는 `INT` 이고 DTO 필드도 `int` 인데, `.value` 가 돌려주는 것은 `"5"` 같은 문자열이다. 그래도 동작하는 것은 **스프링이 받으면서 타입을 맞춰 주기** 때문이다.
+
+```
+화면    "5"        (문자열)
+   │
+   ▼  요청 파라미터도 문자열
+컨트롤러  setHCount(5)   ← 매개변수 타입에 맞춰 변환
+```
+
+숫자로 읽을 수 없는 값이 오면 이 변환 자리에서 걸린다. 입력칸을 비워 둔 채 등록하면 빈 문자열이 `int` 로 바뀌지 못해 요청이 실패하는 식이다. 표에 걸어 둔 `NOT NULL`(1-18 ②)이 DB 쪽에서 막는 것이라면, 이쪽은 그보다 앞에서 걸리는 자리다.
+
+화면에서 미리 막는 방법도 있다. `<input type="number">` 로 두면 숫자만 입력되고, 보내기 전에 값이 비었는지 확인하는 줄을 하나 두면 요청 자체가 나가지 않는다.
+
+**⑦ 늘어난 것은 파일 둘뿐**
+
+| 계층 | 대기명단을 붙이면서 |
+| --- | --- |
+| `BaseDao`·`AppStart` | 그대로 |
+| `sample.sql` | 표 정의만 덧붙임 |
+| Dto·Dao·Controller | 한 벌씩 늘었다 (1-20 ①) |
+| **화면 HTML·JS** | **한 벌씩 늘었다** |
+
+1-20 ①의 표에 화면 두 줄이 더 붙은 모양이다. 도메인이 하나 늘 때 실제로 손대는 것이 다섯 파일이고, 그 다섯이 하나같이 **앞의 것과 같은 모양**이라는 점이 눈에 띈다. 이 되풀이를 서버 쪽에서 줄이는 방향이 3-3의 `JdbcTemplate`·JPA라면, 화면 쪽에서 줄이는 방향은 목록·등록·수정·삭제를 하는 코드를 한 벌만 두고 도메인 이름만 갈아 끼우는 쪽이다 — 프론트엔드 프레임워크가 하는 일의 출발점이 이 자리다.
+
+### 1-26. 정리 — 웹 요청이 화면까지 한 바퀴 돌았다
 
 지금까지의 흐름을 이어 두면 이렇다.
 
@@ -1504,7 +1722,7 @@ html += `<tr>
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하기 |
 | [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
 | [[Java Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
-| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 + 화면에서 axios로 조회·등록·수정 부르기 |
+| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 + 화면에서 axios로 CRUD 네 갈래 부르기 + 그 화면을 두 번째 도메인에 한 벌 더 |
 
 바뀐 것은 `main` 한 줄과 컨트롤러의 표시뿐이고 아래는 그대로다.
 
@@ -1538,7 +1756,7 @@ html += `<tr>
 
 남은 것은 두 방향이다. 하나는 **요청을 실제로 보내 보는 일** — 브라우저 주소창으로는 GET밖에 못 보내서 PUT·DELETE를 확인하려면 도구가 필요하다(2-11). 다른 하나는 **손으로 한 배선을 스프링에게 맡기는 일** — `getInstance()` 대신 주입(2-4), 연결 정보는 설정 파일로(2-2)다.
 
-여기에 1-21의 정적 HTML과 1-22·1-23의 `index.js` 가 얹히면서 세 번째 방향이 하나 정리됐다. **비어 있던 View 자리를 채우는 일**이다.
+여기에 1-21의 정적 HTML과 1-22~1-24의 `index.js` 가 얹히면서 세 번째 방향이 하나 정리됐다. **비어 있던 View 자리를 채우는 일**이다.
 
 ```
 static/day02/index.html ── index.js (axios) ──HTTP──▶ @RestController ── Dao ── MySQL
@@ -1552,9 +1770,19 @@ static/day02/index.html ── index.js (axios) ──HTTP──▶ @RestControl
 | 조회 | `boardFindAll()` | 서버 → 화면 (표 그리기) |
 | 등록 | `boardSave()` | 화면 → 서버 (입력칸 값) |
 | 수정 | `boardUpdate(no)` | 화면 → 서버 (번호 + 물어본 값) |
-| 삭제 | — | 남은 자리 |
+| 삭제 | `boardDelete(no)` | 화면 → 서버 (번호만) |
 
-브라우저 주소창이 임시로 맡고 있던 자리에 실제 화면이 들어서면서 MVC의 V가 제자리를 찾았고, [[Java day09 MVC 종합예제]] 에서 나눈 세 계층이 웹에서 한 바퀴 다 돌았다. 남은 삭제도 같은 틀에서 `axios.delete` 로 바꿔 다는 일이라(2-15·2-17), 여기서부터는 새 개념보다 **되풀이되는 모양을 어떻게 줄일지**가 다음 이야기가 된다.
+브라우저 주소창이 임시로 맡고 있던 자리에 실제 화면이 들어서면서 MVC의 V가 제자리를 찾았고, [[Java day09 MVC 종합예제]] 에서 나눈 세 계층이 웹에서 한 바퀴 다 돌았다. [[개념 - CRUD]] 네 가지가 이번에는 **화면 쪽에서도** 다 이어진 셈이다.
+
+그리고 1-25에서 그 화면 한 벌을 대기명단에 다시 쓰면서, 앞에서 두 번 본 것과 같은 확인을 세 번째로 하게 된다.
+
+| 확인한 것 | 어디서 |
+| --- | --- |
+| 입출구가 바뀌어도 아래 계층은 그대로 | 콘솔 → 웹 (1-6·1-24) |
+| 표가 늘어도 늘어나는 것은 셋뿐 | 게시판 → 대기명단 (1-18~1-20) |
+| 화면이 늘어도 늘어나는 것은 둘뿐 | `index` → `index2` (1-25) |
+
+세 번 다 같은 말을 다른 자리에서 하고 있다 — **경계를 나눠 두면 한쪽이 늘거나 바뀌어도 다른 쪽은 그대로다.** 대신 늘어나는 쪽은 매번 같은 모양을 처음부터 다시 쓰게 되므로, 여기서부터는 새 개념보다 **되풀이되는 모양을 어떻게 줄일지**가 다음 이야기가 된다. 서버 쪽은 3-3의 `JdbcTemplate`·JPA, 화면 쪽은 요청 코드를 한곳에 모으는 axios 설정(2-17)과 프론트엔드 프레임워크가 그 방향이다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -2529,6 +2757,18 @@ public class BoardPageController {
 - 값을 쿼리 스트링에 실을 때와 요청 본문에 실을 때의 갈림, `axios.post(주소, 객체)`
 - `encodeURIComponent` 로 주소에 실을 값 감싸기 — `&`·`#`·공백
 - `@RequestBody` 로 JSON 본문을 객체로 받기
+- 삭제 요청을 화면에서 보내기 — 값을 모으는 단계 없이 대상만 넘기는 모양
+- 되돌릴 수 없는 요청 앞에 `confirm` 두기, 취소를 조기 반환으로 처리하기
+- `boolean` 하나로는 0건과 오류를 갈라 보이지 못하는 자리
+- 화면 파일을 도메인마다 나누기 — `static/` 폴더 구조가 곧 주소가 되는 규칙의 반복
+- 폴더 주소로 열리는 `index.html` 과 이름까지 적어야 닿는 나머지 파일
+- 함수 이름 앞머리를 도메인으로 나누기, 전역 이름이 겹치는 자리
+- 대상을 `onclick` 으로 넘길 때와 `prompt` 로 물어볼 때의 갈림 — 대리키와 자연키
+- 템플릿 리터럴에 문자열 값을 박아 넣을 때 따옴표로 감싸기
+- 응답 본문을 직접 열어 JSON 키 확인하기, 값이 `undefined` 로 찍힐 때 보는 자리
+- `.value` 가 언제나 문자열이라는 점과 요청 파라미터의 타입 변환
+- `<input type="number">` 와 보내기 전 값 검사 — DB 제약보다 앞에서 막는 자리
+- 도메인이 늘 때 손대는 다섯 파일과 그 되풀이를 줄이는 두 방향
 
 ## 실습 파일
 
@@ -2542,7 +2782,9 @@ public class BoardPageController {
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dto/WaitingDto.java` (DB 컬럼 이름과 자바 필드 이름이 다를 때 어디서 무엇을 기준으로 짝을 짓는지, `ResultSet` 은 컬럼 이름·요청 바인딩은 프로퍼티 이름, 자바빈 프로퍼티 이름을 getter·setter가 정한다는 규약, 접근제한자를 적지 않았을 때의 default 범위, 전화번호를 `String` 으로 두는 이유)
 - `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기, 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, `NOT NULL` 로 빈 값 막기, 백틱으로 식별자 감싸기, 표가 늘어도 초기화는 앞 한 줄로)
 - `2026B_Spring/springweb/src/main/resources/static/day02/index.html` (정적 리소스를 두는 자리와 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점, `<!doctype html>`·`lang`·`charset`·viewport meta가 각각 하는 일, `<head>` 와 `<body>` 의 갈림, 입력칸·등록 버튼과 `<thead>`·`<tbody>` 로 나눈 표, 화면 요소가 CRUD 매핑 넷과 짝을 이루는 구조, 파일로 직접 여는 것과 톰캣이 내보내는 것의 차이와 같은 출처, 빌드 결과로 복사되는 자리, `class`·`id` 식별자를 달아 자바스크립트가 잡을 자리 만들기, `onclick` 으로 함수 걸기, `<script>` 를 body 끝에 두는 이유와 실행 순서, CDN 주소와 상대 경로)
-- `2026B_Spring/springweb/src/main/resources/static/day02/index.js` (화면에서 서버로 요청을 보내는 자리, axios로 HTTP 메소드를 그대로 부르기와 서버 매핑 넷과의 짝, 비동기와 `async`·`await`·Promise, 응답 한 벌(`status`·`headers`·`data`)과 본문을 `.data` 로 꺼내기, JSON 배열이 자바스크립트 배열로 담기는 자리, `querySelector` 로 채울 자리 잡기, 반복문으로 마크업 문자열을 모아 한 번에 `innerHTML` 로 넣기, 템플릿 리터럴, JSON 프로퍼티 이름이 곧 화면 코드의 이름이 되는 자리, 파일 끝에서 함수를 바로 불러 페이지 열릴 때 목록 그리기, `.value` 로 입력칸 값 꺼내기, 값을 쿼리 스트링에 실어 POST·PUT 보내기와 커맨드 객체 바인딩이 주소와 본문을 가리지 않는 점, 상대주소로 적기, `response.data` 로 `boolean` 판정하기, 성공 후 조회 함수를 재호출해 표만 다시 그리기, `alert`·`prompt` 로 알리고 값 받기, 수정 함수가 매개변수로 대상 번호를 받는 구조와 `onclick` 에 값을 박아 잇기, 주소창으로는 못 보내던 PUT 요청을 axios로 보내기, 세 함수가 같은 틀을 반복하는 모양)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index.js` (화면에서 서버로 요청을 보내는 자리, axios로 HTTP 메소드를 그대로 부르기와 서버 매핑 넷과의 짝, 비동기와 `async`·`await`·Promise, 응답 한 벌(`status`·`headers`·`data`)과 본문을 `.data` 로 꺼내기, JSON 배열이 자바스크립트 배열로 담기는 자리, `querySelector` 로 채울 자리 잡기, 반복문으로 마크업 문자열을 모아 한 번에 `innerHTML` 로 넣기, 템플릿 리터럴, JSON 프로퍼티 이름이 곧 화면 코드의 이름이 되는 자리, 파일 끝에서 함수를 바로 불러 페이지 열릴 때 목록 그리기, `.value` 로 입력칸 값 꺼내기, 값을 쿼리 스트링에 실어 POST·PUT 보내기와 커맨드 객체 바인딩이 주소와 본문을 가리지 않는 점, 상대주소로 적기, `response.data` 로 `boolean` 판정하기, 성공 후 조회 함수를 재호출해 표만 다시 그리기, `alert`·`prompt` 로 알리고 값 받기, 수정 함수가 매개변수로 대상 번호를 받는 구조와 `onclick` 에 값을 박아 잇기, 주소창으로는 못 보내던 PUT 요청을 axios로 보내기, 세 함수가 같은 틀을 반복하는 모양, `axios.delete` 로 삭제까지 이어 매핑 넷을 화면과 짝짓기, 삭제에는 값을 모으는 단계가 없고 대상만 넘어가는 구조, 되돌릴 수 없는 요청 앞의 `confirm`, `boolean` 하나로는 0건과 오류를 갈라 보이지 못하는 자리)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index2.html` (화면을 도메인마다 파일로 나누기와 폴더 구조가 곧 주소가 되는 규칙의 반복, 폴더 주소로 열리는 `index.html` 과 이름까지 적어야 닿는 파일의 갈림, 게시판 화면과 자리마다 짝이 맞는 마크업 골격, 채울 자리를 가리키는 클래스 이름을 화면마다 통일해 두기, 페이지마다 자기 스크립트를 하나씩 부르는 구조)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index2.js` (같은 화면 코드를 두 번째 도메인에 한 벌 더 쓰기, 함수 이름 앞머리를 도메인으로 나누기와 전역 이름이 겹치는 자리, 수정·삭제 대상을 `onclick` 으로 넘길 때와 `prompt` 로 물어볼 때의 갈림 — 대리키와 자연키가 화면 쪽에서 나타나는 모양, 템플릿 리터럴에 문자열 값을 박을 때 따옴표로 감싸기, JSON 키가 곧 화면에서 꺼내는 이름이 되는 자리와 응답 본문을 직접 열어 확인하기·값이 `undefined` 로 찍힐 때 보는 순서, `.value` 가 언제나 문자열이라는 점과 요청 파라미터의 타입 변환·빈 값이 걸리는 자리, 도메인이 늘 때 손대는 다섯 파일)
 - `2026B_Spring/springweb/build.gradle` (`main` 을 가진 클래스가 여럿일 때 `springBoot { mainClass }` 로 실행할 진입점 고르기, 고른 진입점의 패키지가 곧 컴포넌트 스캔 범위가 되는 점)
 
 ## 관련 노트
