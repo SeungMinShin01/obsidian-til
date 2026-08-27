@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `src/main/resources/static/day02/index.js`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]]
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
@@ -26,6 +26,7 @@ tags: [학습, java]
 | `Model/Dao/WaitingDao.java` | 대기명단 DB 처리 담당 (1-20) |
 | `Model/Dto/WaitingDto.java` | 대기명단 한 줄을 담는 그릇 (1-19) |
 | `resources/static/day02/index.html` | 서버가 내보내는 화면 — 비어 있던 View 자리 (1-21) |
+| `resources/static/day02/index.js` | 화면에서 서버를 부르는 코드 — axios (1-22) |
 
 [[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 먼저 등록 요청 하나가 브라우저에서 DB까지 닿고, 이어서 조회·수정·삭제를 같은 모양으로 채워 [[개념 - CRUD]] 네 가지가 모두 웹 요청으로 이어진다(1-13~1-16). 마지막으로 그 한 벌을 대기명단이라는 다른 주제에 통째로 다시 써 보면서, 계층을 나눠 둔 값어치를 표가 늘어나는 쪽에서도 확인한다(1-18~1-20).
 
@@ -1129,7 +1130,7 @@ src/main/resources/
 | 수정 버튼 | `@PutMapping` — 수정 |
 | 삭제 버튼 | `@DeleteMapping` — 삭제 |
 
-`<td>` 안의 `1`·`유재석`·`안녕하세요` 는 손으로 적어 둔 값이다. **화면의 자리를 먼저 잡아 놓고, 그 자리를 실제 데이터로 채우는 것은 다음 단계**라고 보면 된다. 지금 상태에서 버튼을 눌러도 아무 일도 일어나지 않는데, 버튼과 요청을 잇는 자바스크립트가 아직 없어서다. 그 연결은 2-15에서 정리한다.
+`<td>` 안의 `1`·`유재석`·`안녕하세요` 는 손으로 적어 둔 값이다. **화면의 자리를 먼저 잡아 놓고, 그 자리를 실제 데이터로 채우는 것은 다음 단계**라고 보면 된다. 이 상태에서는 버튼을 눌러도 아무 일도 일어나지 않는다. 버튼과 요청을 잇는 자바스크립트가 아직 없어서인데, 그 연결을 1-22에서 붙인다.
 
 #### 톰캣이 내보낸다는 말
 
@@ -1145,7 +1146,183 @@ src/main/resources/
 
 빌드하면 `build/resources/main/static/…` 아래에 같은 파일이 복사된다. 실행할 때 실제로 읽히는 것은 이 복사본이라, 화면을 고쳤는데 반영이 안 되는 것처럼 보이면 다시 빌드했는지부터 보는 편이 빠르다.
 
-### 1-22. 정리 — 웹 요청이 DB까지 닿았다
+### 1-22. 화면에서 서버를 부른다 — axios로 표 채우기
+
+1-21의 화면은 자리만 잡아 둔 상태였다. 여기에 자바스크립트 파일 하나(`static/day02/index.js`)를 붙이면서 **화면과 API가 처음으로 이어진다.** 이번에 뚫는 길은 전체조회 한 갈래다.
+
+#### 마크업에 이름표와 스크립트를 단다
+
+먼저 HTML 쪽이 조금 바뀐다. 자바스크립트가 잡아야 할 자리에 식별자를 달고, 버튼에 함수를 걸고, 스크립트를 불러오는 줄을 더한 셋이다.
+
+```html
+내용: <input type="text" class="content" /> <br />
+작성자: <input type="text" class="writer" /> <br />
+<button onclick="boardSave()">등록</button>
+...
+<tbody class="boardList">
+...
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="index.js"></script>
+```
+
+| 표기 | 하는 일 |
+| --- | --- |
+| `class` | 여러 마크업이 같이 쓸 수 있는 식별자 (복수) |
+| `id` | 문서에서 하나만 쓰는 식별자 (단일) |
+| `onclick="함수()"` | 그 마크업을 클릭할 때 함수를 부른다 |
+
+`class` 와 `id` 의 갈림은 [[JS day11 DOM 조작]] 에서 `querySelector(".box")` · `querySelector("#box")` 로 나눠 쓰던 것과 같다. 지금은 값을 꺼낼 자리(`.content`·`.writer`)와 채울 자리(`.boardList`) 셋에만 이름을 달아 두면 된다.
+
+#### 스크립트를 `<body>` 끝에 두는 이유
+
+`<script>` 두 줄이 `</body>` 바로 앞에 있다. 위치가 곧 실행 시점이라서다.
+
+| 두는 자리 | 실행 시점 |
+| --- | --- |
+| `<head>` 안 | 마크업이 만들어지기 전 — `querySelector` 가 못 찾는다 |
+| `<body>` 끝 | 마크업이 다 만들어진 뒤 — 바로 잡힌다 |
+
+[[JS day02 변수와 입출력]] 에서 정리한 것과 같은 이야기다. 순서도 의미가 있는데, **axios를 먼저 불러 놓아야 `index.js` 안에서 그 이름을 쓸 수 있다.** 위아래를 바꾸면 `axios` 가 아직 없는 상태에서 코드가 돌게 된다.
+
+주소를 적는 방식도 둘로 갈린다.
+
+| 주소 | 성격 |
+| --- | --- |
+| `https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js` | CDN — 남의 서버에 올라가 있는 파일을 주소로 불러 쓴다 |
+| `index.js` | 상대 경로 — 지금 문서와 같은 폴더(`static/day02/`)의 파일 |
+
+CDN을 쓰면 라이브러리를 내려받아 프로젝트에 넣지 않아도 된다. 대신 인터넷이 끊기면 그 줄부터 안 되므로, 실제 서비스에서는 파일을 프로젝트 안에 두는 편이 안전하다.
+
+#### axios — 코드에서 HTTP 요청을 보낸다
+
+지금까지 요청을 보내는 방법은 브라우저 주소창뿐이었다. 주소창은 GET만 보낼 수 있어서 나머지 셋을 확인할 방법이 없었는데(2-11), 자바스크립트에서 부르면 네 방식을 다 보낼 수 있다.
+
+```javascript
+const 응답결과 = await axios.get("http://127.0.0.1:8080/board/findall");
+```
+
+`axios.get(주소)` 한 줄이 곧 요청 한 번이다. 메소드 이름이 그대로 HTTP 방식이라, 서버에 달아 둔 매핑 넷과 그대로 짝이 된다.
+
+| 화면 | 서버 |
+| --- | --- |
+| `axios.get(주소)` | `@GetMapping` |
+| `axios.post(주소, 객체)` | `@PostMapping` |
+| `axios.put(주소, 객체)` | `@PutMapping` |
+| `axios.delete(주소)` | `@DeleteMapping` |
+
+1-16에서 컨트롤러 쪽 매핑 넷을 CRUD와 짝지어 뒀는데, 그 짝이 화면 코드에서 한 번 더 반복되는 셈이다.
+
+#### 비동기 — `async` 와 `await`
+
+요청을 보내면 응답이 곧바로 오지 않는다. 네트워크를 건너 서버가 DB까지 다녀오는 동안 시간이 걸리는데, 그동안 브라우저가 멈춰 있으면 화면 전체가 굳는다. 그래서 자바스크립트는 **요청을 걸어 두고 일단 넘어가는** 방식으로 동작한다.
+
+`axios.get()` 이 돌려주는 것도 결과가 아니라 "나중에 결과가 담길 자리"(Promise)다.
+
+```javascript
+const a = axios.get(주소);        // Promise 객체가 담긴다
+const b = await axios.get(주소);  // 응답이 올 때까지 기다렸다가 결과가 담긴다
+```
+
+`await` 는 그 자리가 채워질 때까지 **이 함수만** 기다리게 하는 표시다. 화면 전체가 멈추는 것이 아니라 해당 함수의 진행만 멈춘다는 점이 핵심이다.
+
+`await` 를 쓰려면 함수 앞에 `async` 를 붙여야 한다. 짝으로 다닌다고 보면 된다.
+
+```javascript
+async function boardFindAll() {
+  const 응답결과 = await axios.get(주소);
+}
+```
+
+[[JS day05 반복문]] 에서 `await fetch(...)` 를 반복문 안에 두면 순서대로 기다리게 된다고 정리한 것이 이 이야기다. 기다림이 쌓이는 자리라 요청이 여럿일 때는 한꺼번에 보내는 방법을 따로 생각하게 된다.
+
+#### 응답 전체와 응답 본문은 다르다
+
+`await` 로 받은 값은 본문이 아니라 **응답 한 벌 전체**다.
+
+```javascript
+const 응답결과 = await axios.get(주소);
+const 게시물리스트 = 응답결과.data;
+```
+
+| 자리 | 담긴 것 |
+| --- | --- |
+| `.status` | 200 · 404 · 500 같은 상태 코드 |
+| `.headers` | `Content-Type` 등 부가 정보 |
+| `.data` | 본문 — 컨트롤러가 돌려준 값 |
+
+`.data` 를 한 번 더 꺼내는 이유가 여기 있다. 서버에서 `@GetMapping("/board/findall")` 이 `ArrayList<BoardDto>` 를 돌려주면 그것이 JSON 배열이 되어 오고(1-13·1-14), 그 배열이 자바스크립트 배열 그대로 `.data` 에 담긴다. 자바 객체가 JSON이 되는 길의 반대편에서 JSON이 다시 자바스크립트 객체가 되는 자리다.
+
+```
+ArrayList<BoardDto> ──▶ JSON 배열 ──▶ 응답결과.data (자바스크립트 배열)
+        자바              HTTP 본문              브라우저
+```
+
+#### 목록을 표로 그린다
+
+받아 온 배열을 `<tr>` 문자열로 바꿔 `<tbody>` 에 넣는다.
+
+```javascript
+let tbody = document.querySelector(".boardList");
+let html = "";
+for (let i = 0; i < 게시물리스트.length; i++) {
+  const 게시물객체 = 게시물리스트[i];
+  html += `<tr><td>${게시물객체.no}</td><td>${게시물객체.writer}</td><td>${게시물객체.content}</td></tr>`;
+}
+tbody.innerHTML = html;
+```
+
+[[JS day11 DOM 조작]] 에서 정리한 세 단계 그대로다.
+
+| 단계 | 하는 일 |
+| --- | --- |
+| 1. 어디에 | `querySelector` 로 채울 자리를 잡는다 |
+| 2. 무엇을 | 서버에서 받아 온 값으로 마크업 문자열을 만든다 |
+| 3. 출력 | `innerHTML` 에 넣는다 |
+
+문자열을 `html` 에 모아 두고 **마지막에 한 번만** 넣는 모양이다. 반복문 안에서 매번 `innerHTML` 에 넣으면 그때마다 화면을 다시 그리게 되므로, 다 만들어 놓고 한 번에 갈아 끼우는 편이 빠르다. 백틱으로 감싼 템플릿 리터럴(`${ }`)은 [[JS day02 변수와 입출력]] 에서 본 표기이고, 마크업을 문자열로 만들 때 특히 편하다.
+
+`innerHTML` 은 문자열을 마크업으로 해석해 넣기 때문에, 사용자가 입력한 값이 그대로 들어가면 태그도 같이 해석된다. 이 성질과 대비책은 [[JS day11 DOM 조작]] 2-4에 정리해 뒀다.
+
+#### 이름이 끝까지 이어진다
+
+`게시물객체.no`·`.writer`·`.content` 라고 적는 이름은 어디서 온 것인가. 자바 쪽 DTO의 getter가 정한 프로퍼티 이름이다(1-12·1-19).
+
+| 자리 | 이름 |
+| --- | --- |
+| DB 컬럼 | `no` · `writer` · `content` |
+| 자바 필드 | `no` · `writer` · `content` |
+| getter | `getNo()` · `getWriter()` · `getContent()` |
+| JSON 키 | `no` · `writer` · `content` |
+| 화면 코드 | `게시물객체.no` · `.writer` · `.content` |
+
+자바 쪽 getter 이름을 바꾸면 JSON 키가 바뀌고, 그러면 화면 코드도 같이 고쳐야 한다. 계층을 아무리 나눠도 **이름 하나는 DB부터 화면까지 관통한다**는 점이 여기서 드러난다. 컬럼 이름과 필드 이름이 어긋날 때 어디를 기준으로 짝을 짓는지 1-19에서 따져 본 것도 결국 이 줄을 맞추기 위한 일이었다.
+
+#### 정의하고 바로 부른다
+
+```javascript
+boardFindAll();
+```
+
+파일 끝의 이 한 줄이 실행 시점을 정한다. `<script src="index.js">` 가 읽히는 순간 함수가 한 번 불리고, 그 결과로 페이지를 열자마자 표가 서버 값으로 채워진다. 손으로 적어 둔 `1 유재석 안녕하세요` 자리를 실제 데이터가 대신하는 셈이다.
+
+등록 버튼에 걸어 둔 `onclick="boardSave()"` 는 같은 자리에 이어 붙일 다음 함수다. 조회 한 갈래가 뚫렸으니 나머지는 같은 모양에서 `axios.get` 을 `post`·`put`·`delete` 로 바꾸고, 보낼 값을 `.content`·`.writer` 입력칸에서 꺼내 실어 보내면 된다. 구체적인 모양은 2-15에 적어 뒀다.
+
+#### 한 바퀴가 돌았다
+
+```
+브라우저 index.html ──▶ index.js (axios.get) ──HTTP──▶ @RestController ──▶ BoardDao ──JDBC──▶ MySQL
+        표 innerHTML ◀────── 응답결과.data ◀────── JSON ◀────── ArrayList<BoardDto> ◀──────
+```
+
+[[Java day09 MVC 종합예제]] 에서 나눈 세 계층 중 V가 계속 비어 있었다. 콘솔에서는 `println` 이, 스프링으로 옮긴 뒤에는 브라우저 주소창이 그 자리를 임시로 맡고 있었는데, 이제 화면이 제자리에 들어섰다.
+
+| | 콘솔 | 주소창 | 지금 |
+| --- | --- | --- | --- |
+| 입력 | `Scanner` | 주소 직접 입력 | 입력칸 + 버튼 |
+| 출력 | `println` | 날것 JSON | 표 |
+| 요청 방식 | 메뉴 번호 | GET만 | 네 가지 모두 |
+
+### 1-23. 정리 — 웹 요청이 화면까지 한 바퀴 돌았다
 
 지금까지의 흐름을 이어 두면 이렇다.
 
@@ -1155,7 +1332,7 @@ src/main/resources/
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하기 |
 | [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
 | [[Java Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
-| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 |
+| **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 + 화면에서 axios로 부르기 |
 
 바뀐 것은 `main` 한 줄과 컨트롤러의 표시뿐이고 아래는 그대로다.
 
@@ -1189,14 +1366,14 @@ src/main/resources/
 
 남은 것은 두 방향이다. 하나는 **요청을 실제로 보내 보는 일** — 브라우저 주소창으로는 GET밖에 못 보내서 PUT·DELETE를 확인하려면 도구가 필요하다(2-11). 다른 하나는 **손으로 한 배선을 스프링에게 맡기는 일** — `getInstance()` 대신 주입(2-4), 연결 정보는 설정 파일로(2-2)다.
 
-여기에 1-21의 정적 HTML이 얹히면서 세 번째 방향이 하나 더 생겼다. **비어 있던 View 자리를 채우는 일**이다. 지금은 화면과 서버가 각자 떠 있고 사이가 끊긴 상태다.
+여기에 1-21의 정적 HTML과 1-22의 `index.js` 가 얹히면서 세 번째 방향이 하나 정리됐다. **비어 있던 View 자리를 채우는 일**이다.
 
 ```
-static/index.html  ──(아직 끊김)──  @RestController ── Dao ── MySQL
-   버튼·입력칸                          주소 + JSON
+static/day02/index.html ── index.js (axios) ──HTTP──▶ @RestController ── Dao ── MySQL
+   입력칸·버튼·표          ◀────── 응답결과.data ◀────── JSON
 ```
 
-이 사이를 잇는 것이 화면에서 요청을 보내는 코드이고, 그 자리가 `fetch` 다(2-11·2-15). 그러면 브라우저 주소창을 대신하던 자리에 실제 화면이 들어서면서 MVC의 V가 처음으로 제자리를 찾는다.
+전체조회 한 갈래가 브라우저 표까지 닿았으니, 남은 등록·수정·삭제는 같은 모양에서 `axios.get` 을 `post`·`put`·`delete` 로 바꿔 다는 일이다(2-15·2-17). 브라우저 주소창이 임시로 맡고 있던 자리에 실제 화면이 들어서면서 MVC의 V가 제자리를 찾았고, [[Java day09 MVC 종합예제]] 에서 나눈 세 계층이 웹에서 한 바퀴 다 돌았다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -1698,7 +1875,7 @@ public class WaitingController {
 
 ### 2-15. 화면의 버튼과 API를 잇기
 
-1-21에서 만든 화면은 자리만 잡아 둔 상태다. 이 자리를 실제로 이으려면 **버튼을 눌렀을 때 요청을 보내는 코드**가 필요하다. 브라우저 안에서 그 일을 하는 것이 `fetch` 다.
+1-22에서 전체조회 한 갈래를 axios로 이어 봤다. 같은 일을 브라우저에 내장된 `fetch` 로 하면 어떤 모양이 되는지, 그리고 등록·수정·삭제까지 채우면 어떻게 되는지 정리해 둔다. 화면이 하는 일은 **버튼을 눌렀을 때 요청을 보내고 돌아온 값을 그리는 것** 하나다.
 
 우선 값을 꺼내 쓰려면 입력칸에 이름표가 있어야 한다. `id` 를 붙여 두고 [[JS day11 DOM 조작]] 에서 쓰던 방식으로 꺼낸다.
 
@@ -1775,6 +1952,77 @@ public class BoardController { ... }
 - 파일이 `src/main/resources/static/` 아래에 있는지 (`java` 폴더 아래에 두면 주소로 열리지 않는다)
 - 주소의 폴더 구조가 실제 폴더 구조와 같은지
 - 고친 내용이 빌드 결과에 반영됐는지
+
+### 2-17. axios와 fetch — 같은 일을 하는 두 가지
+
+2-15에 적은 `fetch` 와 1-22에서 쓴 `axios` 는 하는 일이 같다. 브라우저에서 HTTP 요청을 보내고 응답을 받는다.
+
+```javascript
+// axios
+const r = await axios.get('/board/findall');
+const list = r.data;
+
+// fetch
+const res = await fetch('/board/findall');
+const list2 = await res.json();
+```
+
+| | `fetch` | `axios` |
+| --- | --- | --- |
+| 불러오기 | 브라우저에 내장 — 아무것도 안 해도 된다 | `<script>` 로 따로 불러온다 |
+| 본문 꺼내기 | `.json()` 을 한 번 더 부른다 | `.data` 에 이미 담겨 있다 |
+| 400·500 응답 | 예외로 보지 않는다 — `res.ok` 를 직접 확인 | 예외로 튄다 — `try`·`catch` 로 잡는다 |
+| 보내는 값 | 헤더·본문을 직접 적는다 | 객체를 넘기면 JSON으로 바꿔 보낸다 |
+
+요청이 몇 개 안 되면 `fetch` 로 충분하고, 요청이 많아지면 공통 설정(기본 주소·헤더·에러 처리)을 한곳에 모을 수 있는 `axios` 쪽이 편해진다.
+
+응답이 실패했을 때의 처리는 둘 다 챙겨야 한다. `axios` 는 `try`·`catch` 로 감싸는 모양이 된다.
+
+```javascript
+async function boardFindAll() {
+  try {
+    const r = await axios.get('/board/findall');
+    // 그리기
+  } catch (e) {
+    console.log('요청 실패', e);
+  }
+}
+```
+
+[[Java day12 예외 처리와 JDBC]] 에서 정리한 `try`·`catch` 와 표기가 같다. 자바 쪽에서 `SQLException` 을 잡아 두는 자리가 있듯이, 화면 쪽에도 응답이 오지 않았을 때 무엇을 보여 줄지 정하는 자리가 필요하다.
+
+### 2-18. 절대주소와 상대주소 — 출처와 CORS
+
+요청 주소를 적는 방식은 둘이다.
+
+| 표기 | 뜻 |
+| --- | --- |
+| `http://127.0.0.1:8080/board/findall` | 절대주소 — 스킴·호스트·포트까지 다 적는다 |
+| `/board/findall` | 상대주소 — 지금 화면이 온 서버의 같은 자리 |
+
+화면과 API가 같은 서버에서 나오는 지금 구조에서는 상대주소로 충분하다. 포트를 바꾸거나 나중에 다른 곳에 올려도 코드를 고칠 일이 없다는 점에서 상대주소가 편하다. 절대주소는 화면과 API가 정말 다른 서버에 있을 때 쓴다.
+
+여기서 **출처(origin)** 라는 개념이 나온다. 스킴·호스트·포트 셋을 묶은 것이 출처이고, 하나라도 다르면 브라우저는 다른 출처로 본다.
+
+| 화면 주소 | API 주소 | 같은 출처인가 |
+| --- | --- | --- |
+| `http://localhost:8080/day02/index.html` | `http://localhost:8080/board/findall` | 같다 |
+| `http://localhost:8080/…` | `http://127.0.0.1:8080/…` | 다르다 (문자열이 다르다) |
+| `http://localhost:5500/…` | `http://localhost:8080/…` | 다르다 (포트) |
+
+다른 출처로 요청을 보내면 브라우저가 응답을 화면 코드에 넘겨주지 않고 막는다. 서버는 정상으로 응답했는데 화면에서만 실패로 보이는 상황이라, 서버 로그와 브라우저 콘솔이 서로 다른 말을 하게 된다.
+
+풀어 주는 쪽은 서버다. 스프링에서는 표시 하나로 열 수 있다.
+
+```java
+@CrossOrigin(origins = "http://localhost:5500")
+@RestController
+public class BoardController { ... }
+```
+
+전부 열어 두는 `origins = "*"` 는 실습에서만 쓰고, 실제로는 허용할 주소를 적어 두는 편이 안전하다. 프로젝트 전체에 한 번만 적으려면 설정 클래스에서 `WebMvcConfigurer` 의 `addCorsMappings` 를 쓴다.
+
+애초에 화면을 `src/main/resources/static/` 에 두고 같은 서버에서 내보내면 출처가 갈리지 않아 이 문제 자체가 생기지 않는다(1-21). 프론트를 따로 띄우기 시작하는 시점부터 챙기게 되는 자리라고 보면 된다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -1997,6 +2245,13 @@ public class BoardPageController {
 - `PreparedStatement` 의 `?` 바인딩, `executeUpdate`·`executeQuery`
 - `JdbcTemplate` 과 JPA — 반복 코드를 줄이는 단계
 - 트랜잭션과 `@Transactional`, `setAutoCommit`·`commit`·`rollback`, ACID
+- `<script>` 태그의 위치와 실행 순서, CDN으로 라이브러리 불러오기
+- axios와 `fetch` — `응답.data` 와 `.json()`, 상태 코드에 따른 예외 처리의 갈림
+- 콜백 · Promise · `async`/`await` — 비동기 코드를 쓰는 세 단계
+- `Promise.all` 로 여러 요청을 한꺼번에 보내기
+- 템플릿 리터럴로 마크업 만들기, `innerHTML` 과 `textContent` · XSS
+- 출처(origin)와 CORS, `@CrossOrigin` · `WebMvcConfigurer.addCorsMappings`
+- 브라우저 개발자 도구의 Network 탭으로 요청·응답 들여다보기
 - 자바 패키지 이름 규칙, 계층별 구조와 기능별 구조
 - `@RestController` 를 쓰는 이유 — 반환값을 뷰 이름이 아니라 데이터로 읽게 하기
 - 객체·컬렉션이 JSON으로 바뀌는 과정과 getter의 역할
@@ -2051,9 +2306,10 @@ public class BoardPageController {
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dao/WaitingDao.java` (`BaseDao` 상속으로 연동 코드 없이 `conn` 쓰기, 싱글톤 세 요소 반복과 수식어 순서, 조건절에 자연키(전화번호)를 쓸 때의 성질, `executeUpdate` 가 2 이상을 돌려줄 수 있는 상황과 `result == 1` 판정의 한계, `UNIQUE` 제약으로 애초에 중복을 막기, 컬럼 이름을 문자열로 적어 `ResultSet` 에서 꺼내기)
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dto/WaitingDto.java` (DB 컬럼 이름과 자바 필드 이름이 다를 때 어디서 무엇을 기준으로 짝을 짓는지, `ResultSet` 은 컬럼 이름·요청 바인딩은 프로퍼티 이름, 자바빈 프로퍼티 이름을 getter·setter가 정한다는 규약, 접근제한자를 적지 않았을 때의 default 범위, 전화번호를 `String` 으로 두는 이유)
 - `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기, 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, `NOT NULL` 로 빈 값 막기, 백틱으로 식별자 감싸기, 표가 늘어도 초기화는 앞 한 줄로)
-- `2026B_Spring/springweb/src/main/resources/static/day02/index.html` (정적 리소스를 두는 자리와 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점, `<!doctype html>`·`lang`·`charset`·viewport meta가 각각 하는 일, `<head>` 와 `<body>` 의 갈림, 입력칸·등록 버튼과 `<thead>`·`<tbody>` 로 나눈 표, 화면 요소가 CRUD 매핑 넷과 짝을 이루는 구조, 파일로 직접 여는 것과 톰캣이 내보내는 것의 차이와 같은 출처, 빌드 결과로 복사되는 자리)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index.html` (정적 리소스를 두는 자리와 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점, `<!doctype html>`·`lang`·`charset`·viewport meta가 각각 하는 일, `<head>` 와 `<body>` 의 갈림, 입력칸·등록 버튼과 `<thead>`·`<tbody>` 로 나눈 표, 화면 요소가 CRUD 매핑 넷과 짝을 이루는 구조, 파일로 직접 여는 것과 톰캣이 내보내는 것의 차이와 같은 출처, 빌드 결과로 복사되는 자리, `class`·`id` 식별자를 달아 자바스크립트가 잡을 자리 만들기, `onclick` 으로 함수 걸기, `<script>` 를 body 끝에 두는 이유와 실행 순서, CDN 주소와 상대 경로)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index.js` (화면에서 서버로 요청을 보내는 자리, axios로 HTTP 메소드를 그대로 부르기와 서버 매핑 넷과의 짝, 비동기와 `async`·`await`·Promise, 응답 한 벌(`status`·`headers`·`data`)과 본문을 `.data` 로 꺼내기, JSON 배열이 자바스크립트 배열로 담기는 자리, `querySelector` 로 채울 자리 잡기, 반복문으로 마크업 문자열을 모아 한 번에 `innerHTML` 로 넣기, 템플릿 리터럴, JSON 프로퍼티 이름이 곧 화면 코드의 이름이 되는 자리, 파일 끝에서 함수를 바로 불러 페이지 열릴 때 목록 그리기)
 - `2026B_Spring/springweb/build.gradle` (`main` 을 가진 클래스가 여럿일 때 `springBoot { mainClass }` 로 실행할 진입점 고르기, 고른 진입점의 패키지가 곧 컴포넌트 스캔 범위가 되는 점)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
