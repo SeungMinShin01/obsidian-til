@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day02, springweb/build.gradle
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day02, springweb/src/main/resources/static/day02, springweb/build.gradle
 작성일: 2026-08-26
 tags: [학습, java]
 ---
 
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]]
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
@@ -25,6 +25,7 @@ tags: [학습, java]
 | `Controller/WaitingController.java` | 대기명단 요청을 받는 자리 (1-20) |
 | `Model/Dao/WaitingDao.java` | 대기명단 DB 처리 담당 (1-20) |
 | `Model/Dto/WaitingDto.java` | 대기명단 한 줄을 담는 그릇 (1-19) |
+| `resources/static/day02/index.html` | 서버가 내보내는 화면 — 비어 있던 View 자리 (1-21) |
 
 [[Java day12 종합예제 JDBC DAO]] 에서 만든 구조와 거의 같다. 달라진 것은 `main` 이 콘솔 메뉴를 돌리는 대신 **서버를 띄운다**는 것, 그리고 컨트롤러가 메뉴 번호 대신 **주소로 요청을 받는다**는 것 둘이다. 먼저 등록 요청 하나가 브라우저에서 DB까지 닿고, 이어서 조회·수정·삭제를 같은 모양으로 채워 [[개념 - CRUD]] 네 가지가 모두 웹 요청으로 이어진다(1-13~1-16). 마지막으로 그 한 벌을 대기명단이라는 다른 주제에 통째로 다시 써 보면서, 계층을 나눠 둔 값어치를 표가 늘어나는 쪽에서도 확인한다(1-18~1-20).
 
@@ -1040,7 +1041,111 @@ public boolean deleteList(String pNumber) { return wd.deleteList(pNumber); }
 
 1-16의 표와 주소·이름만 다르고 골격이 같다. [[개념 - CRUD]] 네 가지가 도메인마다 한 벌씩 생기는 형태라, 이 반복이 눈에 보이기 시작하는 것이 3-3의 `JdbcTemplate`·JPA로 넘어가는 계기가 된다.
 
-### 1-21. 정리 — 웹 요청이 DB까지 닿았다
+### 1-21. 정적 리소스 — 서버가 HTML을 직접 내보낸다
+
+지금까지는 브라우저 주소창이 View 자리를 대신했다. 주소를 치면 JSON이 그대로 보이는 식이라 화면이라고 부르기는 어렵다. 여기에 **HTML 파일 하나를 프로젝트 안에 두고 서버가 내보내게** 하면 화면 쪽 첫 자리가 생긴다.
+
+파일을 놓은 곳이 핵심이다.
+
+```
+src/main/resources/
+├── application.properties
+└── static/
+    └── day02/
+        └── index.html
+```
+
+`src/main/resources/static/` 아래에 둔 파일은 **따로 매핑을 적지 않아도 주소로 바로 열린다.** 컨트롤러를 만들 필요가 없다.
+
+| 파일 위치 | 브라우저 주소 |
+| --- | --- |
+| `static/day02/index.html` | `http://localhost:8080/day02/index.html` |
+| `static/index.html` | `http://localhost:8080/` (앞 화면으로 자동 인식) |
+
+`static/` 아래의 폴더 구조가 그대로 주소가 된다고 보면 된다. 스프링 부트가 정적 리소스를 찾는 자리는 네 곳(`static`·`public`·`resources`·`META-INF/resources`)인데, 실습에서 쓰는 것은 `static/` 하나로 충분하다.
+
+이름을 `index.html` 로 둔 이유도 있다. 폴더 주소만 쳤을 때 열리는 **기본 문서**로 취급되는 이름이라, `/day02/` 까지만 쳐도 같은 파일이 열린다.
+
+#### 문서의 뼈대
+
+```html
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page Title</title>
+  </head>
+  <body>
+    <h3>톰캣 서버에서 실행되는 HTML</h3>
+  </body>
+</html>
+```
+
+| 표기 | 하는 일 |
+| --- | --- |
+| `<!doctype html>` | 이 문서를 HTML5로 읽으라는 선언. 빠뜨리면 브라우저가 옛 방식으로 해석한다 |
+| `lang="ko"` | 문서의 언어. 번역·읽어주기 기능이 참고한다 |
+| `<meta charset="utf-8">` | 글자 인코딩. 한글이 깨지지 않게 하는 자리 |
+| `<meta name="viewport" ...>` | 모바일에서 화면 너비를 기기에 맞춘다 |
+| `<title>` | 브라우저 탭에 뜨는 이름 |
+
+`<head>` 는 브라우저에게 주는 정보, `<body>` 는 사람에게 보이는 내용이다. 이 갈림은 [[HTML day02 문서 구조와 미디어]] 에서 정리한 것과 같다.
+
+#### 입력 자리와 목록 자리
+
+`<body>` 안은 두 덩어리로 나뉜다. 위는 값을 넣는 자리, 아래는 이미 있는 값을 보여 주는 자리다.
+
+```html
+<div>
+  내용 : <input type="text" /> <br />
+  작성자 : <input type="text" /> <br />
+  <button>등록</button>
+</div>
+```
+
+```html
+<table border="1">
+  <thead>
+    <tr><th>번호</th><th>작성자</th><th>내용</th><th>비고</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>유재석</td><td>안녕하세요</td>
+      <td><button>수정</button><button>삭제</button></td>
+    </tr>
+  </tbody>
+</table>
+```
+
+`<thead>` 는 제목 줄, `<tbody>` 는 값이 들어가는 줄이다. 제목 칸은 `<th>`, 값 칸은 `<td>` 로 갈린다. 표 마크업은 [[HTML day04 폼과 테이블]]·[[HTML day15 테이블 마크업]] 에서 본 것과 같은 모양이다.
+
+눈여겨볼 것은 **화면의 구성이 지금까지 만든 CRUD 넷과 그대로 짝을 이룬다**는 점이다.
+
+| 화면 요소 | 짝이 되는 요청 |
+| --- | --- |
+| 입력칸 + 등록 버튼 | `@PostMapping` — 등록 |
+| 표 전체 | `@GetMapping` — 전체조회 |
+| 수정 버튼 | `@PutMapping` — 수정 |
+| 삭제 버튼 | `@DeleteMapping` — 삭제 |
+
+`<td>` 안의 `1`·`유재석`·`안녕하세요` 는 손으로 적어 둔 값이다. **화면의 자리를 먼저 잡아 놓고, 그 자리를 실제 데이터로 채우는 것은 다음 단계**라고 보면 된다. 지금 상태에서 버튼을 눌러도 아무 일도 일어나지 않는데, 버튼과 요청을 잇는 자바스크립트가 아직 없어서다. 그 연결은 2-15에서 정리한다.
+
+#### 톰캣이 내보낸다는 말
+
+제목에 적힌 "톰캣 서버에서 실행되는 HTML"이 가리키는 것은, 이 파일을 **파일 탐색기에서 더블클릭해 여는 것과 서버가 내보내는 것이 다르다**는 점이다.
+
+| | 파일로 직접 열기 | 서버가 내보내기 |
+| --- | --- | --- |
+| 주소 | `file:///C:/.../index.html` | `http://localhost:8080/day02/index.html` |
+| 거치는 것 | 없음 | 내장 톰캣 |
+| 같은 서버의 API 호출 | 다른 출처로 취급돼 막힌다 | 같은 출처라 그대로 된다 |
+
+같은 주소·같은 포트에서 화면과 API가 함께 나오는 상태라, 화면에서 `/board` 같은 주소를 부를 때 출처가 갈리지 않는다. 화면과 API를 한 프로젝트에 같이 두는 이유 중 하나가 이것이다.
+
+빌드하면 `build/resources/main/static/…` 아래에 같은 파일이 복사된다. 실행할 때 실제로 읽히는 것은 이 복사본이라, 화면을 고쳤는데 반영이 안 되는 것처럼 보이면 다시 빌드했는지부터 보는 편이 빠르다.
+
+### 1-22. 정리 — 웹 요청이 DB까지 닿았다
 
 지금까지의 흐름을 이어 두면 이렇다.
 
@@ -1083,6 +1188,15 @@ public boolean deleteList(String pNumber) { return wd.deleteList(pNumber); }
 `BaseDao` 와 `AppStart` 는 손대지 않았고, 도메인마다 Dto·Dao·Controller가 한 벌씩 늘었다. 반대로 말하면 **표가 늘 때마다 같은 모양을 세 번씩 다시 쓰게 된다**는 뜻이기도 해서, 이 반복을 줄이는 방향이 3-3의 `JdbcTemplate`·JPA다.
 
 남은 것은 두 방향이다. 하나는 **요청을 실제로 보내 보는 일** — 브라우저 주소창으로는 GET밖에 못 보내서 PUT·DELETE를 확인하려면 도구가 필요하다(2-11). 다른 하나는 **손으로 한 배선을 스프링에게 맡기는 일** — `getInstance()` 대신 주입(2-4), 연결 정보는 설정 파일로(2-2)다.
+
+여기에 1-21의 정적 HTML이 얹히면서 세 번째 방향이 하나 더 생겼다. **비어 있던 View 자리를 채우는 일**이다. 지금은 화면과 서버가 각자 떠 있고 사이가 끊긴 상태다.
+
+```
+static/index.html  ──(아직 끊김)──  @RestController ── Dao ── MySQL
+   버튼·입력칸                          주소 + JSON
+```
+
+이 사이를 잇는 것이 화면에서 요청을 보내는 코드이고, 그 자리가 `fetch` 다(2-11·2-15). 그러면 브라우저 주소창을 대신하던 자리에 실제 화면이 들어서면서 MVC의 V가 처음으로 제자리를 찾는다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -1582,6 +1696,86 @@ public class WaitingController {
 
 `@RequestMapping` 은 클래스와 메소드 양쪽에 쓸 수 있는 표시라, 클래스에 붙으면 **공통 앞머리**로, 메소드에 붙으면 그 메소드의 주소로 읽힌다(1-9 ④). 클래스 쪽에는 HTTP 방식을 지정하지 않고 주소만 두는 것이 보통이다 — 방식은 메소드마다 다르기 때문이다.
 
+### 2-15. 화면의 버튼과 API를 잇기
+
+1-21에서 만든 화면은 자리만 잡아 둔 상태다. 이 자리를 실제로 이으려면 **버튼을 눌렀을 때 요청을 보내는 코드**가 필요하다. 브라우저 안에서 그 일을 하는 것이 `fetch` 다.
+
+우선 값을 꺼내 쓰려면 입력칸에 이름표가 있어야 한다. `id` 를 붙여 두고 [[JS day11 DOM 조작]] 에서 쓰던 방식으로 꺼낸다.
+
+```html
+내용 : <input type="text" id="content" /> <br />
+작성자 : <input type="text" id="writer" /> <br />
+<button onclick="add()">등록</button>
+```
+
+```javascript
+function add() {
+  const content = document.querySelector('#content').value;
+  const writer = document.querySelector('#writer').value;
+
+  fetch(`/board?content=${content}&writer=${writer}`, { method: 'post' })
+    .then((r) => r.json())
+    .then((result) => {
+      if (result) location.reload();
+    });
+}
+```
+
+전체조회는 받아 온 목록으로 `<tbody>` 를 채우는 모양이 된다.
+
+```javascript
+function print() {
+  fetch('/board')
+    .then((r) => r.json())
+    .then((list) => {
+      let html = '';
+      for (const b of list) {
+        html += `<tr><td>${b.bno}</td><td>${b.bwriter}</td><td>${b.bcontent}</td>
+                 <td><button>수정</button><button>삭제</button></td></tr>`;
+      }
+      document.querySelector('tbody').innerHTML = html;
+    });
+}
+print();
+```
+
+여기서 `b.bno`·`b.bwriter` 처럼 쓰는 이름이 곧 **DTO의 프로퍼티 이름**이다. 1-19에서 정리한 "JSON으로 나갈 때의 이름은 getter가 정한다"가 화면에서 그대로 드러나는 자리라, 자바 쪽 이름을 바꾸면 화면도 같이 바뀐다.
+
+정리하면 화면이 하는 일은 셋뿐이다.
+
+| 단계 | 하는 일 |
+| --- | --- |
+| 1 | 입력칸에서 값 꺼내기 |
+| 2 | `fetch` 로 주소 + 방식에 맞춰 보내기 |
+| 3 | 돌려받은 JSON을 화면에 그리기 |
+
+서버 쪽은 손댈 것이 없다. 이미 만들어 둔 매핑 넷이 그대로 받는다.
+
+### 2-16. 정적 파일 주소와 컨트롤러 주소가 겹칠 때
+
+정적 파일도 주소를 차지하기 때문에, 컨트롤러 매핑과 같은 주소가 되면 한쪽만 보인다. **컨트롤러 매핑이 먼저 확인되고, 거기서 걸리는 것이 없을 때 정적 파일을 찾는 순서**다.
+
+| 상황 | 결과 |
+| --- | --- |
+| `static/board.html` 만 있음 | `/board.html` 로 파일이 열린다 |
+| `@GetMapping("/board")` 만 있음 | `/board` 로 JSON이 나온다 |
+| `static/board` 와 `@GetMapping("/board")` 둘 다 | 컨트롤러가 이긴다 — 파일은 안 보인다 |
+
+그래서 **화면 주소와 API 주소를 처음부터 갈라 두는 편이 안전하다.** 흔히 쓰는 방식은 API 쪽에 앞머리를 하나 두는 것이다.
+
+```java
+@RequestMapping("/api/board")
+public class BoardController { ... }
+```
+
+이렇게 두면 화면은 `/day02/index.html`, API는 `/api/board` 로 갈려서 겹칠 일이 없다. 2-14의 공통 앞머리와 2-10의 REST 주소 정리를 함께 쓰면 자연스럽게 이 모양이 된다.
+
+화면 파일이 열리지 않을 때 보는 자리는 대체로 셋이다.
+
+- 파일이 `src/main/resources/static/` 아래에 있는지 (`java` 폴더 아래에 두면 주소로 열리지 않는다)
+- 주소의 폴더 구조가 실제 폴더 구조와 같은지
+- 고친 내용이 빌드 결과에 반영됐는지
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 자동 설정이 실제로 하는 일
@@ -1740,7 +1934,35 @@ com.example                   com.example
 
 작을 때는 ①이 편하고, 기능이 늘어나면 ②가 관리하기 낫다는 평이 많다. 어느 쪽이든 1-3에서 본 컴포넌트 스캔 범위(시작 클래스 아래) 안에 들어가야 한다.
 
-### 3-6. 다음에 볼 키워드
+### 3-6. 정적 파일과 템플릿 엔진 — 화면을 만드는 두 갈래
+
+1-21처럼 완성된 HTML을 그대로 내보내는 방식 말고, **서버가 값을 채워 넣은 HTML을 만들어 내보내는** 방식도 있다. 갈림은 "누가 화면을 그리느냐"다.
+
+| | 정적 파일 + `fetch` | 템플릿 엔진 |
+| --- | --- | --- |
+| 두는 곳 | `resources/static/` | `resources/templates/` |
+| 서버가 하는 일 | 파일을 그대로 내보낸다 | 값을 끼워 넣어 HTML을 완성한다 |
+| 컨트롤러 | `@RestController` (JSON) | `@Controller` (뷰 이름) |
+| 화면을 그리는 쪽 | 브라우저 | 서버 |
+
+템플릿 쪽은 1-13에서 갈렸던 `@Controller` 로 돌아가는 길이다. 반환값이 데이터가 아니라 **뷰 이름**으로 읽혀서, 스프링이 그 이름의 템플릿 파일을 찾아 값을 채운 뒤 내보낸다.
+
+```java
+@Controller
+public class BoardPageController {
+  @GetMapping("/board/list")
+  public String list(Model model) {
+    model.addAttribute("list", BoardDao.getInstance().print());
+    return "boardList";   // templates/boardList.html
+  }
+}
+```
+
+스프링 부트에서 주로 쓰는 것은 Thymeleaf고, `spring-boot-starter-thymeleaf` 를 의존성에 넣으면 자동 설정이 나머지를 잡아 준다(3-1과 같은 구조다). JSP는 톰캣을 따로 띄우던 시절의 방식이라 내장 톰캣과는 손이 더 간다.
+
+지금 방향은 앞쪽, 그러니까 **서버는 JSON만 내보내고 화면은 브라우저가 그리는** 쪽이다. 이 갈림이 굳어지면 화면을 React 같은 도구로 분리해도 서버는 그대로 쓸 수 있다.
+
+### 3-7. 다음에 볼 키워드
 
 - 프레임워크와 라이브러리의 차이, 제어의 역전(IoC)
 - 애노테이션의 성격 — 주석과의 차이, 리플렉션으로 읽히는 구조
@@ -1805,6 +2027,18 @@ com.example                   com.example
 - `@RequestMapping` 을 클래스에 붙여 공통 앞머리 두기
 - 전화번호처럼 숫자로 보이지만 문자열로 다뤄야 하는 값
 - SQL에서 `NULL` 은 `=` 로 비교되지 않는다는 성질
+- 정적 리소스 위치 — `resources/static`·`public`·`resources`·`META-INF/resources`
+- `static/` 아래 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점
+- `<!doctype html>`·`lang`·`<meta charset>`·viewport meta가 각각 하는 일
+- `file://` 로 여는 것과 `http://localhost:8080` 으로 여는 것의 차이, 같은 출처와 CORS
+- 화면 요소(입력칸·표·버튼)와 CRUD 매핑 넷의 대응
+- `build/resources/main` 으로 복사되는 빌드 결과와 반영 시점
+- `fetch` 로 화면과 API 잇기 — `method` 지정, `.json()`, `location.reload()`
+- JSON의 프로퍼티 이름이 곧 화면에서 쓰는 이름이 되는 자리
+- 정적 파일 주소와 컨트롤러 매핑이 겹칠 때의 우선순위, `/api` 앞머리로 갈라 두기
+- 템플릿 엔진(Thymeleaf)과 `resources/templates`, `@Controller` 의 반환값이 뷰 이름이 되는 자리
+- `Model` 에 값을 담아 화면으로 넘기기
+- 서버가 화면을 그리는 방식과 브라우저가 그리는 방식의 갈림, 프론트 분리
 
 ## 실습 파일
 
@@ -1817,8 +2051,9 @@ com.example                   com.example
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dao/WaitingDao.java` (`BaseDao` 상속으로 연동 코드 없이 `conn` 쓰기, 싱글톤 세 요소 반복과 수식어 순서, 조건절에 자연키(전화번호)를 쓸 때의 성질, `executeUpdate` 가 2 이상을 돌려줄 수 있는 상황과 `result == 1` 판정의 한계, `UNIQUE` 제약으로 애초에 중복을 막기, 컬럼 이름을 문자열로 적어 `ResultSet` 에서 꺼내기)
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dto/WaitingDto.java` (DB 컬럼 이름과 자바 필드 이름이 다를 때 어디서 무엇을 기준으로 짝을 짓는지, `ResultSet` 은 컬럼 이름·요청 바인딩은 프로퍼티 이름, 자바빈 프로퍼티 이름을 getter·setter가 정한다는 규약, 접근제한자를 적지 않았을 때의 default 범위, 전화번호를 `String` 으로 두는 이유)
 - `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기, 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, `NOT NULL` 로 빈 값 막기, 백틱으로 식별자 감싸기, 표가 늘어도 초기화는 앞 한 줄로)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index.html` (정적 리소스를 두는 자리와 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점, `<!doctype html>`·`lang`·`charset`·viewport meta가 각각 하는 일, `<head>` 와 `<body>` 의 갈림, 입력칸·등록 버튼과 `<thead>`·`<tbody>` 로 나눈 표, 화면 요소가 CRUD 매핑 넷과 짝을 이루는 구조, 파일로 직접 여는 것과 톰캣이 내보내는 것의 차이와 같은 출처, 빌드 결과로 복사되는 자리)
 - `2026B_Spring/springweb/build.gradle` (`main` 을 가진 클래스가 여럿일 때 `springBoot { mainClass }` 로 실행할 진입점 고르기, 고른 진입점의 패키지가 곧 컴포넌트 스캔 범위가 되는 점)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
