@@ -2521,6 +2521,14 @@ public class BoardPageController {
 - 템플릿 엔진(Thymeleaf)과 `resources/templates`, `@Controller` 의 반환값이 뷰 이름이 되는 자리
 - `Model` 에 값을 담아 화면으로 넘기기
 - 서버가 화면을 그리는 방식과 브라우저가 그리는 방식의 갈림, 프론트 분리
+- `<input>` 에서 값을 꺼내는 `.value` 와 `innerHTML`·`textContent` 의 갈림
+- `alert`·`confirm`·`prompt` — 브라우저가 그리는 창과 각각 돌려주는 값
+- 요청 성공 후 화면을 되살리는 두 방식 — `location.reload()` 와 조회 함수 재호출
+- 표를 그릴 때 `onclick` 에 값을 박아 넣어 버튼과 함수를 잇기
+- 자바스크립트의 `==` 와 `===`, JSON `true` 가 자바스크립트 `boolean` 으로 담기는 자리
+- 값을 쿼리 스트링에 실을 때와 요청 본문에 실을 때의 갈림, `axios.post(주소, 객체)`
+- `encodeURIComponent` 로 주소에 실을 값 감싸기 — `&`·`#`·공백
+- `@RequestBody` 로 JSON 본문을 객체로 받기
 
 ## 실습 파일
 
@@ -2534,9 +2542,9 @@ public class BoardPageController {
 - `2026B_Spring/springweb/src/main/java/day02/Model/Dto/WaitingDto.java` (DB 컬럼 이름과 자바 필드 이름이 다를 때 어디서 무엇을 기준으로 짝을 짓는지, `ResultSet` 은 컬럼 이름·요청 바인딩은 프로퍼티 이름, 자바빈 프로퍼티 이름을 getter·setter가 정한다는 규약, 접근제한자를 적지 않았을 때의 default 범위, 전화번호를 `String` 으로 두는 이유)
 - `2026B_Spring/springweb/src/main/java/day02/sample.sql` (실습용 DB·테이블 생성, `AUTO_INCREMENT` 와 `PRIMARY KEY` 제약, 여러 줄 `insert`, `DROP ... IF EXISTS` 로 같은 상태에서 시작하기, 제약을 컬럼 뒤에 붙이는 표기와 `constraint` 로 빼는 표기, `NOT NULL` 로 빈 값 막기, 백틱으로 식별자 감싸기, 표가 늘어도 초기화는 앞 한 줄로)
 - `2026B_Spring/springweb/src/main/resources/static/day02/index.html` (정적 리소스를 두는 자리와 폴더 구조가 그대로 주소가 되는 규칙, `index.html` 이 기본 문서로 취급되는 이름인 점, `<!doctype html>`·`lang`·`charset`·viewport meta가 각각 하는 일, `<head>` 와 `<body>` 의 갈림, 입력칸·등록 버튼과 `<thead>`·`<tbody>` 로 나눈 표, 화면 요소가 CRUD 매핑 넷과 짝을 이루는 구조, 파일로 직접 여는 것과 톰캣이 내보내는 것의 차이와 같은 출처, 빌드 결과로 복사되는 자리, `class`·`id` 식별자를 달아 자바스크립트가 잡을 자리 만들기, `onclick` 으로 함수 걸기, `<script>` 를 body 끝에 두는 이유와 실행 순서, CDN 주소와 상대 경로)
-- `2026B_Spring/springweb/src/main/resources/static/day02/index.js` (화면에서 서버로 요청을 보내는 자리, axios로 HTTP 메소드를 그대로 부르기와 서버 매핑 넷과의 짝, 비동기와 `async`·`await`·Promise, 응답 한 벌(`status`·`headers`·`data`)과 본문을 `.data` 로 꺼내기, JSON 배열이 자바스크립트 배열로 담기는 자리, `querySelector` 로 채울 자리 잡기, 반복문으로 마크업 문자열을 모아 한 번에 `innerHTML` 로 넣기, 템플릿 리터럴, JSON 프로퍼티 이름이 곧 화면 코드의 이름이 되는 자리, 파일 끝에서 함수를 바로 불러 페이지 열릴 때 목록 그리기)
+- `2026B_Spring/springweb/src/main/resources/static/day02/index.js` (화면에서 서버로 요청을 보내는 자리, axios로 HTTP 메소드를 그대로 부르기와 서버 매핑 넷과의 짝, 비동기와 `async`·`await`·Promise, 응답 한 벌(`status`·`headers`·`data`)과 본문을 `.data` 로 꺼내기, JSON 배열이 자바스크립트 배열로 담기는 자리, `querySelector` 로 채울 자리 잡기, 반복문으로 마크업 문자열을 모아 한 번에 `innerHTML` 로 넣기, 템플릿 리터럴, JSON 프로퍼티 이름이 곧 화면 코드의 이름이 되는 자리, 파일 끝에서 함수를 바로 불러 페이지 열릴 때 목록 그리기, `.value` 로 입력칸 값 꺼내기, 값을 쿼리 스트링에 실어 POST·PUT 보내기와 커맨드 객체 바인딩이 주소와 본문을 가리지 않는 점, 상대주소로 적기, `response.data` 로 `boolean` 판정하기, 성공 후 조회 함수를 재호출해 표만 다시 그리기, `alert`·`prompt` 로 알리고 값 받기, 수정 함수가 매개변수로 대상 번호를 받는 구조와 `onclick` 에 값을 박아 잇기, 주소창으로는 못 보내던 PUT 요청을 axios로 보내기, 세 함수가 같은 틀을 반복하는 모양)
 - `2026B_Spring/springweb/build.gradle` (`main` 을 가진 클래스가 여럿일 때 `springBoot { mainClass }` 로 실행할 진입점 고르기, 고른 진입점의 패키지가 곧 컴포넌트 스캔 범위가 되는 점)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day03 자료형과 연산자]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
