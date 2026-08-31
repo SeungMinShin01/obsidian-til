@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java Spring day03 — 애노테이션과 리플렉션
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `RestController1.java`, `AppStart.java`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
 
 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
@@ -23,6 +23,8 @@ day03은 그 안쪽을 본다. 애노테이션을 직접 만들고, 만든 애�
 | `exam2.java` 의 `class Student` | 남이 만든 애노테이션(롬복)을 가져다 쓰기 — 컴파일 시점에 읽히는 갈래 (1-13~1-17) |
 | `exam2.java` 의 `Student.builder()` | 애노테이션 하나로 객체 조립 방식 자체를 바꾸기 (1-18) |
 | `exam3.java` | 객체를 **누가** 만드는가 — `new`·싱글톤·스프링 컨테이너 (1-19~1-22) |
+| `AppStart.java` | day03 패키지에 진입점을 두고 스캔 범위를 잡기 (1-23) |
+| `RestController1.java` | 지금까지 본 표시들을 실제 요청 처리에 얹기 — `@Controller`·`@GetMapping`·`@ResponseBody` (1-24~1-27) |
 
 `exam2` 는 방향이 반대다. 만드는 쪽이 아니라 **이미 만들어진 애노테이션(롬복)을 가져다 쓰는** 쪽이고, 읽히는 시점도 실행 중이 아니라 컴파일 중이다. 같은 장치의 다른 갈래를 한 날에 둘 다 보는 셈이다.
 
@@ -573,6 +575,153 @@ class SampleDao3 {
 
 정리하면 오늘 본 것은 하나의 흐름이다. 애노테이션이라는 표시가 있고(1-1~1-8), 그 표시를 읽어 객체를 만들고 메소드를 부르는 장치가 있고(1-9~1-12), 그 장치 위에 스프링이 **객체 관리 자체를 대신 맡는** 구조를 얹었다(1-19~1-22). `@Component` 한 줄이 세 줄짜리 싱글톤을 대신할 수 있는 근거가 앞의 리플렉션 실습에 다 나와 있는 셈이다.
 
+### 1-23. day03의 진입점 — 스캔 범위는 패키지가 정한다
+
+앞의 세 파일이 `main` 을 직접 돌려 보는 실습이었다면, 여기서부터는 서버를 띄운 상태에서 확인한다. 그러려면 이 패키지에도 진입점이 하나 있어야 한다.
+
+```java
+package day03.exam;
+
+@SpringBootApplication   // 1. 내장 톰캣 지원  2. IOC/DI 컴포넌트 지원
+public class AppStart {
+    public static void main(String[] args) {
+        SpringApplication.run(AppStart.class, args);
+    }
+}
+```
+
+[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 만든 것과 모양이 같다. 달라진 것은 **어느 패키지에 놓였는가** 하나뿐인데, 그 하나가 등록되는 빈의 범위를 정한다.
+
+```
+day02.AppStart  →  day02 패키지 아래만 스캔
+day03.exam.AppStart  →  day03.exam 패키지 아래만 스캔
+```
+
+`@SpringBootApplication` 안에 `@ComponentScan` 이 들어 있고(3-2), 범위를 따로 적지 않으면 **이 클래스가 속한 패키지와 그 하위**가 대상이 된다. 그래서 같은 프로젝트 안에 컨트롤러가 여러 개 있어도, 띄운 진입점이 어디에 있느냐에 따라 살아나는 것이 갈린다.
+
+1-21에서 `@Component` 를 붙여 두면 컨테이너가 객체를 만들어 준다고 했는데, 그 "훑는 범위"를 정하는 자리가 여기다. 2-10에서 적어 둔 "표시를 달았는데 동작하지 않으면 읽는 쪽부터 본다"가 실제로 걸리는 지점이기도 하다.
+
+### 1-24. @Controller — @Component에 웹 기능을 얹은 표시
+
+컨트롤러 클래스에 붙은 표시가 둘 중 하나로 갈린다.
+
+```java
+// @Component   // [싱글톤 대신] 스프링 컨테이너에 해당 클래스의 객체(빈) 등록
+@Controller     // [서블릿 대신] HTTP 통신을 지원하는 서블릿 제공 + @Component
+public class RestController1 {
+```
+
+`@Component` 만 붙여도 빈으로는 등록된다. 다만 그것만으로는 **요청을 받는 자리**가 되지 않는다.
+
+| 표시 | 얻는 것 |
+| --- | --- |
+| `@Component` | 컨테이너가 객체를 만들어 관리한다 |
+| `@Controller` | 그 위에 **HTTP 요청을 받아 처리하는 자리**라는 표시가 얹힌다 |
+
+3-2에서 정리한 합성 애노테이션이 실제로 쓰이는 첫 자리다. `@Controller` 는 `@Component` 를 품고 있어서, 붙이는 순간 빈 등록과 요청 처리 등록이 함께 일어난다. [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `HttpServlet` 을 물려받아 만들던 자리를 표시 한 줄이 대신하는 셈이다.
+
+계층별로 이름이 갈려 있는 것(`@Controller`·`@Service`·`@Repository`)도 같은 구조다. 셋 다 `@Component` 를 품고 있고, 읽는 쪽에서 계층을 구분할 수 있도록 이름만 나눠 둔 것이다(3-1).
+
+### 1-25. @GetMapping과 @ResponseBody — 주소를 잇고, 나가는 모양을 정한다
+
+메소드마다 표시 둘이 붙는다.
+
+```java
+@GetMapping(value = "/day03/task1")   // HTTP 요청 url 매핑/연결
+@ResponseBody                          // HTTP 응답: JSON 타입 변환
+public int task1() {
+    return 10;
+}
+```
+
+`@GetMapping` 은 주소를 메소드에 잇는다. 1-12에서 그린 "주소 → 메소드 표"에 이 줄이 한 칸으로 들어가고, 그 주소로 요청이 오면 `invoke` 로 이 메소드가 불린다.
+
+속성 이름을 적는 방식과 생략하는 방식이 나란히 나온다.
+
+```java
+@GetMapping(value = "/day03/task1")   // 이름을 적은 표기
+@GetMapping("/day03/task2")           // value 하나만 채우니 생략할 수 있다
+```
+
+2-1에서 본 `value` 생략 규칙이 그대로 적용되는 자리다. 둘은 같은 뜻이라, 값이 하나뿐일 때는 짧은 쪽을 쓰는 편이 읽기 좋다.
+
+`@ResponseBody` 는 반환값을 **응답 본문에 그대로 싣겠다**는 표시다. 붙이지 않으면 `@Controller` 는 돌려준 문자열을 화면 이름으로 읽는다.
+
+| | 반환값을 무엇으로 보나 |
+| --- | --- |
+| `@Controller` 만 | 보여 줄 **화면(뷰)의 이름** |
+| `@Controller` + `@ResponseBody` | **데이터 그 자체** |
+
+[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서는 클래스에 `@RestController` 를 붙여 이 둘을 한 번에 처리했다. 여기서는 `@Controller` 를 클래스에 두고 `@ResponseBody` 를 메소드마다 붙였는데, 결과는 같지만 **메소드 단위로 고를 수 있다**는 점이 다르다(2-17).
+
+### 1-26. 반환 타입이 Content-Type을 정한다
+
+네 메소드가 서로 다른 타입을 돌려준다. 자바 타입이 무엇이냐에 따라 응답의 `Content-Type` 이 갈린다.
+
+```java
+public int task1() { return 10; }
+public String task2() { return "안녕하세요"; }
+public Map<String, Object> task3() { ... }
+public ExamDto task4() { ... }
+```
+
+| 반환 타입 | 나가는 Content-Type | 브라우저에 보이는 것 |
+| --- | --- | --- |
+| `String` | `text/plain` | `안녕하세요` |
+| `int` 같은 기본형 | `application/json` | `10` |
+| `Map<String, Object>` | `application/json` | `{"유재석":100,"강호동":90}` |
+| DTO 객체 | `application/json` | `{"name":"유재석","age":10}` |
+
+정리하면 **문자열만 평문으로 나가고 나머지는 JSON이 된다.** 문자열은 이미 그 자체로 글자라 더 바꿀 것이 없고, 나머지는 자바 안에서만 쓰는 모양이라 오갈 수 있는 형식으로 옮겨야 한다.
+
+`Map` 을 그대로 돌려주면 **키가 JSON의 키가 되고 값이 값이 된다.** [[Java day15 Map과 HashMap]] 에서 본 `{ key : value }` 구조가 JSON의 모양과 거의 그대로 맞아떨어져서, DTO를 따로 만들지 않고도 응답을 조립할 수 있다.
+
+```java
+Map<String, Object> map = new HashMap<>();
+map.put("유재석", 100);
+map.put("강호동", 90);
+return map;
+```
+
+값 타입을 `Object` 로 열어 둔 덕분에 숫자든 문자열이든 한 맵에 섞어 담을 수 있다 — [[Java day14 제네릭]] 에서 본 타입 파라미터를 넓게 잡는 쪽이다. 대신 꺼내 쓸 때 타입이 보장되지 않으므로, 서버 안에서 다시 쓰는 값이 아니라 **내보내고 끝나는 자리**에 어울린다.
+
+이 변환을 스프링이 자동으로 해 준다는 점이 핵심이다. 서블릿으로 직접 짤 때는 `Content-Type` 을 손으로 정하고 문자열을 만들어 써 보냈는데, 여기서는 **반환 타입만 정하면 나머지는 알아서 맞춰진다**(3-9).
+
+### 1-27. 롬복이 붙은 DTO가 JSON이 되는 자리
+
+`task4` 가 돌려주는 `ExamDto` 는 같은 파일 아래쪽에 있다.
+
+```java
+@Data   // 롬복
+class ExamDto {
+    String name;
+    int age;
+}
+```
+
+1-17에서 본 `@Data` 하나로 getter·setter·`toString`·`equals`·`hashCode` 가 다 만들어진다. 그래서 멤버변수 둘만 적혀 있는데도 컨트롤러에서 이렇게 쓸 수 있다.
+
+```java
+ExamDto dto = new ExamDto();
+dto.setName("유재석");   // @Data 가 만들어 준 setter
+dto.setAge(10);
+return dto;
+```
+
+돌아 나갈 때는 반대로 getter가 쓰인다. **JSON의 키를 정하는 것이 필드 이름이 아니라 getter 이름**이라, `getName()` 이 `"name"` 키가 된다. [[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 getter 이름과 JSON 키가 어긋나던 자리를 따져 본 것과 같은 이야기다.
+
+여기서 오늘 본 것 둘이 한 줄에서 만난다.
+
+```
+@Data (컴파일 시점에 생성) ──▶ getter ──▶ @ResponseBody (실행 중에 읽음) ──▶ JSON
+```
+
+1-14에서 갈라 둔 두 갈래 — 컴파일 시점에 코드를 만드는 쪽과 실행 중에 표시를 읽는 쪽 — 가 실제로 이어져 하나의 응답을 만든다. 롬복이 만들어 둔 메소드를 스프링이 실행 중에 리플렉션으로 찾아 부르는 것이라, 둘 중 하나만 빠져도 응답이 비어 나간다.
+
+DTO를 컨트롤러와 같은 파일에 둔 것은 실습 규모라서다. 계층을 나눈 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 처럼 실제로는 `Model/Dto` 쪽으로 빼 두는 편이 찾기 쉽다.
+
+정리하면 오늘의 마지막 두 파일은 **앞에서 뜯어본 것을 다시 조립해 쓰는 자리**다. 애노테이션이 표시일 뿐이고 읽는 쪽이 있어야 동작한다는 것(1-1), 표시를 읽어 객체를 만들고 메소드를 부른다는 것(1-9~1-12), 그 관리가 컨테이너로 넘어간다는 것(1-19~1-22)이 `@Controller` + `@GetMapping` + `@ResponseBody` 세 줄로 압축되어 있다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. value 하나만 쓸 때는 이름을 생략할 수 있다
@@ -826,6 +975,75 @@ class SampleDao4 {
 
 정리하면 **빈은 기능을 담는 자리이지 데이터를 담는 자리가 아니다.** DAO·서비스·컨트롤러에 멤버변수를 둘 때는 "이게 요청마다 달라져야 하는 값인가"를 먼저 따져 보는 편이 낫다.
 
+### 2-17. @RestController와 @Controller + @ResponseBody 중 무엇을 쓸까
+
+같은 결과를 두 가지로 적을 수 있으니 기준을 정해 두는 편이 낫다.
+
+| 상황 | 어울리는 쪽 |
+| --- | --- |
+| 클래스의 메소드가 전부 데이터를 내보낸다 | `@RestController` — 한 번만 적으면 된다 |
+| 데이터와 화면을 한 클래스에 섞어 둔다 | `@Controller` + 필요한 메소드에만 `@ResponseBody` |
+| 표시가 무엇을 하는지 코드에 드러내고 싶다 | `@Controller` + `@ResponseBody` |
+
+`@RestController = @Controller + @ResponseBody` 이므로(3-2) 실제 동작은 갈리지 않는다. 다만 메소드마다 붙이면 **어떤 메소드가 데이터를 내보내는지가 눈에 보인다**는 이점이 있고, 화면을 돌려주는 메소드를 나중에 섞어 둘 여지도 남는다.
+
+### 2-18. Map으로 내보낼 때 순서는 정해지지 않는다
+
+`HashMap` 은 넣은 순서를 지키지 않는다. JSON으로 나갈 때 키 순서가 코드에 적은 순서와 달라질 수 있다는 뜻이다.
+
+| 구현 | 순서 |
+| --- | --- |
+| `HashMap` | 보장하지 않는다 |
+| `LinkedHashMap` | 넣은 순서 그대로 |
+| `TreeMap` | 키를 정렬한 순서 |
+
+[[Java day15 Map과 HashMap]] 에서 본 갈림이 응답에서 드러나는 자리다. 순서가 눈에 띄어야 하는 응답이라면 `LinkedHashMap` 을 쓰거나, 애초에 DTO로 모양을 고정해 두는 편이 안전하다.
+
+키를 사람 이름처럼 **값에 가까운 것**으로 두면 화면 쪽에서 키를 미리 알 수 없다는 문제도 따라온다. 오가는 모양이 정해져 있어야 하는 응답은 `{"name": ..., "score": ...}` 처럼 **키를 고정하고 값을 채우는** 쪽이 다루기 쉽다.
+
+### 2-19. 주소의 앞부분을 클래스로 묶기 — @RequestMapping
+
+메소드마다 `/day03/...` 을 되풀이해 적는 대신, 공통 부분을 클래스에 올릴 수 있다.
+
+```java
+@Controller
+@RequestMapping("/day03")
+public class RestController1 {
+
+    @GetMapping("/task1")   // 실제 주소는 /day03/task1
+    @ResponseBody
+    public int task1() { ... }
+}
+```
+
+클래스의 값과 메소드의 값이 이어 붙는다. 주소 체계를 한 자리에서 바꿀 수 있어서, 컨트롤러가 커질수록 값어치가 커진다.
+
+`@RequestMapping` 은 메소드 방식을 지정하지 않으면 전부 받는다. 방식을 갈라 두는 짧은 표기가 `@GetMapping`·`@PostMapping`·`@PutMapping`·`@DeleteMapping` 이고, 전부 `@RequestMapping(method = ...)` 을 줄인 합성 애노테이션이다(3-2).
+
+### 2-20. 요청에서 값 받기 — @RequestParam
+
+지금은 값을 받지 않고 내보내기만 하지만, 주소에 실려 오는 값을 받을 때는 매개변수에 표시를 붙인다.
+
+```java
+@GetMapping("/day03/task5")
+@ResponseBody
+public String task5(@RequestParam String name) {
+    return name + "님 안녕하세요";
+}
+```
+
+`/day03/task5?name=유재석` 로 요청하면 `name` 에 값이 담긴다. 몇 가지를 더 정할 수 있다.
+
+| 표기 | 뜻 |
+| --- | --- |
+| `@RequestParam("이름")` | 요청 쪽 이름과 매개변수 이름이 다를 때 짝지어 준다 |
+| `@RequestParam(required = false)` | 값이 없어도 된다 (없으면 `null`) |
+| `@RequestParam(defaultValue = "0")` | 값이 없을 때 채울 기본값 |
+
+[[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `request.getParameter("name")` 으로 꺼내던 자리를 표시 하나가 대신한다. 문자열로 꺼내 형변환하던 과정도 매개변수 타입에 맞춰 스프링이 처리한다.
+
+값이 여럿이면 하나씩 나열하는 대신 DTO로 받을 수도 있다. 이때 스프링이 기본 생성자로 객체를 만들고 setter로 값을 채우는데, 1-11에서 본 `newInstance()` 가 실제로 쓰이는 자리이자 DTO에 기본 생성자를 남겨 두는 이유다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 컴포넌트 스캔 — 클래스를 훑어 표시를 찾는다
@@ -949,7 +1167,30 @@ public class BoardController {
 
 이 갈림이 성립하는 것 자체가 [[Java day11 인터페이스]] 에서 본 다형성 위에서다. 받는 쪽이 인터페이스 타입으로만 선언해 두면 **구현을 바꿔 끼우는 일이 설정 문제로 줄어든다** — 테스트할 때 가짜 구현을 넣는 것도 같은 통로다.
 
-### 3-8. 다음에 볼 키워드
+### 3-8. 메시지 컨버터 — 반환값이 본문이 되는 실제 자리
+
+`@ResponseBody` 가 붙은 메소드의 반환값을 실제로 바꾸는 것은 **메시지 컨버터(`HttpMessageConverter`)** 다. 스프링이 반환 타입과 요청의 `Accept` 헤더를 보고 맞는 컨버터를 골라 변환을 맡긴다.
+
+| 반환 타입 | 고르는 컨버터 |
+| --- | --- |
+| `String` | `StringHttpMessageConverter` |
+| 객체·`Map`·컬렉션 | `MappingJackson2HttpMessageConverter` (Jackson) |
+
+1-26에서 문자열만 평문으로 나가고 나머지는 JSON이 되던 갈림이 여기서 정해진다. 자바 객체를 JSON 문자열로 바꾸는 일(직렬화)은 Jackson이라는 라이브러리가 맡고, 스프링 부트의 web 의존성에 이미 들어 있어 따로 추가하지 않아도 된다.
+
+Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸고 싶으면 getter 쪽을 건드리거나 표시를 붙인다.
+
+| 애노테이션 | 하는 일 |
+| --- | --- |
+| `@JsonProperty("이름")` | 이 필드를 다른 키 이름으로 내보낸다 |
+| `@JsonIgnore` | 이 필드는 JSON에 넣지 않는다 |
+| `@JsonInclude(NON_NULL)` | `null` 인 필드는 빼고 내보낸다 |
+
+비밀번호처럼 나가면 곤란한 값을 `@JsonIgnore` 로 빼 두는 것은 2-13에서 `@ToString(exclude = ...)` 로 로그에서 빼던 것과 같은 발상이다. **나가는 자리마다 무엇이 실리는지 한 번씩 확인해 두는 편이 안전하다.**
+
+들어오는 쪽도 같은 장치가 반대로 돈다. `@RequestBody` 가 붙으면 요청 본문의 JSON을 자바 객체로 되돌리는데(역직렬화), 이때 기본 생성자와 setter가 쓰인다.
+
+### 3-9. 다음에 볼 키워드
 
 - `@Component`·`@Service`·`@Repository` — 계층별 컴포넌트 표시와 스캔
 - `@Autowired`·생성자 주입 — 컨테이너가 객체를 넣어 주는 통로
@@ -967,12 +1208,19 @@ public class BoardController {
 - `@Scope`·`ApplicationContext` — 빈의 개수와 수명을 정하는 자리
 - `@Primary`·`@Qualifier` — 같은 타입 빈이 여럿일 때 고르기
 - `@Builder.Default`·`@Value` — 빌더의 기본값과 불변 객체
+- `@RequestMapping`·`@PostMapping` — 주소를 클래스로 묶고 메소드 방식 나누기
+- `@RequestParam`·`@PathVariable`·`@RequestBody` — 요청에서 값을 받는 세 통로
+- `HttpMessageConverter`·Jackson — 반환값이 JSON이 되는 자리
+- `@JsonProperty`·`@JsonIgnore` — JSON 키와 내보낼 필드 고르기
+- `ResponseEntity` — 상태코드·헤더까지 함께 돌려주기
 
 ## 실습 파일
 
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java` (애노테이션이 주석과 갈리는 지점과 기계가 읽는 표시라는 성격, `@Override` 로 재정의를 컴파일러에게 검사시키기와 재정의된 메소드가 불리는 확인·`super` 로 부모 메소드 부르기, `@Deprecated` 로 사용 권장하지 않음을 알리기와 실행은 되지만 경고가 나는 자리, `@interface` 로 애노테이션 직접 정의하기, 메타 애노테이션 `@Retention` 과 `RetentionPolicy` 세 단계(`SOURCE`·`CLASS`·`RUNTIME`)·실행 중에 읽으려면 `RUNTIME` 이어야 하는 이유, `@Target` 과 `ElementType` 으로 붙일 자리 제한하기·여러 자리를 배열로 적기, 애노테이션 속성이 추상메소드 모양인 이유와 `default` 유무로 갈리는 필수·선택, 속성으로 쓸 수 있는 타입의 제한, 정의한 애노테이션을 메소드에 달고 속성 생략 시 기본값이 채워지는 자리, `java.lang.annotation` 과 `java.lang.reflect` 로 갈리는 두 축, `클래스.class` 리터럴로 `Class` 얻기와 `getClass()`·`Class.forName()` 과의 갈림·제네릭 `Class<T>` 로 타입 남기기, `getMethod(이름)` 으로 `Method` 꺼내기, `getAnnotation(애노테이션.class)` 로 표시 읽기와 `null` 이 나올 수 있는 자리, 속성 이름 그대로 메소드처럼 값 읽기, `getDeclaredConstructor().newInstance()` 로 `new` 없이 객체 만들기와 기본 생성자가 필요한 이유, `method.invoke(대상)` 으로 이름을 코드에 박지 않고 메소드 실행하기·`static` 이면 `null`·매개변수를 뒤에 잇기, 리플렉션 계열 호출이 검사 예외를 던지는 자리, 정의→주입→읽기 세 단계가 스프링의 컴포넌트 스캔·주소 매핑과 같은 구조라는 정리)
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam2.java` (롬복으로 남이 만든 애노테이션을 가져다 쓰기, 컴파일 시점에 읽는 애노테이션 프로세서 갈래와 리플렉션 갈래의 갈림, `@NoArgsConstructor`·`@AllArgsConstructor`·`@RequiredArgsConstructor` 로 생성자 만들기와 전체 생성자를 두면 기본 생성자가 사라지는 자리, `@Getter`·`@Setter` 로 캡슐화 메소드 자동 생성·멤버변수 하나에만 붙이기, `@ToString` 이 `toString()` 재정의와 이어지는 자리, `@Data` 가 묶음 애노테이션이라는 점과 그 구성, `@EqualsAndHashCode` 로 값 기준 비교 만들기와 `equals`·`hashCode` 를 짝으로 두어야 하는 이유, 소스에 안 보이는 생성 코드를 확인하는 통로, `@Builder` 로 빌더 패턴 지원하기와 생성자와 갈리는 지점(순서 무관·선택적 대입·값에 이름이 남는 것)·`builder()` 가 `static` 인 이유·메소드 체이닝과 `build()` 에서 객체가 만들어지는 자리·생략한 값이 기본값이 되는 점과 빠뜨려도 컴파일이 막지 않는 약점·`@Builder.Default`)
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam3.java` (객체를 만드는 주체를 세 방식으로 나란히 보기, 전통 방식의 `new` 와 호출마다 객체가 쌓이는 점·쓰는 쪽에 구현 클래스 이름이 박히는 결합도 문제, 손으로 만드는 싱글톤과 `private` 생성자·`private static final` 인스턴스·`getInstance()` 창구 세 줄의 역할·클래스마다 되풀이되는 부담·이른 초기화와 늦은 초기화의 갈림, `@Component` 로 스프링 컨테이너에 빈 자동 등록하기와 표시 한 줄이 세 줄을 대신하는 근거가 앞의 리플렉션에 있다는 정리·빈이 기본적으로 하나로 공유되는 점, IOC(제어의 역전)와 DI(의존성 주입)의 갈림과 구현을 갈아 끼워도 쓰는 쪽이 그대로인 이유, 하나뿐인 객체에 상태를 담으면 요청끼리 덮어쓰는 문제)
+- `2026B_Spring/springweb/src/main/java/day03/exam/AppStart.java` (day03 패키지에 진입점 두기, `@SpringBootApplication` 이 내장 톰캣과 IOC/DI 컴포넌트 지원을 함께 켜는 자리, 컴포넌트 스캔 범위가 진입점이 속한 패키지와 그 하위로 정해지는 점과 어느 진입점을 띄우느냐에 따라 등록되는 빈이 갈리는 자리)
+- `2026B_Spring/springweb/src/main/java/day03/exam/RestController1.java` (`@Controller` 가 `@Component` 를 품고 웹 요청을 받는 자리를 얹는다는 점과 서블릿을 물려받던 자리를 대신하는 구조, `@GetMapping` 으로 주소를 메소드에 잇기와 `value =` 표기·생략 표기가 같은 뜻인 자리, `@ResponseBody` 로 반환값을 응답 본문에 싣기와 붙이지 않으면 뷰 이름으로 읽히는 갈림·메소드 단위로 고를 수 있다는 점, 반환 타입이 Content-Type을 정하는 규칙(`String` 은 `text/plain`·나머지는 `application/json`), `Map<String, Object>` 를 그대로 돌려줘 키·값이 JSON이 되는 자리와 값 타입을 `Object` 로 열어 섞어 담기·`HashMap` 의 순서가 보장되지 않는 점, `@Data` 가 붙은 DTO를 돌려주기와 setter로 값을 채우고 getter가 JSON 키를 정하는 자리, 컴파일 시점에 생성된 메소드를 실행 중에 읽어 응답을 만드는 두 갈래의 결합)
 - `2026B_Spring/springweb/build.gradle` (롬복 의존성 추가, `compileOnly` 로 실행 배포본에서 빠지는 이유와 `annotationProcessor` 로 컴파일 중 처리기를 등록하는 자리)
 
 ## 관련 노트
