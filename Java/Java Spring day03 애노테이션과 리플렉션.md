@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Java Spring day03 — 애노테이션과 리플렉션
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `RestController1.java`, `AppStart.java`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `RestController1.java`, `RestController2.java`, `AppStart.java`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
 
 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
@@ -25,6 +25,7 @@ day03은 그 안쪽을 본다. 애노테이션을 직접 만들고, 만든 애�
 | `exam3.java` | 객체를 **누가** 만드는가 — `new`·싱글톤·스프링 컨테이너 (1-19~1-22) |
 | `AppStart.java` | day03 패키지에 진입점을 두고 스캔 범위를 잡기 (1-23) |
 | `RestController1.java` | 지금까지 본 표시들을 실제 요청 처리에 얹기 — `@Controller`·`@GetMapping`·`@ResponseBody` (1-24~1-27) |
+| `RestController2.java` | 나가는 쪽에서 **들어오는 쪽**으로 — `@RestController`·`@RequestMapping`·`@RequestParam`·`@ModelAttribute` (1-28~1-33) |
 
 `exam2` 는 방향이 반대다. 만드는 쪽이 아니라 **이미 만들어진 애노테이션(롬복)을 가져다 쓰는** 쪽이고, 읽히는 시점도 실행 중이 아니라 컴파일 중이다. 같은 장치의 다른 갈래를 한 날에 둘 다 보는 셈이다.
 
@@ -685,7 +686,7 @@ return map;
 
 값 타입을 `Object` 로 열어 둔 덕분에 숫자든 문자열이든 한 맵에 섞어 담을 수 있다 — [[Java day14 제네릭]] 에서 본 타입 파라미터를 넓게 잡는 쪽이다. 대신 꺼내 쓸 때 타입이 보장되지 않으므로, 서버 안에서 다시 쓰는 값이 아니라 **내보내고 끝나는 자리**에 어울린다.
 
-이 변환을 스프링이 자동으로 해 준다는 점이 핵심이다. 서블릿으로 직접 짤 때는 `Content-Type` 을 손으로 정하고 문자열을 만들어 써 보냈는데, 여기서는 **반환 타입만 정하면 나머지는 알아서 맞춰진다**(3-9).
+이 변환을 스프링이 자동으로 해 준다는 점이 핵심이다. 서블릿으로 직접 짤 때는 `Content-Type` 을 손으로 정하고 문자열을 만들어 써 보냈는데, 여기서는 **반환 타입만 정하면 나머지는 알아서 맞춰진다**(3-8).
 
 ### 1-27. 롬복이 붙은 DTO가 JSON이 되는 자리
 
@@ -720,7 +721,214 @@ return dto;
 
 DTO를 컨트롤러와 같은 파일에 둔 것은 실습 규모라서다. 계층을 나눈 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 처럼 실제로는 `Model/Dto` 쪽으로 빼 두는 편이 찾기 쉽다.
 
-정리하면 오늘의 마지막 두 파일은 **앞에서 뜯어본 것을 다시 조립해 쓰는 자리**다. 애노테이션이 표시일 뿐이고 읽는 쪽이 있어야 동작한다는 것(1-1), 표시를 읽어 객체를 만들고 메소드를 부른다는 것(1-9~1-12), 그 관리가 컨테이너로 넘어간다는 것(1-19~1-22)이 `@Controller` + `@GetMapping` + `@ResponseBody` 세 줄로 압축되어 있다.
+정리하면 여기까지의 파일은 **앞에서 뜯어본 것을 다시 조립해 쓰는 자리**다. 애노테이션이 표시일 뿐이고 읽는 쪽이 있어야 동작한다는 것(1-1), 표시를 읽어 객체를 만들고 메소드를 부른다는 것(1-9~1-12), 그 관리가 컨테이너로 넘어간다는 것(1-19~1-22)이 `@Controller` + `@GetMapping` + `@ResponseBody` 세 줄로 압축되어 있다.
+
+### 1-28. @RestController와 @RequestMapping — 공통을 클래스 자리로 올린다
+
+`RestController1` 은 메소드마다 `@ResponseBody` 를 붙이고 주소도 `/day03/...` 을 통째로 적었다. `RestController2` 는 되풀이되던 두 가지를 클래스 자리로 올린다.
+
+```java
+// @Component  // 1. 스프링 컨테이너에 객체(빈) 등록
+// @Controller // 2. HTTP 서블릿 지원 + @Component 포함
+@RestController  // 3. 응답 content-type을 application/json 설정 + @Controller
+@RequestMapping("/day03")   // 클래스 내 메소드들의 공통 URL 정의
+public class RestController2 {
+```
+
+주석으로 남은 두 줄이 계단을 그대로 보여 준다. 아래로 갈수록 위의 것을 품는다.
+
+| 표시 | 얻는 것 | 품고 있는 것 |
+| --- | --- | --- |
+| `@Component` | 빈 등록 | — |
+| `@Controller` | 요청을 받는 자리 | `@Component` |
+| `@RestController` | 반환값이 데이터로 나감 | `@Controller` + `@ResponseBody` |
+
+3-2에서 정리한 합성 애노테이션이 세 단계로 겹쳐 있는 모양이다. 그래서 클래스에 `@RestController` 하나만 붙이면 **메소드마다 `@ResponseBody` 를 적지 않아도 된다.**
+
+```java
+@GetMapping("/task5")
+public String task5() {
+    return "서버에서 응답하는 메시지";
+}
+```
+
+`@ResponseBody` 가 없는데도 문자열이 그대로 응답 본문으로 나간다. 1-25에서 본 "붙이지 않으면 뷰 이름으로 읽힌다"가 여기서는 걸리지 않는 셈이다.
+
+고르는 기준은 2-17에 적어 둔 그대로다. **화면을 돌려줄 일이 있으면 `@Controller`, 전부 데이터면 `@RestController`** 다. 파일의 주석에도 같은 갈림이 적혀 있다 — `HTML(VIEW) → @Controller`, `JSON(값) → @RestController`.
+
+`@RequestMapping("/day03")` 은 2-19에서 미리 적어 둔 그 표기다. 클래스의 값과 메소드의 값이 이어 붙는다.
+
+```
+@RequestMapping("/day03")  +  @GetMapping("/task5")  →  /day03/task5
+```
+
+`RestController1` 처럼 메소드마다 `/day03/task1` 을 전부 적으면, 주소 체계를 바꿀 때 메소드 수만큼 고쳐야 한다. 공통 부분을 클래스에 올려 두면 **한 자리만 고치면 전부 따라온다.**
+
+`@RequestMapping` 은 메소드 방식을 지정하지 않으면 GET·POST를 가리지 않고 받는다. 클래스에 붙일 때는 방식을 정하지 않고 주소만 묶는 용도로 쓰고, 방식은 메소드 쪽의 `@GetMapping`·`@DeleteMapping` 에서 갈라 준다.
+
+### 1-29. @RequestParam — 요청에 실려 온 값을 매개변수로 받는다
+
+여기서부터 방향이 바뀐다. `RestController1` 이 **내보내는** 쪽만 다뤘다면, 이제 **들어오는** 값을 받는다.
+
+```java
+@GetMapping("/task6")
+public int task6(@RequestParam String name, @RequestParam int age) {
+    System.out.println(name);
+    System.out.println(age);
+    return 6;
+}
+```
+
+`/day03/task6?name=유재석&age=10` 으로 요청하면 쿼리스트링의 값이 매개변수에 담긴다.
+
+| 요청 쪽 | 받는 쪽 |
+| --- | --- |
+| `?name=유재석` | `@RequestParam String name` |
+| `?age=10` | `@RequestParam int age` |
+
+이름이 짝을 맞추는 기준이다. 쿼리스트링의 키와 매개변수 이름이 같으면 그대로 이어진다.
+
+눈여겨볼 것은 `age` 의 타입이다. HTTP로 오는 값은 전부 문자열인데 매개변수는 `int` 다. **문자열 `"10"` 을 `int` 10으로 바꾸는 일을 스프링이 대신 해 준다.** [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `Integer.parseInt(request.getParameter("age"))` 라고 두 겹으로 적던 자리가 매개변수 선언 하나로 줄어든 셈이다.
+
+| | 서블릿 | 스프링 |
+| --- | --- | --- |
+| 값 꺼내기 | `request.getParameter("age")` | 매개변수로 받는다 |
+| 타입 변환 | `Integer.parseInt(...)` 를 직접 | 매개변수 타입에 맞춰 자동 |
+| 값이 없을 때 | `null` 이 와서 직접 처리 | 속성으로 정한다(1-30) |
+
+받아 오는 통로가 쿼리스트링만은 아니다. `@RequestParam` 은 **요청의 `Content-Type` 이 폼(`application/x-www-form-urlencoded`)일 때도 같은 방식으로** 값을 잡는다. 주소 뒤에 붙어 오든 본문에 폼으로 실려 오든 받는 쪽 코드가 같다는 뜻이다. [[JS day14 게시판 CRUD]] 에서 `fetch` 로 폼 데이터를 보내던 자리가 이 쪽으로 도착한다.
+
+### 1-30. @RequestParam의 속성 — 이름·필수 여부·기본값
+
+`task7` 은 같은 표시를 세 가지로 다르게 쓴다.
+
+```java
+@GetMapping("/task7")
+public int task7(String name,                                      // @RequestParam 생략 가능
+        @RequestParam(name = "age") int age,                        // 매핑할 매개변수명 지정
+        @RequestParam(required = false, defaultValue = "10") int count   // 필수 여부·기본값
+) {
+```
+
+한 줄씩 갈라 보면 이렇다.
+
+| 표기 | 뜻 |
+| --- | --- |
+| `String name` | 표시를 생략해도 이름이 같으면 잡힌다 |
+| `@RequestParam(name = "age")` | 요청 쪽 이름을 직접 지목한다 |
+| `required = false` | 값이 안 와도 된다 |
+| `defaultValue = "10"` | 안 왔을 때 채울 값 |
+
+**표시를 생략할 수 있는 이유**는 스프링이 이름을 못 찾으면 매개변수 이름 그대로를 키로 삼기 때문이다. 다만 컴파일 옵션에 따라 매개변수 이름이 `.class` 에 남지 않는 경우가 있어, 이름을 명시해 두는 편이 안전하다. 1-5에서 본 "언제까지 살아 있는가"의 이야기가 여기서도 걸리는 셈이다 — **컴파일 뒤에 남아 있지 않은 정보는 실행 중에 읽을 수 없다.**
+
+`name` 속성은 요청 쪽 이름과 자바 쪽 이름이 어긋날 때 쓴다. 화면에서 보내는 키를 바꾸지 못하는 상황에서 자바 쪽만 읽기 좋은 이름으로 두고 싶을 때가 대표적이다. 2-1에서 본 규칙대로 `@RequestParam("age")` 라고 짧게 적어도 같은 뜻이다.
+
+`defaultValue` 가 숫자가 아니라 `"10"` 이라는 문자열인 점이 눈에 띈다. 애노테이션 속성으로 쓸 수 있는 타입이 제한돼 있어서(1-7) 매개변수 타입마다 다른 타입을 받을 수 없고, **문자열로 받아 두었다가 매개변수 타입에 맞춰 변환한다.** 요청으로 오는 값이 어차피 문자열이니 들어오는 경로도 같아지는 셈이다.
+
+`defaultValue` 를 적으면 값이 없어도 채워지므로 `required = false` 는 사실상 따라온다. 반대로 `required = false` 만 두면 값이 안 왔을 때 `null` 이 들어가는데, 매개변수가 `int` 같은 기본형이면 `null` 을 담을 자리가 없다. 선택 값을 기본형으로 받을 때는 **`defaultValue` 를 함께 두거나 `Integer` 같은 래퍼 타입으로 받는 편이 안전하다.** [[Java day02 타입 변환]] 에서 본 기본형과 참조형의 갈림이 요청 처리에서 드러나는 자리다.
+
+### 1-31. Map으로 한꺼번에 받기
+
+키를 하나씩 나열하지 않고 통째로 받을 수도 있다.
+
+```java
+@DeleteMapping("/task8")
+public int task8(@RequestParam Map<String, Object> map) {
+    System.out.println(map);
+    return 8;
+}
+```
+
+요청에 실려 온 파라미터가 전부 맵에 담긴다. `?name=유재석&age=10` 이면 `{name=유재석, age=10}` 이 된다.
+
+1-26에서 `Map` 을 **돌려주어** JSON으로 내보냈는데, 여기서는 같은 `Map` 으로 **받는다.** 방향만 반대일 뿐 `{ key : value }` 구조가 오가는 형식과 잘 맞아떨어진다는 점은 같다.
+
+| | `Map` 을 쓰는 자리 | 성격 |
+| --- | --- | --- |
+| 내보낼 때(1-26) | 반환 타입 | 키가 그대로 JSON 키가 된다 |
+| 받을 때(1-31) | 매개변수 | 요청 파라미터가 그대로 키가 된다 |
+
+받을 때의 `Map` 은 **어떤 키가 올지 미리 정해 두지 않아도 되는** 대신 잃는 것이 있다.
+
+- 값이 전부 문자열로 들어온다. `Object` 로 열어 두었을 뿐 `int` 로 변환되지 않으므로 꺼내 쓸 때 직접 바꿔야 한다
+- 어떤 키가 필요한지가 코드에 드러나지 않는다. 메소드 서명만 봐서는 무엇을 받는지 알 수 없다
+- 오타가 걸러지지 않는다. 잘못된 키가 와도 그냥 담긴다
+
+그래서 받는 값의 모양이 정해져 있으면 다음에 볼 DTO 쪽이 다루기 쉽고, **키가 상황마다 달라지는 자리**(검색 조건을 자유롭게 받는 경우 등)에 `Map` 이 어울린다. 2-18에서 내보내는 쪽을 두고 정리한 것과 같은 갈림이다.
+
+### 1-32. @ModelAttribute — 값을 DTO에 담아 받는다
+
+매개변수를 나열하는 대신 객체 하나로 받는 방식이다.
+
+```java
+@DeleteMapping("/task9")
+public int task9(@ModelAttribute ExamDto examDto) {
+    System.out.println(examDto);
+    return 9;
+}
+```
+
+`ExamDto` 는 `RestController1` 에 있던 그 DTO다(1-27).
+
+```java
+@Data
+class ExamDto {
+    String name;
+    int age;
+}
+```
+
+`?name=유재석&age=10` 로 요청하면 `examDto` 에 값이 채워져 들어온다. 스프링이 하는 일은 이렇다.
+
+```
+① 기본 생성자로 ExamDto 객체를 만든다        ← newInstance
+② 요청 파라미터 이름과 같은 필드를 찾는다
+③ setter 를 불러 값을 넣는다                  ← invoke
+```
+
+1-11에서 리플렉션으로 해 본 것이 그대로 돌아간다. **오늘 오전에 손으로 짜 본 세 줄이 요청 처리에서 다시 나오는 자리**다.
+
+여기서 `@Data` 가 왜 필요한지도 이어진다. 값을 넣는 통로가 setter라 `@Setter`(또는 이를 품은 `@Data`)가 있어야 하고, 객체를 만드는 통로가 기본 생성자라 그것도 있어야 한다. 1-15에서 "프레임워크가 객체를 만드는 통로는 매개변수 없는 생성자"라고 정리한 것이 세 번째로 걸리는 셈이다.
+
+`System.out.println(examDto)` 가 값을 보여 주는 것은 `@Data` 안의 `@ToString` 덕이다(1-16). 재정의가 없으면 `클래스명@해시값` 만 찍혀 값이 들어왔는지 확인할 수 없다.
+
+받는 세 방식을 나란히 놓으면 갈림이 분명하다.
+
+| | `@RequestParam` | `@RequestParam Map` | `@ModelAttribute` |
+| --- | --- | --- | --- |
+| 받는 모양 | 값 하나씩 | 통째로 맵에 | DTO 객체에 |
+| 어떤 값이 오는지 | 메소드 서명에 드러난다 | 드러나지 않는다 | DTO에 드러난다 |
+| 타입 변환 | 매개변수 타입대로 | 안 된다(문자열) | 필드 타입대로 |
+| 값이 늘어나면 | 매개변수를 계속 늘린다 | 그대로 | DTO에 필드만 추가 |
+| 어울리는 자리 | 값이 두셋 | 키가 정해지지 않은 경우 | 값이 여럿이고 모양이 고정 |
+
+1-18에서 빌더를 두고 본 이야기와 결이 같다. **값이 몇 개 안 되면 나열하는 쪽이 짧고, 많아지면 이름 붙은 묶음으로 받는 쪽이 읽기 좋다.**
+
+`@ModelAttribute` 도 생략할 수 있다. 매개변수가 기본형·`String` 이 아닌 객체 타입이면 스프링이 이 방식으로 처리한다. 다만 생략하면 `@RequestBody` 로 받는 경우와 코드 모양이 같아져 구분이 흐려지므로, 적어 두는 편이 읽기에 낫다(2-22).
+
+### 1-33. @DeleteMapping — 주소는 같고 방식으로 갈린다
+
+`task8`·`task9` 에는 `@GetMapping` 대신 `@DeleteMapping` 이 붙었다.
+
+```java
+@DeleteMapping("/task8")
+@DeleteMapping("/task9")
+```
+
+[[Java Spring day01 서블릿과 HTTP 메소드]] 에서 본 네 가지 방식이 각자의 짧은 표시를 갖는다.
+
+| 표시 | 방식 | 뜻하는 일 |
+| --- | --- | --- |
+| `@GetMapping` | GET | 조회 |
+| `@PostMapping` | POST | 등록 |
+| `@PutMapping` | PUT | 수정 |
+| `@DeleteMapping` | DELETE | 삭제 |
+
+전부 `@RequestMapping(method = ...)` 을 줄인 합성 애노테이션이다(3-2). 주소가 같아도 방식이 다르면 다른 메소드로 이어지므로, `/day03/board` 하나에 조회·등록·수정·삭제를 전부 매달 수 있다. [[JS day14 게시판 CRUD]] 에서 `fetch` 의 `method` 를 바꿔 가며 부르던 그 쪽과 짝을 이루는 자리다.
+
+DELETE 요청에 값을 실을 때는 대체로 **본문이 아니라 쿼리스트링**을 쓴다. `@RequestParam`·`@ModelAttribute` 둘 다 쿼리스트링에서 값을 잡으므로 여기서 `@DeleteMapping` 과 함께 쓰는 데 문제가 없다(2-23).
+
+정리하면 `RestController2` 는 오늘 본 것의 마지막 조각이다. 나가는 쪽(1-24~1-27)에 이어 **들어오는 쪽**을 채웠고, 값을 받는 세 통로가 전부 1-9~1-12의 리플렉션 위에서 돌아간다. 표시를 읽고(`getAnnotation`), 객체를 만들고(`newInstance`), 메소드를 부르는(`invoke`) 구조가 응답뿐 아니라 **요청의 값을 매개변수에 담는 자리에서도 같은 모양으로 반복된다**(3-9).
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -1003,7 +1211,7 @@ class SampleDao4 {
 
 ### 2-19. 주소의 앞부분을 클래스로 묶기 — @RequestMapping
 
-메소드마다 `/day03/...` 을 되풀이해 적는 대신, 공통 부분을 클래스에 올릴 수 있다.
+`RestController2` 에서 실제로 쓴 방식이다(1-28). `RestController1` 처럼 메소드마다 `/day03/...` 을 되풀이해 적는 대신, 공통 부분을 클래스에 올릴 수 있다.
 
 ```java
 @Controller
@@ -1022,7 +1230,7 @@ public class RestController1 {
 
 ### 2-20. 요청에서 값 받기 — @RequestParam
 
-지금은 값을 받지 않고 내보내기만 하지만, 주소에 실려 오는 값을 받을 때는 매개변수에 표시를 붙인다.
+1-29~1-30에서 실제로 써 본 표시다. 주소에 실려 오는 값을 받을 때는 매개변수에 표시를 붙인다.
 
 ```java
 @GetMapping("/day03/task5")
@@ -1042,7 +1250,62 @@ public String task5(@RequestParam String name) {
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `request.getParameter("name")` 으로 꺼내던 자리를 표시 하나가 대신한다. 문자열로 꺼내 형변환하던 과정도 매개변수 타입에 맞춰 스프링이 처리한다.
 
-값이 여럿이면 하나씩 나열하는 대신 DTO로 받을 수도 있다. 이때 스프링이 기본 생성자로 객체를 만들고 setter로 값을 채우는데, 1-11에서 본 `newInstance()` 가 실제로 쓰이는 자리이자 DTO에 기본 생성자를 남겨 두는 이유다.
+값이 여럿이면 하나씩 나열하는 대신 DTO로 받을 수도 있다. 이때 스프링이 기본 생성자로 객체를 만들고 setter로 값을 채우는데, 1-11에서 본 `newInstance()` 가 실제로 쓰이는 자리이자 DTO에 기본 생성자를 남겨 두는 이유다. 1-32에서 `@ModelAttribute` 로 확인한 그대로다.
+
+### 2-21. 주소 자체에 값을 싣기 — @PathVariable
+
+값을 쿼리스트링이 아니라 **주소의 일부**로 받는 통로가 하나 더 있다.
+
+```java
+@GetMapping("/board/{no}")
+public int detail(@PathVariable int no) {
+    return no;
+}
+```
+
+`/day03/board/10` 으로 요청하면 `no` 에 `10` 이 담긴다. 중괄호로 감싼 자리가 변수가 되고, 이름이 같은 매개변수에 이어진다.
+
+| | `@RequestParam` | `@PathVariable` |
+| --- | --- | --- |
+| 값이 실리는 곳 | `?no=10` | `/board/10` |
+| 뜻하는 것 | 조건·옵션 | **무엇을 가리키는가(식별자)** |
+| 값이 없을 수 있나 | `required = false` 로 가능 | 주소가 달라지므로 사실상 필수 |
+
+기준을 잡자면 **자원을 가리키는 값은 주소에, 걸러 내는 조건은 쿼리스트링에** 둔다. `/board/10` 은 10번 글 하나를 가리키고, `/board?page=2&size=10` 은 목록을 어떻게 잘라 볼지를 정하는 식이다.
+
+이름이 다르면 지목해 준다.
+
+```java
+@GetMapping("/board/{boardNo}")
+public int detail(@PathVariable("boardNo") int no) { ... }
+```
+
+### 2-22. @ModelAttribute와 @RequestBody — 어디에 실려 오느냐로 갈린다
+
+DTO로 받는 표기가 둘이라 헷갈리기 쉽다. 갈림은 **값이 요청의 어디에 실려 오는가**다.
+
+| | `@ModelAttribute` | `@RequestBody` |
+| --- | --- | --- |
+| 읽는 곳 | 쿼리스트링·폼 데이터 | 요청 **본문의 JSON** |
+| `Content-Type` | `x-www-form-urlencoded` 등 | `application/json` |
+| 값을 채우는 통로 | 기본 생성자 + setter | 기본 생성자 + setter(Jackson) |
+| 어울리는 요청 | 폼 전송, GET·DELETE | `fetch` 로 JSON을 보낼 때 |
+
+받는 쪽 코드 모양은 거의 같은데 동작하는 조건이 다르다. **JSON을 보냈는데 `@ModelAttribute` 로 받으면 값이 비어 들어오고**, 반대도 마찬가지다. DTO에 값이 안 채워질 때 먼저 볼 자리가 여기다.
+
+[[JS day14 게시판 CRUD]] 에서 `fetch` 의 `headers` 에 `Content-Type` 을 적고 `body` 에 `JSON.stringify(...)` 를 실었는데, 그렇게 보낸 요청은 `@RequestBody` 쪽으로 도착한다. 보내는 쪽에서 정한 형식이 받는 쪽 표시를 정하는 셈이다.
+
+3-8에서 본 메시지 컨버터가 들어오는 방향으로도 도는 자리다. 나갈 때 자바 객체를 JSON으로 바꾸던 Jackson이, 들어올 때는 JSON을 자바 객체로 되돌린다.
+
+### 2-23. DELETE 요청에 값을 어떻게 실을까
+
+`@DeleteMapping` 에 값을 넘기는 방식은 GET과 거의 같다.
+
+- 쿼리스트링에 실어 `@RequestParam`·`@ModelAttribute` 로 받는 쪽이 무난하다
+- DELETE에 본문을 싣는 것은 규격상 금지되지는 않지만 **중간 장비나 클라이언트가 본문을 버릴 수 있어** 기대대로 도착하지 않을 때가 있다
+- 지울 대상 하나를 가리키는 요청이면 `/board/10` 처럼 주소에 두고 `@PathVariable` 로 받는 쪽이 뜻이 분명하다
+
+정리하면 **DELETE는 "무엇을 지울지"만 알면 되는 요청**이라 값이 많이 필요하지 않고, 그래서 주소나 쿼리스트링으로 충분한 경우가 대부분이다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -1190,7 +1453,33 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 
 들어오는 쪽도 같은 장치가 반대로 돈다. `@RequestBody` 가 붙으면 요청 본문의 JSON을 자바 객체로 되돌리는데(역직렬화), 이때 기본 생성자와 setter가 쓰인다.
 
-### 3-9. 다음에 볼 키워드
+### 3-9. 요청 값이 매개변수에 담기는 실제 자리 — ArgumentResolver
+
+`@ResponseBody` 의 반환값을 바꾸는 것이 메시지 컨버터였다면(3-8), 들어오는 쪽에는 **`HandlerMethodArgumentResolver`** 가 있다. 메소드를 부르기 직전에 매개변수를 하나씩 훑어 값을 만들어 채우는 자리다.
+
+```
+① 주소 표에서 부를 메소드를 찾는다
+② 그 메소드의 매개변수를 하나씩 본다              ← getParameters
+③ 매개변수에 붙은 표시를 읽어 담당자를 고른다      ← getAnnotation
+④ 담당자가 요청에서 값을 꺼내 만든다
+⑤ 만들어진 값들을 인자로 메소드를 부른다          ← invoke(대상, 값1, 값2)
+```
+
+1-11에서 `method.invoke(대상, 값1, 값2)` 처럼 매개변수를 뒤에 이어 붙일 수 있다고 본 그 자리가 여기서 쓰인다. **매개변수 값을 미리 만들어 두고 마지막에 한 번에 넘기는** 구조라, 표시별로 담당자만 갈아 끼우면 받는 방식이 늘어난다.
+
+| 매개변수 표시 | 담당자가 하는 일 |
+| --- | --- |
+| `@RequestParam` | 쿼리스트링·폼에서 이름으로 값을 꺼낸다 |
+| `@PathVariable` | 주소 패턴에서 잘라 낸 값을 꺼낸다 |
+| `@ModelAttribute` | 객체를 만들고 setter로 채운다 |
+| `@RequestBody` | 메시지 컨버터에게 본문 변환을 맡긴다 |
+| 표시 없는 `HttpServletRequest` 등 | 서블릿 객체를 그대로 넘긴다 |
+
+컨트롤러 메소드의 매개변수 자리에 아무 타입이나 적어도 웬만하면 값이 채워져 들어오는 이유가 이것이다. **담당자 목록에 있는 타입·표시면 처리된다.** 직접 만들어 등록할 수도 있어서, 로그인한 사용자를 매개변수로 바로 받는 식의 처리를 한 자리로 모으는 데 쓴다.
+
+값을 채우다 실패하면(숫자 자리에 글자가 오는 등) 메소드를 부르기 전에 예외가 난다. 요청 값 검증(`@Valid`)이 이 단계에 붙는 것도 같은 이유다 — **메소드 본문이 시작될 때는 이미 값이 갖춰져 있다**는 전제를 지키기 위해서다.
+
+### 3-10. 다음에 볼 키워드
 
 - `@Component`·`@Service`·`@Repository` — 계층별 컴포넌트 표시와 스캔
 - `@Autowired`·생성자 주입 — 컨테이너가 객체를 넣어 주는 통로
@@ -1213,6 +1502,12 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 - `HttpMessageConverter`·Jackson — 반환값이 JSON이 되는 자리
 - `@JsonProperty`·`@JsonIgnore` — JSON 키와 내보낼 필드 고르기
 - `ResponseEntity` — 상태코드·헤더까지 함께 돌려주기
+- `@ModelAttribute` — 폼·쿼리스트링 값을 DTO에 담아 받기
+- `HandlerMethodArgumentResolver` — 매개변수에 값이 채워지는 실제 자리
+- `@Valid`·`BindingResult` — 받은 값이 규칙에 맞는지 검사하기
+- `WebDataBinder`·`Converter` — 문자열을 원하는 타입으로 바꾸는 규칙 직접 정하기
+- `-parameters` 컴파일 옵션 — 매개변수 이름을 `.class` 에 남겨 두기
+- `@RestControllerAdvice`·`@ExceptionHandler` — 값 변환 실패 같은 예외를 한 자리에서 처리하기
 
 ## 실습 파일
 
@@ -1221,8 +1516,9 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam3.java` (객체를 만드는 주체를 세 방식으로 나란히 보기, 전통 방식의 `new` 와 호출마다 객체가 쌓이는 점·쓰는 쪽에 구현 클래스 이름이 박히는 결합도 문제, 손으로 만드는 싱글톤과 `private` 생성자·`private static final` 인스턴스·`getInstance()` 창구 세 줄의 역할·클래스마다 되풀이되는 부담·이른 초기화와 늦은 초기화의 갈림, `@Component` 로 스프링 컨테이너에 빈 자동 등록하기와 표시 한 줄이 세 줄을 대신하는 근거가 앞의 리플렉션에 있다는 정리·빈이 기본적으로 하나로 공유되는 점, IOC(제어의 역전)와 DI(의존성 주입)의 갈림과 구현을 갈아 끼워도 쓰는 쪽이 그대로인 이유, 하나뿐인 객체에 상태를 담으면 요청끼리 덮어쓰는 문제)
 - `2026B_Spring/springweb/src/main/java/day03/exam/AppStart.java` (day03 패키지에 진입점 두기, `@SpringBootApplication` 이 내장 톰캣과 IOC/DI 컴포넌트 지원을 함께 켜는 자리, 컴포넌트 스캔 범위가 진입점이 속한 패키지와 그 하위로 정해지는 점과 어느 진입점을 띄우느냐에 따라 등록되는 빈이 갈리는 자리)
 - `2026B_Spring/springweb/src/main/java/day03/exam/RestController1.java` (`@Controller` 가 `@Component` 를 품고 웹 요청을 받는 자리를 얹는다는 점과 서블릿을 물려받던 자리를 대신하는 구조, `@GetMapping` 으로 주소를 메소드에 잇기와 `value =` 표기·생략 표기가 같은 뜻인 자리, `@ResponseBody` 로 반환값을 응답 본문에 싣기와 붙이지 않으면 뷰 이름으로 읽히는 갈림·메소드 단위로 고를 수 있다는 점, 반환 타입이 Content-Type을 정하는 규칙(`String` 은 `text/plain`·나머지는 `application/json`), `Map<String, Object>` 를 그대로 돌려줘 키·값이 JSON이 되는 자리와 값 타입을 `Object` 로 열어 섞어 담기·`HashMap` 의 순서가 보장되지 않는 점, `@Data` 가 붙은 DTO를 돌려주기와 setter로 값을 채우고 getter가 JSON 키를 정하는 자리, 컴파일 시점에 생성된 메소드를 실행 중에 읽어 응답을 만드는 두 갈래의 결합)
+- `2026B_Spring/springweb/src/main/java/day03/exam/RestController2.java` (`@Component`→`@Controller`→`@RestController` 로 겹쳐 올라가는 표시의 계단과 `@RestController` 를 붙이면 메소드마다 `@ResponseBody` 를 생략할 수 있는 자리·화면을 돌려주면 `@Controller`·값을 돌려주면 `@RestController` 로 갈리는 기준, `@RequestMapping` 을 클래스에 올려 공통 URL을 한 자리에서 정하기와 클래스 값과 메소드 값이 이어 붙는 규칙, `@RequestParam` 으로 쿼리스트링·폼 값을 매개변수에 받기와 이름이 짝을 맞추는 기준·문자열로 오는 값을 매개변수 타입에 맞춰 스프링이 변환해 주는 자리, `@RequestParam` 을 생략할 수 있는 조건과 매개변수 이름이 `.class` 에 남지 않을 수 있다는 점, `name` 으로 요청 쪽 이름 지목하기, `required = false` 로 선택 값 만들기와 기본형에 `null` 을 담을 수 없어 생기는 갈림, `defaultValue` 가 문자열인 이유가 애노테이션 속성 타입 제한과 이어지는 자리, `@RequestParam Map<String, Object>` 로 파라미터를 통째로 받기와 값이 전부 문자열로 들어오는 점·무엇을 받는지가 서명에 드러나지 않는 점, `@ModelAttribute` 로 DTO에 담아 받기와 기본 생성자로 만들고 setter로 채우는 과정이 `newInstance`·`invoke` 와 같은 구조라는 정리·`@Data` 가 그 통로를 만들어 주는 자리, 값을 받는 세 방식의 갈림과 값 개수에 따라 고르는 기준, `@DeleteMapping` 으로 주소는 같고 방식으로 갈리는 매핑 만들기와 네 가지 방식별 짧은 표시)
 - `2026B_Spring/springweb/build.gradle` (롬복 의존성 추가, `compileOnly` 로 실행 배포본에서 빠지는 이유와 `annotationProcessor` 로 컴파일 중 처리기를 등록하는 자리)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day14 게시판 CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
