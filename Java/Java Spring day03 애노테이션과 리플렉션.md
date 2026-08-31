@@ -26,6 +26,7 @@ day03은 그 안쪽을 본다. 애노테이션을 직접 만들고, 만든 애�
 | `AppStart.java` | day03 패키지에 진입점을 두고 스캔 범위를 잡기 (1-23) |
 | `RestController1.java` | 지금까지 본 표시들을 실제 요청 처리에 얹기 — `@Controller`·`@GetMapping`·`@ResponseBody` (1-24~1-27) |
 | `RestController2.java` | 나가는 쪽에서 **들어오는 쪽**으로 — `@RestController`·`@RequestMapping`·`@RequestParam`·`@ModelAttribute` (1-28~1-33) |
+| `RestController2.java` 의 `task10`·`task11` | 값이 실려 오는 자리를 넓히기 — `@PathVariable`·`@RequestBody` (1-34~1-36) |
 
 `exam2` 는 방향이 반대다. 만드는 쪽이 아니라 **이미 만들어진 애노테이션(롬복)을 가져다 쓰는** 쪽이고, 읽히는 시점도 실행 중이 아니라 컴파일 중이다. 같은 장치의 다른 갈래를 한 날에 둘 다 보는 셈이다.
 
@@ -930,6 +931,74 @@ DELETE 요청에 값을 실을 때는 대체로 **본문이 아니라 쿼리스�
 
 정리하면 `RestController2` 는 오늘 본 것의 마지막 조각이다. 나가는 쪽(1-24~1-27)에 이어 **들어오는 쪽**을 채웠고, 값을 받는 세 통로가 전부 1-9~1-12의 리플렉션 위에서 돌아간다. 표시를 읽고(`getAnnotation`), 객체를 만들고(`newInstance`), 메소드를 부르는(`invoke`) 구조가 응답뿐 아니라 **요청의 값을 매개변수에 담는 자리에서도 같은 모양으로 반복된다**(3-9).
 
+### 1-34. @PathVariable — 값을 주소의 일부로 받는다
+
+여기까지의 세 통로는 값이 전부 주소 **뒤쪽**(쿼리스트링)이나 폼에 실려 왔다. `task10` 은 값을 주소 **안**에 둔다.
+
+```java
+@GetMapping("/task10/{name}/{age}")
+public int task10(
+        @PathVariable("name") String name,
+        @PathVariable("age") int age) {
+    System.out.println(name);
+    System.out.println(age);
+    return 10;
+}
+```
+
+`/day03/task10/유재석/10` 으로 요청하면 `name` 에 `유재석`, `age` 에 `10` 이 담긴다. 중괄호로 감싼 자리가 변수 자리가 되고, `@PathVariable` 이 그 자리의 값을 매개변수로 옮긴다. 자리 표시를 여러 개 두면 그만큼 받을 수 있다.
+
+| 자리 | 대응 |
+| --- | --- |
+| `{name}` | `@PathVariable("name") String name` |
+| `{age}` | `@PathVariable("age") int age` |
+
+괄호 안의 이름은 **주소 쪽 자리 이름을 지목하는** 값이다. 자리 이름과 매개변수 이름이 같으면 생략할 수 있는데, `@RequestParam` 을 생략할 때와 마찬가지로 매개변수 이름이 `.class` 에 남아 있어야 하므로 적어 두는 편이 안전하다(1-30).
+
+문자열로 잘라 낸 값이 `int age` 에 담기는 것도 `@RequestParam` 과 같다. 주소는 전부 글자라 `10` 도 문자열로 도착하는데, 매개변수 타입을 보고 스프링이 변환해 준다.
+
+쿼리스트링과 갈리는 기준은 2-21에 정리해 두었다. 요약하면 **무엇을 가리키는 값은 주소에, 어떻게 걸러 볼지는 쿼리스트링에** 둔다.
+
+### 1-35. @RequestBody — 본문에 실린 JSON을 DTO로 되돌린다
+
+마지막 `task11` 은 통로가 하나 더 다르다.
+
+```java
+@PostMapping("/task11")
+public int task11(@RequestBody ExamDto examDto) {
+    System.out.println(examDto);
+    return 11;
+}
+```
+
+`@ModelAttribute`(1-32)와 코드 모양이 거의 같은데, 값이 실려 오는 곳이 다르다. `@ModelAttribute` 는 쿼리스트링·폼에서 값을 찾고, `@RequestBody` 는 **요청 본문의 JSON** 을 읽어 객체로 되돌린다.
+
+`@PostMapping` 이 붙은 것이 그 조건과 맞물린다. 본문을 실을 수 있는 방식은 POST·PUT 쪽이라, GET·DELETE에 `@RequestBody` 를 걸어 두면 값이 오지 않을 수 있다(2-23). 주소에 값이 드러나지 않는다는 점도 갈리는 자리다.
+
+| | `@ModelAttribute` | `@RequestBody` |
+| --- | --- | --- |
+| 값이 실리는 곳 | 쿼리스트링·폼 | 요청 본문 |
+| `Content-Type` | `x-www-form-urlencoded` | `application/json` |
+| 어울리는 방식 | GET·DELETE·폼 전송 | POST·PUT |
+| 값이 주소에 보이나 | 보인다 | 보이지 않는다 |
+
+받는 쪽에서 벌어지는 일은 1-27의 반대 방향이다. 나갈 때 `ExamDto` 를 JSON으로 바꿔 내보냈다면, 들어올 때는 JSON을 읽어 **기본 생성자로 객체를 만들고 setter로 채운다.** `@Data` 하나가 양쪽 통로를 다 만들어 주는 셈이고, 그 과정이 1-11의 `newInstance`·`invoke` 와 같은 구조라는 것도 그대로다(2-22, 3-8).
+
+### 1-36. 값을 받는 네 통로 정리
+
+`RestController2` 한 클래스에서 요청 값을 받는 방식이 네 가지 나왔다.
+
+| 표시 | 값이 실려 오는 곳 | 받는 모양 |
+| --- | --- | --- |
+| `@RequestParam` | 쿼리스트링 · 폼(`x-www-form-urlencoded`) | 값 하나씩 또는 `Map` |
+| `@ModelAttribute` | 쿼리스트링 · 폼 | DTO 객체 |
+| `@PathVariable` | 주소의 경로 구분자 | 값 하나씩 |
+| `@RequestBody` | 요청 본문(`application/json`) | DTO 객체 |
+
+갈림의 축은 둘이다. **어디에 실려 오는가**(쿼리스트링·경로·본문)와 **무엇으로 받는가**(값 하나씩·묶음 객체). 앞의 축은 보내는 쪽이 정하고, 뒤의 축은 값이 몇 개인지에 따라 고른다.
+
+보내는 쪽이 정한 형식이 받는 쪽 표시를 정한다는 점이 실제로 걸리는 자리다. JSON으로 보냈는데 `@ModelAttribute` 로 받으면 DTO가 비어 들어오고, 쿼리스트링으로 보냈는데 `@RequestBody` 로 받으면 본문이 없어 실패한다. **DTO에 값이 안 채워질 때 먼저 볼 곳이 요청의 `Content-Type` 과 받는 표시가 짝을 이루는지**다(2-22).
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. value 하나만 쓸 때는 이름을 생략할 수 있다
@@ -1516,7 +1585,7 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam3.java` (객체를 만드는 주체를 세 방식으로 나란히 보기, 전통 방식의 `new` 와 호출마다 객체가 쌓이는 점·쓰는 쪽에 구현 클래스 이름이 박히는 결합도 문제, 손으로 만드는 싱글톤과 `private` 생성자·`private static final` 인스턴스·`getInstance()` 창구 세 줄의 역할·클래스마다 되풀이되는 부담·이른 초기화와 늦은 초기화의 갈림, `@Component` 로 스프링 컨테이너에 빈 자동 등록하기와 표시 한 줄이 세 줄을 대신하는 근거가 앞의 리플렉션에 있다는 정리·빈이 기본적으로 하나로 공유되는 점, IOC(제어의 역전)와 DI(의존성 주입)의 갈림과 구현을 갈아 끼워도 쓰는 쪽이 그대로인 이유, 하나뿐인 객체에 상태를 담으면 요청끼리 덮어쓰는 문제)
 - `2026B_Spring/springweb/src/main/java/day03/exam/AppStart.java` (day03 패키지에 진입점 두기, `@SpringBootApplication` 이 내장 톰캣과 IOC/DI 컴포넌트 지원을 함께 켜는 자리, 컴포넌트 스캔 범위가 진입점이 속한 패키지와 그 하위로 정해지는 점과 어느 진입점을 띄우느냐에 따라 등록되는 빈이 갈리는 자리)
 - `2026B_Spring/springweb/src/main/java/day03/exam/RestController1.java` (`@Controller` 가 `@Component` 를 품고 웹 요청을 받는 자리를 얹는다는 점과 서블릿을 물려받던 자리를 대신하는 구조, `@GetMapping` 으로 주소를 메소드에 잇기와 `value =` 표기·생략 표기가 같은 뜻인 자리, `@ResponseBody` 로 반환값을 응답 본문에 싣기와 붙이지 않으면 뷰 이름으로 읽히는 갈림·메소드 단위로 고를 수 있다는 점, 반환 타입이 Content-Type을 정하는 규칙(`String` 은 `text/plain`·나머지는 `application/json`), `Map<String, Object>` 를 그대로 돌려줘 키·값이 JSON이 되는 자리와 값 타입을 `Object` 로 열어 섞어 담기·`HashMap` 의 순서가 보장되지 않는 점, `@Data` 가 붙은 DTO를 돌려주기와 setter로 값을 채우고 getter가 JSON 키를 정하는 자리, 컴파일 시점에 생성된 메소드를 실행 중에 읽어 응답을 만드는 두 갈래의 결합)
-- `2026B_Spring/springweb/src/main/java/day03/exam/RestController2.java` (`@Component`→`@Controller`→`@RestController` 로 겹쳐 올라가는 표시의 계단과 `@RestController` 를 붙이면 메소드마다 `@ResponseBody` 를 생략할 수 있는 자리·화면을 돌려주면 `@Controller`·값을 돌려주면 `@RestController` 로 갈리는 기준, `@RequestMapping` 을 클래스에 올려 공통 URL을 한 자리에서 정하기와 클래스 값과 메소드 값이 이어 붙는 규칙, `@RequestParam` 으로 쿼리스트링·폼 값을 매개변수에 받기와 이름이 짝을 맞추는 기준·문자열로 오는 값을 매개변수 타입에 맞춰 스프링이 변환해 주는 자리, `@RequestParam` 을 생략할 수 있는 조건과 매개변수 이름이 `.class` 에 남지 않을 수 있다는 점, `name` 으로 요청 쪽 이름 지목하기, `required = false` 로 선택 값 만들기와 기본형에 `null` 을 담을 수 없어 생기는 갈림, `defaultValue` 가 문자열인 이유가 애노테이션 속성 타입 제한과 이어지는 자리, `@RequestParam Map<String, Object>` 로 파라미터를 통째로 받기와 값이 전부 문자열로 들어오는 점·무엇을 받는지가 서명에 드러나지 않는 점, `@ModelAttribute` 로 DTO에 담아 받기와 기본 생성자로 만들고 setter로 채우는 과정이 `newInstance`·`invoke` 와 같은 구조라는 정리·`@Data` 가 그 통로를 만들어 주는 자리, 값을 받는 세 방식의 갈림과 값 개수에 따라 고르는 기준, `@DeleteMapping` 으로 주소는 같고 방식으로 갈리는 매핑 만들기와 네 가지 방식별 짧은 표시)
+- `2026B_Spring/springweb/src/main/java/day03/exam/RestController2.java` (`@Component`→`@Controller`→`@RestController` 로 겹쳐 올라가는 표시의 계단과 `@RestController` 를 붙이면 메소드마다 `@ResponseBody` 를 생략할 수 있는 자리·화면을 돌려주면 `@Controller`·값을 돌려주면 `@RestController` 로 갈리는 기준, `@RequestMapping` 을 클래스에 올려 공통 URL을 한 자리에서 정하기와 클래스 값과 메소드 값이 이어 붙는 규칙, `@RequestParam` 으로 쿼리스트링·폼 값을 매개변수에 받기와 이름이 짝을 맞추는 기준·문자열로 오는 값을 매개변수 타입에 맞춰 스프링이 변환해 주는 자리, `@RequestParam` 을 생략할 수 있는 조건과 매개변수 이름이 `.class` 에 남지 않을 수 있다는 점, `name` 으로 요청 쪽 이름 지목하기, `required = false` 로 선택 값 만들기와 기본형에 `null` 을 담을 수 없어 생기는 갈림, `defaultValue` 가 문자열인 이유가 애노테이션 속성 타입 제한과 이어지는 자리, `@RequestParam Map<String, Object>` 로 파라미터를 통째로 받기와 값이 전부 문자열로 들어오는 점·무엇을 받는지가 서명에 드러나지 않는 점, `@ModelAttribute` 로 DTO에 담아 받기와 기본 생성자로 만들고 setter로 채우는 과정이 `newInstance`·`invoke` 와 같은 구조라는 정리·`@Data` 가 그 통로를 만들어 주는 자리, 값을 받는 세 방식의 갈림과 값 개수에 따라 고르는 기준, `@DeleteMapping` 으로 주소는 같고 방식으로 갈리는 매핑 만들기와 네 가지 방식별 짧은 표시, `@PathVariable` 로 주소의 경로 구분자에 실린 값을 받기와 자리 표시를 여러 개 두어 나눠 받기·괄호 안 이름이 주소 쪽 자리를 지목하는 값이라는 점·경로 값도 문자열로 도착해 매개변수 타입에 맞춰 변환되는 자리, `@RequestBody` 로 본문의 JSON을 DTO로 되돌리기와 `@ModelAttribute` 와 코드 모양이 같은데 값이 실려 오는 곳이 갈리는 자리·본문을 실을 수 있는 `@PostMapping` 계열과 짝을 이루는 이유·나가는 쪽 직렬화의 반대 방향이 기본 생성자와 setter로 도는 자리, 값을 받는 네 통로를 "어디에 실려 오는가 × 무엇으로 받는가" 두 축으로 정리하기와 보내는 쪽 `Content-Type` 이 받는 쪽 표시를 정한다는 점)
 - `2026B_Spring/springweb/build.gradle` (롬복 의존성 추가, `compileOnly` 로 실행 배포본에서 빠지는 이유와 `annotationProcessor` 로 컴파일 중 처리기를 등록하는 자리)
 
 ## 관련 노트
