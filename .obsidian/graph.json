@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "논문 리뷰",
+  "search": "",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -207,6 +207,6 @@
   "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 1.512050615344728,
+  "scale": 0.2791597173050379,
   "close": false
 }
