@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day03/exam
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day03/exam, springweb/build.gradle
 작성일: 2026-08-31
 tags: [학습, java]
 ---
 
 # Java Spring day03 — 애노테이션과 리플렉션
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `springweb/build.gradle`
 > 허브: [[Java MOC]] · 이전: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
 
 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
@@ -20,6 +20,9 @@ day03은 그 안쪽을 본다. 애노테이션을 직접 만들고, 만든 애�
 | `@interface MyAnnotation` | 애노테이션을 직접 정의하기 (1-4~1-7) |
 | `class TestClass` | 만든 애노테이션을 메소드에 달아 두기 (1-8) |
 | `main` 의 리플렉션 부분 | 그 표시를 읽어 내고, 객체를 만들고, 메소드를 실행하기 (1-9~1-11) |
+| `exam2.java` 의 `class Student` | 남이 만든 애노테이션(롬복)을 가져다 쓰기 — 컴파일 시점에 읽히는 갈래 (1-13~1-17) |
+
+`exam2` 는 방향이 반대다. 만드는 쪽이 아니라 **이미 만들어진 애노테이션(롬복)을 가져다 쓰는** 쪽이고, 읽히는 시점도 실행 중이 아니라 컴파일 중이다. 같은 장치의 다른 갈래를 한 날에 둘 다 보는 셈이다.
 
 [[Java day13 Object 클래스와 리플렉션]] 에서 `Class` 와 `Class.forName()` 을 본 적이 있다. 그때는 "실행 중에 클래스를 문자열로 찾아 로드한다"까지였다면, 여기서는 찾아낸 클래스에서 **메소드를 꺼내고 붙어 있는 표시를 읽어 내는** 데까지 나간다.
 
@@ -290,6 +293,126 @@ method.invoke(대상, 값1, 값2);
 
 `@Retention(RUNTIME)` 이 왜 필요했는지도 여기서 이어진다. 서버는 컴파일이 다 끝난 뒤에 뜨므로, 그때까지 표시가 살아 있지 않으면 읽을 수가 없다.
 
+### 1-13. 롬복 — 남이 만들어 둔 애노테이션을 가져다 쓰기
+
+`exam1` 이 애노테이션을 **만들고 읽는** 쪽이었다면, `exam2` 는 이미 만들어져 있는 애노테이션을 **가져다 쓰는** 쪽이다. 여기서 쓰는 것이 롬복(Lombok)이다.
+
+롬복은 DTO를 만들 때마다 되풀이하던 코드 — 생성자, getter·setter, `toString`, `equals`·`hashCode` — 를 애노테이션 하나로 대신 만들어 주는 라이브러리다. [[Java day05 클래스와 인스턴스]] 부터 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지 DTO를 만들 때마다 손으로 적던 그 부분이다.
+
+먼저 `build.gradle` 에 의존성을 추가한다.
+
+```gradle
+dependencies {
+    // 3. 롬북
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+```
+
+두 줄로 갈려 있는 것이 롬복의 성격을 그대로 말해 준다.
+
+| 설정 | 뜻 |
+| --- | --- |
+| `compileOnly` | 컴파일할 때만 있으면 된다 — 실행할 때 배포본에는 들어가지 않는다 |
+| `annotationProcessor` | 컴파일 중에 애노테이션을 읽고 코드를 생성하는 처리기로 등록한다 |
+
+`implementation` 이 아니라 `compileOnly` 인 이유가 여기 있다. 롬복은 **컴파일이 끝나면 할 일이 끝나는** 라이브러리라 실행 시점에는 필요가 없다.
+
+### 1-14. 컴파일 시점에 읽는 갈래 — 애노테이션 프로세서
+
+`exam1` 에서 만든 `MyAnnotation` 은 `@Retention(RUNTIME)` 이었고, 실행 중에 리플렉션으로 읽혔다. 롬복은 반대쪽 갈래다.
+
+| 갈래 | 언제 읽나 | 읽는 주체 | 결과 |
+| --- | --- | --- | --- |
+| 리플렉션 (`RUNTIME`) | 프로그램 실행 중 | 프레임워크 코드 | 그때그때 판단해서 동작 |
+| 애노테이션 프로세서 (`SOURCE`) | 컴파일하는 중 | 컴파일러에 끼워 넣은 처리기 | **소스에 없던 코드가 생성된다** |
+
+롬복은 컴파일할 때 `@Getter` 가 붙은 클래스를 보고 getter 메소드를 만들어 넣는다. 그래서 `.java` 파일에는 메소드가 안 보이는데 `.class` 에는 들어 있다. 실행 중에 롬복이 무언가를 하는 것이 아니라 **이미 만들어진 코드가 평범하게 실행되는** 것이라, 리플렉션과 달리 성능 부담이 없다.
+
+같은 애노테이션이라는 장치를 놓고 `@Retention` 값에 따라 읽는 시점과 읽는 주체가 갈린다는 것이 1-5의 표가 실제로 쓰이는 자리다.
+
+### 1-15. 생성자를 만들어 주는 애노테이션
+
+`exam2` 의 `Student` 클래스에는 멤버변수만 남아 있고 생성자가 없다.
+
+```java
+@NoArgsConstructor
+@AllArgsConstructor
+// @RequiredArgsConstructor
+class Student {
+    private String name;
+    private int kor;
+    private int math;
+}
+```
+
+셋의 갈림은 이렇다.
+
+| 애노테이션 | 만들어 주는 생성자 | 손으로 쓰면 |
+| --- | --- | --- |
+| `@NoArgsConstructor` | 매개변수 없는 생성자 | `Student() {}` |
+| `@AllArgsConstructor` | 모든 멤버변수를 받는 생성자 | `Student(String name, int kor, int math) {...}` |
+| `@RequiredArgsConstructor` | `final` 이거나 `@NonNull` 인 멤버만 받는 생성자 | 필수 값만 받는 생성자 |
+
+[[Java day06 생성자와 콘솔 게시판]] 에서 본 규칙 하나가 여기서 다시 걸린다 — 생성자를 하나라도 직접 정의하면 기본 생성자가 사라진다는 점이다. `@AllArgsConstructor` 만 붙이면 전체 생성자가 생기면서 기본 생성자가 없어지므로, 둘 다 필요하면 `@NoArgsConstructor` 를 함께 붙인다. 실제로 이 파일도 둘을 같이 붙였다.
+
+기본 생성자가 왜 자꾸 필요한지는 1-11에서 본 그대로다. `newInstance()` 든 JSON을 객체로 되돌리는 과정이든, **프레임워크가 객체를 만드는 통로는 매개변수 없는 생성자**다.
+
+`@RequiredArgsConstructor` 는 스프링에서 의존성 주입에 쓰이는 관용구이기도 하다. 멤버를 `final` 로 두고 이 애노테이션 하나만 붙이면 생성자 주입이 완성된다 — 3-7에서 이어서 본다.
+
+### 1-16. getter·setter·toString
+
+나머지 셋은 메소드를 만들어 준다.
+
+```java
+@Getter
+@Setter
+@ToString
+```
+
+| 애노테이션 | 생성되는 것 |
+| --- | --- |
+| `@Getter` | 멤버변수마다 `getName()`·`getKor()`·`getMath()` |
+| `@Setter` | 멤버변수마다 `setName(...)`·`setKor(...)`·`setMath(...)` |
+| `@ToString` | 멤버변수 값을 모아 문자열로 만드는 `toString()` |
+
+`private` 으로 닫아 둔 멤버변수를 메소드로 여닫는 구조는 [[Java day08 접근제한자와 static]] 에서 본 캡슐화 그대로다. 손으로 적을 때는 멤버 하나 늘 때마다 메소드 둘을 따라 늘려야 했는데, 애노테이션으로 두면 **멤버변수만 고치면 나머지가 따라온다.**
+
+`@ToString` 이 하는 일은 [[Java day13 Object 클래스와 리플렉션]] 에서 본 `toString()` 재정의다. 재정의하지 않으면 `클래스명@해시값` 이 찍히는 그 자리를, 멤버 값이 보이도록 바꿔 준다.
+
+클래스가 아니라 멤버변수 하나에만 붙이는 것도 된다. 특정 필드만 열고 싶을 때 쓴다.
+
+```java
+@Getter @Setter
+private String name;
+```
+
+### 1-17. @Data와 @EqualsAndHashCode — 묶음 애노테이션
+
+```java
+@Data
+@EqualsAndHashCode
+```
+
+`@Data` 는 자주 같이 쓰는 것들을 하나로 묶은 애노테이션이다.
+
+```
+@Data = @Getter + @Setter + @ToString + @EqualsAndHashCode + @RequiredArgsConstructor
+```
+
+3-2에서 볼 합성 애노테이션과 같은 발상이다. **자주 쓰는 조합에 짧은 이름을 붙여 둔 것**이라, `@Data` 하나만 붙여도 위의 것들이 다 따라온다. 개별 애노테이션을 함께 적어 두면 무엇이 생기는지가 코드에 드러나는 이점은 있다.
+
+`@EqualsAndHashCode` 는 `equals()` 와 `hashCode()` 를 멤버변수 값 기준으로 재정의한다. 기본 동작과 갈리는 지점이 핵심이다.
+
+| | 재정의 전 | `@EqualsAndHashCode` 후 |
+| --- | --- | --- |
+| `equals` 기준 | 같은 객체인가(주소) | 멤버변수 값이 같은가 |
+| `hashCode` | 주소 기반 | 멤버변수 값 기반 |
+
+[[Java day13 Object 클래스와 리플렉션]] 에서 `equals` 를 값 비교로 바꿔야 했던 이유, [[Java day15 Map과 HashMap]] 에서 키로 쓸 객체는 `hashCode` 와 `equals` 가 짝으로 맞아야 했던 이유가 그대로 이어진다. 둘 중 하나만 재정의하면 `HashMap` 이나 `HashSet` 에서 어긋나므로, **짝으로 함께 만들어 주는 애노테이션 하나로 두는 편이 안전하다.**
+
+정리하면 `Student` 클래스는 멤버변수 세 개만 적혀 있지만, 컴파일이 끝나면 생성자 둘과 메소드 열 개 남짓이 들어 있는 클래스가 된다. [[Java day12 종합예제 JDBC DAO]] 에서 DTO마다 길게 적던 부분이 애노테이션 몇 줄로 줄어든 셈이다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. value 하나만 쓸 때는 이름을 생략할 수 있다
@@ -440,6 +563,57 @@ catch (InvocationTargetException e) {
 
 이걸 알아 두면 스프링에서 애노테이션을 붙였는데 동작하지 않을 때 볼 자리가 좁혀진다. 대체로 "표시를 안 달았다"가 아니라 **"읽는 쪽이 그 클래스를 훑지 않았다"** 쪽인 경우가 많다 — 컴포넌트 스캔 범위 밖에 클래스가 있는 상황이 대표적이다. [[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 진입점의 패키지가 곧 스캔 범위가 된다고 본 그 이야기와 이어진다.
 
+롬복도 같은 이야기 위에 있다. 애노테이션을 아무리 붙여도 `annotationProcessor` 등록이 빠져 있으면 읽는 쪽이 없는 것이라 메소드가 생기지 않는다. IDE에서 `getName()` 을 못 찾겠다고 나오는 상황이 대체로 이 자리다.
+
+### 2-11. 롬복이 만든 코드를 확인하는 방법
+
+생성된 코드가 소스에 보이지 않는 것이 롬복의 불편한 점이다. 확인할 수 있는 통로는 몇 가지가 있다.
+
+- 빌드 결과의 `.class` 를 디컴파일해 보면 생성된 메소드가 그대로 보인다
+- IDE의 구조 보기(Outline)에는 생성된 메소드가 함께 잡힌다
+- 리플렉션으로 훑어도 보인다 — `exam1` 에서 쓴 `getDeclaredMethods()` 로 확인할 수 있다
+
+```java
+for (Method m : Student.class.getDeclaredMethods()) {
+    System.out.println(m.getName());
+}
+```
+
+컴파일 시점에 만들어진 코드도 결국 평범한 메소드라, 실행 중에 리플렉션으로 보면 손으로 적은 것과 구별되지 않는다. 두 갈래가 결국 같은 `.class` 파일에서 만난다는 것이 여기서 드러난다.
+
+### 2-12. 롬복 애노테이션을 고르는 기준
+
+전부 붙이는 것보다 필요한 것만 고르는 편이 낫다. 대체로 이런 갈림이다.
+
+| 상황 | 붙일 것 |
+| --- | --- |
+| 값을 담고 옮기기만 하는 DTO | `@Getter` + `@Setter` + `@NoArgsConstructor` + `@AllArgsConstructor` |
+| 값이 바뀌지 않아야 하는 객체 | `@Getter` + `@AllArgsConstructor` (setter를 두지 않는다) |
+| 스프링 빈에 의존성 주입 | 멤버를 `final` 로 두고 `@RequiredArgsConstructor` |
+| 값 비교가 필요한 객체 | `@EqualsAndHashCode` 를 빠뜨리지 않기 |
+
+`@Setter` 를 습관적으로 붙이면 아무 데서나 값을 바꿀 수 있게 된다. 바뀌면 안 되는 값에는 setter를 두지 않는 편이 안전하다. 캡슐화의 목적이 "메소드로 감싸는 것" 자체가 아니라 **바뀔 수 있는 경로를 정해 두는 것**이라는 점이 여기서 이어진다.
+
+### 2-13. 순환 참조와 toString
+
+`@ToString` 과 `@EqualsAndHashCode` 는 기본적으로 **모든 멤버변수**를 훑는다. 서로를 참조하는 객체 둘이 있으면 `toString()` 이 서로를 부르며 끝나지 않는 문제가 생길 수 있다.
+
+특정 필드를 빼려면 이렇게 적는다.
+
+```java
+@ToString(exclude = "비밀번호")
+@EqualsAndHashCode(of = { "학번" })
+```
+
+| 속성 | 뜻 |
+| --- | --- |
+| `exclude` | 이 필드는 제외한다 |
+| `of` | 이 필드들만 포함한다 |
+
+로그에 남으면 곤란한 값(비밀번호 등)을 `@ToString` 에서 빼 두는 것도 같은 통로다. 로그가 남는 자리에 무엇이 찍히는지는 한 번 확인해 두는 편이 안전하다.
+
+`callSuper` 속성으로 부모 클래스의 필드까지 볼지도 정할 수 있다. 상속이 걸린 클래스에서 값 비교가 어긋나면 대개 이 자리다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 컴포넌트 스캔 — 클래스를 훑어 표시를 찾는다
@@ -489,9 +663,36 @@ catch (InvocationTargetException e) {
 - 실행 중에 하는 일이 없으니 성능 부담이 없다는 것이 장점이다
 - 대신 생성된 코드가 소스에 보이지 않아 IDE 지원이 필요하다
 
-DTO마다 getter·setter를 손으로 적던 [[Java day08 접근제한자와 static]] 의 되풀이를 줄이는 방향이기도 하다.
+DTO마다 getter·setter를 손으로 적던 [[Java day08 접근제한자와 static]] 의 되풀이를 줄이는 방향이기도 하다. 이 갈래는 1-13~1-17에서 실제로 써 봤다.
 
-### 3-5. 리플렉션의 비용과 쓰는 자리
+애노테이션 프로세서를 쓰는 라이브러리는 롬복 말고도 몇 가지가 더 있다. 성격을 알아 두면 빌드 설정에서 `annotationProcessor` 줄이 왜 필요한지가 같은 이야기로 읽힌다.
+
+| 라이브러리 | 컴파일 시점에 만드는 것 |
+| --- | --- |
+| Lombok | 생성자·getter·setter·`toString`·`equals` |
+| MapStruct | 객체 A ↔ 객체 B 변환 코드(DTO ↔ 엔티티) |
+| Querydsl | 타입이 검사되는 쿼리용 Q클래스 |
+
+### 3-5. 생성자 주입과 @RequiredArgsConstructor
+
+스프링에서 롬복이 가장 자주 쓰이는 자리는 DTO보다 오히려 **의존성 주입** 쪽이다.
+
+```java
+@RestController
+@RequiredArgsConstructor
+public class BoardController {
+    private final BoardDao boardDao;   // final 멤버
+}
+```
+
+`final` 멤버를 받는 생성자가 컴파일 시점에 만들어지고, 스프링은 그 생성자를 통해 필요한 객체를 넣어 준다. 생성자가 하나뿐이면 `@Autowired` 를 붙이지 않아도 주입된다.
+
+- 필드 주입(`@Autowired` 를 멤버변수에 직접)보다 **생성자 주입이 권장되는 방식**이다
+- `final` 이라 만들어진 뒤 바뀌지 않고, 필요한 것이 없으면 객체 생성 자체가 실패해 문제가 일찍 드러난다
+
+[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 컨트롤러가 DAO를 직접 `new` 로 만들던 자리가 이 구조로 바뀐다. 컨트롤러는 "필요하다"고 선언만 하고, 만들어 넣는 일은 컨테이너가 맡는 갈림이다.
+
+### 3-6. 리플렉션의 비용과 쓰는 자리
 
 리플렉션은 편한 만큼 대가가 있다.
 
@@ -503,7 +704,7 @@ DTO마다 getter·setter를 손으로 적던 [[Java day08 접근제한자와 sta
 
 일반 업무 코드에서 리플렉션을 직접 쓸 일은 드물다. 다만 **쓰는 라이브러리가 그것으로 돌아간다**는 것을 알아 두면, 기본 생성자가 왜 필요한지·`private` 필드에 값이 어떻게 들어가는지 같은 것이 설명된다.
 
-### 3-6. 다음에 볼 키워드
+### 3-7. 다음에 볼 키워드
 
 - `@Component`·`@Service`·`@Repository` — 계층별 컴포넌트 표시와 스캔
 - `@Autowired`·생성자 주입 — 컨테이너가 객체를 넣어 주는 통로
@@ -513,12 +714,18 @@ DTO마다 getter·setter를 손으로 적던 [[Java day08 접근제한자와 sta
 - `ApplicationContext` 와 빈 생명주기(`@PostConstruct`·`@PreDestroy`)
 - `HandlerMapping`·`HandlerAdapter` — 주소 표를 만들고 메소드를 부르는 실제 자리
 - Lombok과 애노테이션 프로세서
+- `@Builder` — 값이 많은 객체를 이름 붙여 조립하기
+- `@Slf4j` — 로거를 애노테이션으로 만들어 두기
+- `record` — 값 객체를 자바 문법 자체로 짧게 쓰는 방향
+- MapStruct·Querydsl — 코드 생성 계열 라이브러리
 - `MethodHandle` — 리플렉션보다 빠른 대안
 
 ## 실습 파일
 
 - `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java` (애노테이션이 주석과 갈리는 지점과 기계가 읽는 표시라는 성격, `@Override` 로 재정의를 컴파일러에게 검사시키기와 재정의된 메소드가 불리는 확인·`super` 로 부모 메소드 부르기, `@Deprecated` 로 사용 권장하지 않음을 알리기와 실행은 되지만 경고가 나는 자리, `@interface` 로 애노테이션 직접 정의하기, 메타 애노테이션 `@Retention` 과 `RetentionPolicy` 세 단계(`SOURCE`·`CLASS`·`RUNTIME`)·실행 중에 읽으려면 `RUNTIME` 이어야 하는 이유, `@Target` 과 `ElementType` 으로 붙일 자리 제한하기·여러 자리를 배열로 적기, 애노테이션 속성이 추상메소드 모양인 이유와 `default` 유무로 갈리는 필수·선택, 속성으로 쓸 수 있는 타입의 제한, 정의한 애노테이션을 메소드에 달고 속성 생략 시 기본값이 채워지는 자리, `java.lang.annotation` 과 `java.lang.reflect` 로 갈리는 두 축, `클래스.class` 리터럴로 `Class` 얻기와 `getClass()`·`Class.forName()` 과의 갈림·제네릭 `Class<T>` 로 타입 남기기, `getMethod(이름)` 으로 `Method` 꺼내기, `getAnnotation(애노테이션.class)` 로 표시 읽기와 `null` 이 나올 수 있는 자리, 속성 이름 그대로 메소드처럼 값 읽기, `getDeclaredConstructor().newInstance()` 로 `new` 없이 객체 만들기와 기본 생성자가 필요한 이유, `method.invoke(대상)` 으로 이름을 코드에 박지 않고 메소드 실행하기·`static` 이면 `null`·매개변수를 뒤에 잇기, 리플렉션 계열 호출이 검사 예외를 던지는 자리, 정의→주입→읽기 세 단계가 스프링의 컴포넌트 스캔·주소 매핑과 같은 구조라는 정리)
+- `2026B_Spring/springweb/src/main/java/day03/exam/exam2.java` (롬복으로 남이 만든 애노테이션을 가져다 쓰기, 컴파일 시점에 읽는 애노테이션 프로세서 갈래와 리플렉션 갈래의 갈림, `@NoArgsConstructor`·`@AllArgsConstructor`·`@RequiredArgsConstructor` 로 생성자 만들기와 전체 생성자를 두면 기본 생성자가 사라지는 자리, `@Getter`·`@Setter` 로 캡슐화 메소드 자동 생성·멤버변수 하나에만 붙이기, `@ToString` 이 `toString()` 재정의와 이어지는 자리, `@Data` 가 묶음 애노테이션이라는 점과 그 구성, `@EqualsAndHashCode` 로 값 기준 비교 만들기와 `equals`·`hashCode` 를 짝으로 두어야 하는 이유, 소스에 안 보이는 생성 코드를 확인하는 통로)
+- `2026B_Spring/springweb/build.gradle` (롬복 의존성 추가, `compileOnly` 로 실행 배포본에서 빠지는 이유와 `annotationProcessor` 로 컴파일 중 처리기를 등록하는 자리)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
