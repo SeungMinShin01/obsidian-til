@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `src/main/resources/static/day02/index.js`, `src/main/resources/static/day02/index2.html`, `src/main/resources/static/day02/index2.js`, `springweb/build.gradle`
-> 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]]
+> 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]] · 다음: [[Java Spring day03 애노테이션과 리플렉션]]
 
 [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
 
@@ -2789,4 +2789,4 @@ public class BoardPageController {
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day03 자료형과 연산자]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring day03 애노테이션과 리플렉션]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day03 자료형과 연산자]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
