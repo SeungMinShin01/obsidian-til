@@ -28,7 +28,7 @@ tags: [학습, java]
 | `ExamRepository` 의 인터페이스 한 줄 | 구현을 적지 않고 규약만 남기기 (1-6·1-7) |
 | `ExamService` | 컨트롤러와 DB 사이에 규칙을 담을 자리 두기 (1-9) |
 | `final` + `@RequiredArgsConstructor` | 필요한 것을 만들지 않고 받기 (1-10) |
-| `ExamController` | 엔티티를 그대로 주고받는 두 갈래 (1-11) |
+| `ExamController` | 엔티티를 그대로 주고받는 네 갈래 (1-11) |
 | `build.gradle` 의 스타터 한 줄 | 이 전부를 켜는 선언 (1-12) |
 
 ## 1. 배운 내용
@@ -277,6 +277,97 @@ Controller  →  Service  →  Repository
 
 `@Service` 는 `@Component` 와 하는 일이 같다. 빈으로 등록된다는 결과는 같고, **이름이 계층을 말해 준다**는 것이 다르다. [[Spring day04 REST 컨트롤러 CRUD 골격]] 에서 정리한 `@Controller`·`@Service`·`@Repository` 셋의 갈림이 여기서 세 파일로 눈에 보이는 모양이 됐다.
 
+뒤이어 삭제와 수정까지 붙어 네 갈래가 한 벌로 찼다.
+
+```java
+public boolean delete(int no) {
+    examRepository.deleteById(no);
+    return true;
+}
+
+public boolean update(ExamEntity entity) {
+    Optional<ExamEntity> optional = examRepository.findById(entity.getEno());
+    if (optional.isPresent()) {
+        ExamEntity savedEntity = optional.get();
+        savedEntity.setEname(entity.getEname());
+        return true;
+    }
+    return false;
+}
+```
+
+네 갈래가 리포지토리를 부르는 모양이 서로 다르다.
+
+| 갈래 | 부르는 메소드 | 돌려받는 것 | 판정하는 방법 |
+| --- | --- | --- | --- |
+| 조회 | `findAll()` | `List<엔티티>` | (판정 없음) |
+| 저장 | `save(entity)` | 영속된 엔티티 | 채워진 번호를 본다 |
+| 삭제 | `deleteById(no)` | 없음(`void`) | 되돌려 받을 값이 없다 |
+| 수정 | `findById(no)` | `Optional<엔티티>` | 들어 있는지 본다 |
+
+삭제만 돌려받는 값이 없다. **성공·실패를 알려면 지운 뒤 `existsById` 로 다시 확인하거나, 지우기 전에 있는지 먼저 보는 수밖에 없다.** 없는 번호를 지우려 하면 예외가 나는 쪽이라, 앞에 확인 한 줄을 두는 배치가 흔하다.
+
+### 1-9-1. 없을 수도 있는 결과를 감싸는 상자 — Optional
+
+`findById` 만 돌려주는 타입이 다르다. `ExamEntity` 가 아니라 `Optional<ExamEntity>` 다.
+
+```
+findAll()   →  List<ExamEntity>       없으면 빈 목록
+findById(9) →  Optional<ExamEntity>   없으면 빈 Optional
+```
+
+목록은 "없음"을 빈 목록으로 말할 수 있는데, **하나를 찾는 일은 "없음"을 말할 방법이 `null` 뿐**이었다. `null` 을 그대로 돌려주면 받는 쪽이 확인을 빠뜨렸을 때 그 자리가 아니라 한참 뒤에서 터진다.
+
+`Optional` 은 그 자리를 **타입으로 옮긴다.** 값을 상자에 넣어 돌려주므로, 꺼내려면 열어 보는 절차를 거치게 된다.
+
+| 하는 일 | 메소드 |
+| --- | --- |
+| 들어 있는지 보기 | `isPresent()` / `isEmpty()` |
+| 꺼내기 | `get()` |
+| 없으면 대신 쓸 값 | `orElse(기본값)` |
+| 없으면 예외 던지기 | `orElseThrow()` |
+| 있을 때만 실행 | `ifPresent(…)` |
+
+`isPresent()` 로 갈라 `get()` 으로 꺼내는 모양이 가장 눈에 익는 형태다. 다만 `get()` 은 비어 있을 때 예외가 나므로 **`isPresent()` 확인 없이 부르면 `null` 검사를 빠뜨린 것과 다를 바가 없다.** 확인과 꺼내기가 붙어 있어야 값어치가 산다.
+
+조회 결과가 없을 때 그냥 실패로 끝낼 것이면 `orElseThrow()` 한 줄이 더 짧다.
+
+```java
+ExamEntity saved = examRepository.findById(no)
+        .orElseThrow(() -> new IllegalArgumentException("없는 번호"));
+```
+
+### 1-9-2. update SQL을 적지 않고 값만 바꾸기
+
+수정이 특이하다. **`save` 를 다시 부르지 않고 setter 하나로 끝난다.**
+
+```java
+ExamEntity savedEntity = optional.get();
+savedEntity.setEname(entity.getEname());
+```
+
+`update` 라는 이름의 메소드도, `save` 호출도 없는데 값이 바뀐다는 이야기다. 이것이 3-1에서 볼 **영속성 컨텍스트**의 성질이다.
+
+```
+findById 로 꺼낸 엔티티  →  관리 대상(영속 상태)이 된다
+setter 로 값을 바꾼다    →  JPA가 처음 읽은 값과 견준다
+트랜잭션이 끝난다        →  달라진 필드만 update SQL로 나간다
+```
+
+이 자동 감지를 **더티 체킹**이라 부른다. 조회해 온 객체는 그냥 값 그릇이 아니라 **DB의 그 줄과 이어져 있는 객체**라는 것이 요점이다. 1-2에서 DTO와 엔티티의 갈림으로 적어 둔 "상태가 추적되는 객체"가 실제로 도는 자리가 여기다.
+
+그래서 기억해 둘 것이 하나 있다. **더티 체킹은 트랜잭션이 살아 있는 동안에만 성립한다.** 조회와 값 변경이 같은 트랜잭션 안에서 일어나야 끝날 때 `update` 가 나가고, 트랜잭션 밖에서 꺼낸 객체는 관리 대상에서 풀려 아무리 setter를 불러도 DB에 반영되지 않는다. 수정 메소드에 `@Transactional` 을 붙이는 관용이 여기서 온다(2-7).
+
+새로 만든 객체에 번호를 채워 `save` 로 밀어 넣는 갈래도 있다.
+
+| | 조회 후 setter (더티 체킹) | `save` 를 다시 부르기 |
+| --- | --- | --- |
+| 나가는 SQL | 바뀐 컬럼만 `update` | `select` 로 확인 뒤 `update` |
+| 안 보낸 필드 | 원래 값이 남는다 | `null` 로 덮일 수 있다 |
+| 필요한 조건 | 트랜잭션 안이어야 한다 | PK가 채워져 있어야 한다 |
+
+**안 보낸 필드가 어떻게 되는가**가 갈림의 핵심이다. 필드가 둘일 때는 차이가 안 보이는데, 화면에서 일부만 고쳐 보내기 시작하면 벌어진다. 조회 후 setter 쪽이 부분 수정에 자연스럽다.
+
 ### 1-10. 만들지 않고 받기 — final과 @RequiredArgsConstructor
 
 컨트롤러와 서비스가 필요한 것을 들고 있는 방식이 바뀌었다.
@@ -314,7 +405,7 @@ public class ExamController {
 
 ### 1-11. 엔티티를 그대로 주고받기
 
-컨트롤러는 두 갈래뿐이다.
+컨트롤러도 네 갈래가 찼다.
 
 ```java
 @GetMapping("/day04/exam")
@@ -326,9 +417,46 @@ public List<ExamEntity> findAll() {
 public boolean save(@RequestBody ExamEntity entity) {
     return examService.save(entity);
 }
+
+@DeleteMapping("/day04/exam")
+public boolean delete(@RequestParam(name = "no") int no) {
+    return examService.delete(no);
+}
+
+@PutMapping("/day04/exam")
+public boolean update(@RequestBody ExamEntity entity) {
+    return examService.update(entity);
+}
 ```
 
-주소가 같고 방식으로 갈리는 배치는 [[Spring day04 REST 컨트롤러 CRUD 골격]] 과 같다. 달라진 것은 **오가는 타입이 DTO가 아니라 엔티티**라는 점이다.
+주소 하나에 방식 넷이 붙었다. **주소는 자원을 가리키고 방식이 무엇을 할지를 말한다**는 배치가 여기서 온전한 모양이 된다.
+
+| 방식 | 주소 | 뜻 | 받는 방법 |
+| --- | --- | --- | --- |
+| `GET` | `/day04/exam` | 목록 읽기 | (받는 값 없음) |
+| `POST` | `/day04/exam` | 새로 만들기 | `@RequestBody` |
+| `DELETE` | `/day04/exam?no=3` | 지우기 | `@RequestParam` |
+| `PUT` | `/day04/exam` | 통째로 고치기 | `@RequestBody` |
+
+**받는 방법이 두 갈래로 갈린다.** 삭제만 `@RequestParam` 이고 나머지는 `@RequestBody` 다.
+
+```
+@RequestParam   주소 뒤 쿼리 문자열     ?no=3          값 하나
+@RequestBody    요청 본문의 JSON        {"eno":3,…}    객체 한 벌
+```
+
+갈림의 기준은 **보낼 것이 값 하나인가 객체 한 벌인가**다. 삭제는 번호 하나면 끝나므로 본문을 실을 것이 없고, 저장·수정은 필드가 여럿이라 JSON으로 묶는 편이 낫다. `@RequestParam(name = "no")` 처럼 이름을 적어 두면 **주소에 실리는 이름과 매개변수 이름을 따로 둘 수 있다** — 컴파일 설정에 따라 매개변수 이름이 남지 않는 경우가 있어, 이름을 적는 쪽이 안전하다.
+
+번호를 주소 자체에 실어 `@PathVariable` 로 받는 갈래도 흔하다. 자원을 주소로 가리키는 REST 관점에서는 이쪽이 더 곧다.
+
+```java
+@DeleteMapping("/day04/exam/{no}")
+public boolean delete(@PathVariable int no) { … }
+```
+
+`PUT` 과 `PATCH` 의 갈림도 여기 걸려 있다. `PUT` 은 **보낸 것으로 통째로 바꾼다**는 뜻이고, 일부만 고치는 것은 `PATCH` 다. 1-9-2에서 본 "조회 후 setter" 방식은 안 보낸 필드를 그대로 두므로 실제 동작은 `PATCH` 쪽에 가깝다. 뜻과 동작을 맞춰 두면 API를 읽는 쪽에서 헷갈릴 일이 준다.
+
+달라진 것은 **오가는 타입이 DTO가 아니라 엔티티**라는 점이다.
 
 ```
 요청 본문 JSON {"ename":"유재석"}
@@ -387,6 +515,17 @@ ExamController    주소와 방식
 | 성격 | 도메인이 달라도 같던 코드 | 도메인마다 다른 코드 |
 
 **같은 코드는 프레임워크에 넘기고, 다른 코드를 담을 자리는 따로 만든다.** 계층이 하나 느는 것이 손해로 보이지 않는 이유가 여기 있다.
+
+CRUD 네 갈래가 층을 타고 내려가는 모양을 한 번에 놓고 보면 이렇게 된다.
+
+| 갈래 | 컨트롤러 | 서비스 | 리포지토리 | 나가는 SQL |
+| --- | --- | --- | --- | --- |
+| 조회 | `@GetMapping` | `findAll()` | `findAll()` | `select` |
+| 저장 | `@PostMapping` + `@RequestBody` | `save()` | `save()` | `insert` |
+| 삭제 | `@DeleteMapping` + `@RequestParam` | `delete()` | `deleteById()` | `delete` |
+| 수정 | `@PutMapping` + `@RequestBody` | `update()` | `findById()` + setter | `select` 뒤 `update` |
+
+수정만 리포지토리 호출과 나가는 SQL이 어긋난다. **`update` 를 부르는 자리가 없는데 `update` 가 나간다** — 적은 코드와 도는 동작이 처음으로 갈라지는 지점이다. 다른 셋은 코드에서 SQL을 읽어 낼 수 있는데 수정만 그렇지 않아서, 3-1의 영속성 컨텍스트를 알고 나서야 코드가 온전히 읽힌다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -576,7 +715,7 @@ Spring day02 스프링 부트 실행과 계층 이식 에서 본 자바빈 프�
 
 ### 3-1. 영속성 컨텍스트 — 객체를 관리하는 상자
 
-JPA가 SQL을 대신 적어 주는 것으로만 보이지만, 그 아래에 상자가 하나 있다. 읽어 온 엔티티를 **담아 두고 상태를 추적하는** 자리다.
+JPA가 SQL을 대신 적어 주는 것으로만 보이지만, 그 아래에 상자가 하나 있다. 읽어 온 엔티티를 **담아 두고 상태를 추적하는** 자리다. 1-9-2에서 setter 하나로 수정이 끝나던 자리가 이 상자 위에서 도는 일이다.
 
 ```
 findById(1)  →  상자에 없으면 select, 있으면 그대로 돌려준다
@@ -679,8 +818,8 @@ List<ExamEntity> search(@Param("kw") String kw);
 - `2026B_Spring/springweb/src/main/java/day04/sample.sql` (옮겨 담을 표를 먼저 만들어 두기 — `DROP DATABASE if EXISTS` 로 다시 만들기, 컬럼 둘짜리 `exam` 표와 `PRIMARY KEY AUTO_INCREMENT` 가 엔티티의 `@Id`·`@GeneratedValue(IDENTITY)` 와 짝을 이루는 자리, 번호를 적지 않고 `INSERT` 하면 DB가 다음 번호를 채우는 성질, `spring.datasource.url` 이 가리키는 DB 이름과 여기서 만든 이름이 같아야 붙는 점)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamEntity.java` (표 하나를 자바 클래스에 짝지어 두기 — `@Entity` 로 DB와 짝지어 관리한다고 선언하기·`@Table(name=…)` 으로 표 이름 지목하기와 생략했을 때 클래스 이름이 표 이름이 되는 규칙, 필드 이름과 컬럼 이름이 짝을 이루어 컬럼→필드→JSON 키→화면으로 이름 하나가 관통하는 자리, DTO와 엔티티가 서 있는 자리의 갈림(오가는 값의 모양 vs DB의 표, 그냥 객체 vs 상태가 추적되는 객체), `@Id` 로 열쇠를 지정하고 엔티티는 PK를 반드시 하나 이상 갖는다는 규칙과 그 이유(객체가 표의 어느 줄인지 늘 알아야 한다), `@GeneratedValue` 로 번호 만들기를 맡기기와 `GenerationType` 네 갈래(`IDENTITY`·`SEQUENCE`·`TABLE`·`AUTO`)·MySQL의 `AUTO_INCREMENT` 와 `IDENTITY` 가 짝인 이유·저장 전 `null` 과 저장 후 채워진 번호를 갈라 보려면 `Integer` 여야 하는 자리, 엔티티에 붙은 롬복 표시 넷과 각각이 여는 통로·JPA 규격이 매개변수 없는 생성자를 요구하는 이유(빈 객체를 먼저 만든 뒤 값을 채운다)와 `@Builder`·`@AllArgsConstructor` 를 붙일 때 기본 생성자를 함께 두는 관용, `@Data` 를 엔티티에 붙일 때 딸려 오는 `@EqualsAndHashCode`·`@ToString`·`@Setter` 가 걸리는 지점과 PK만 보게 두거나 통로를 메소드로 만드는 갈래)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamRepository.java` (구현을 적지 않고 규약만 남기기 — 몸통이 빈 인터페이스가 `extends JpaRepository` 한 줄로 메소드를 물려받는 구조·제네릭 두 자리가 조작할 엔티티와 그 PK 타입을 적는 곳이며 PK 타입이 엔티티의 `@Id` 필드 타입과 맞아야 하는 점, 스프링이 시작할 때 인터페이스를 찾아 구현 객체를 만들어 빈으로 등록하는 자리와 "표시를 읽어 동작을 만드는" 구조가 인터페이스 자체를 읽는 쪽으로 간 정리, 물려받는 메소드들(`findAll`·`findById`·`save`·`deleteById`·`count`·`existsById`)과 대응하는 SQL·CRUD 네 갈래가 이름만 바뀌어 그대로 있는 점, `@Repository` 를 붙이지 않아도 Spring Data가 등록하지만 읽는 사람에게 계층이 드러나는 값어치, 직접 JDBC와 견줬을 때 연결·SQL 문자열·값 바인딩·결과 훑기·자원 닫기가 전부 사라지는 자리와 그 대신 무슨 SQL이 나가는지 코드에 안 보이는 뒷면, 메소드 이름으로 쿼리 만들기 — 이름을 단어로 쪼개 읽는 규칙(`findByEname`·`Containing`·`GreaterThan`·`OrderBy`)과 필드 이름이 어긋나면 뜰 때 걸리는 점·조건이 늘면 `@Query` 로 넘어가는 기준)
-- `2026B_Spring/springweb/src/main/java/day04/Exam/ExamService.java` (컨트롤러와 DB 사이에 계층 하나 두기 — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `findAll` 처럼 넘기기만 하는 자리와 `save` 처럼 리포지토리가 돌려준 값을 보고 판정하는 자리의 갈림·양쪽 어디에 둬도 어색한 코드를 담는 것이 Service의 값어치, `save` 가 영속된 엔티티를 돌려주므로 DB가 채운 번호를 그 자리에서 확인할 수 있는 자리, `final` + `@RequiredArgsConstructor` 로 리포지토리를 주입받기와 컴파일 시점 코드 생성과 실행 시점 주입이 맞물리는 구조·`getInstance()` 로 꺼내 오던 방식과의 갈림(만드는 주체·박히는 이름·테스트에서 다른 구현을 넣을 수 있는 값어치)·각 계층이 자기 바로 아래만 아는 배치, `save` 가 `insert` 인지 `update` 인지 PK가 비어 있는가로 갈리는 기준과 `int` 였다면 0이 "3번을 고쳐라"와 같은 갈래로 읽히는 문제, 여러 단계를 한 묶음으로 묶는 `@Transactional` 이 Service에 붙는 이유와 `readOnly`·프록시로 도는 구조와 자기 호출 제약)
-- `2026B_Spring/springweb/src/main/java/day04/Exam/ExamController.java` (엔티티를 그대로 주고받는 두 갈래 — 주소는 같고 방식으로 갈리는 배치의 반복·오가는 타입이 DTO가 아니라 엔티티라는 점, `@RequestBody` 로 받은 JSON에 PK 키가 없으면 `null` 이 되고 DB가 번호를 채워 돌아오는 왕복, `List<ExamEntity>` 가 그대로 JSON 배열이 되고 `@Data` 의 getter가 JSON 키를 정하는 자리·표의 모양이 곧 응답의 모양이 되는 점과 내보내면 안 되는 값까지 나갈 여지, 엔티티를 그대로 내보내지 않는 갈래 — 표를 고치면 API 응답이 같이 바뀌는 문제·요청용과 응답용을 갈라 두기·`@JsonIgnore` 로 응답에서 필드 빼기, `boolean` 대신 저장된 엔티티와 상태 코드를 돌려줘 등록 직후 번호를 화면에 넘기기, 목록이 커질 때 `Page`·`Pageable`·`Sort` 로 쪽을 나누기와 `Page` 가 전체 개수·쪽수까지 들고 있는 점)
+- `2026B_Spring/springweb/src/main/java/day04/Exam/ExamService.java` (컨트롤러와 DB 사이에 계층 하나 두기 — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `findAll` 처럼 넘기기만 하는 자리와 `save` 처럼 리포지토리가 돌려준 값을 보고 판정하는 자리의 갈림·양쪽 어디에 둬도 어색한 코드를 담는 것이 Service의 값어치, `save` 가 영속된 엔티티를 돌려주므로 DB가 채운 번호를 그 자리에서 확인할 수 있는 자리, `final` + `@RequiredArgsConstructor` 로 리포지토리를 주입받기와 컴파일 시점 코드 생성과 실행 시점 주입이 맞물리는 구조·`getInstance()` 로 꺼내 오던 방식과의 갈림(만드는 주체·박히는 이름·테스트에서 다른 구현을 넣을 수 있는 값어치)·각 계층이 자기 바로 아래만 아는 배치, `save` 가 `insert` 인지 `update` 인지 PK가 비어 있는가로 갈리는 기준과 `int` 였다면 0이 "3번을 고쳐라"와 같은 갈래로 읽히는 문제, 여러 단계를 한 묶음으로 묶는 `@Transactional` 이 Service에 붙는 이유와 `readOnly`·프록시로 도는 구조와 자기 호출 제약, 삭제·수정이 붙어 네 갈래가 한 벌로 차는 자리 — `deleteById` 만 돌려주는 값이 없어 성공 여부를 `existsById` 로 따로 확인해야 하는 점, `findById` 가 `Optional<엔티티>` 를 돌려주는 이유(목록은 빈 목록으로 "없음"을 말할 수 있지만 하나를 찾는 일은 `null` 뿐이었다는 자리)와 `isPresent`·`get`·`orElse`·`orElseThrow`·`ifPresent` 의 갈림·확인 없이 `get()` 을 부르면 `null` 검사를 빠뜨린 것과 같아지는 점, 수정이 `save` 호출 없이 setter 하나로 끝나는 구조 — 조회해 온 엔티티가 영속 상태가 되어 트랜잭션이 끝날 때 바뀐 필드만 `update` 로 나가는 더티 체킹·이것이 트랜잭션 안에서만 성립한다는 조건, 조회 후 setter와 `save` 를 다시 부르는 두 갈래의 갈림(나가는 SQL·안 보낸 필드가 원래 값으로 남는가 `null` 로 덮이는가·부분 수정에 어느 쪽이 자연스러운가))
+- `2026B_Spring/springweb/src/main/java/day04/Exam/ExamController.java` (엔티티를 그대로 주고받는 네 갈래 — 주소 하나에 `GET`·`POST`·`DELETE`·`PUT` 넷이 붙어 "주소는 자원을 가리키고 방식이 무엇을 할지 말한다"가 온전한 모양이 되는 자리, 받는 방법이 `@RequestParam`(주소 뒤 쿼리 문자열, 값 하나)과 `@RequestBody`(요청 본문 JSON, 객체 한 벌)로 갈리는 기준과 `@RequestParam(name=…)` 으로 이름을 적어 두는 편이 안전한 이유, 번호를 주소에 실어 `@PathVariable` 로 받는 갈래와 REST 관점에서의 값어치, `PUT`(통째로 바꾸기)과 `PATCH`(일부만 고치기)의 갈림과 조회 후 setter 방식의 실제 동작이 `PATCH` 쪽에 가까운 점, 주소는 같고 방식으로 갈리는 배치의 반복·오가는 타입이 DTO가 아니라 엔티티라는 점, `@RequestBody` 로 받은 JSON에 PK 키가 없으면 `null` 이 되고 DB가 번호를 채워 돌아오는 왕복, `List<ExamEntity>` 가 그대로 JSON 배열이 되고 `@Data` 의 getter가 JSON 키를 정하는 자리·표의 모양이 곧 응답의 모양이 되는 점과 내보내면 안 되는 값까지 나갈 여지, 엔티티를 그대로 내보내지 않는 갈래 — 표를 고치면 API 응답이 같이 바뀌는 문제·요청용과 응답용을 갈라 두기·`@JsonIgnore` 로 응답에서 필드 빼기, `boolean` 대신 저장된 엔티티와 상태 코드를 돌려줘 등록 직후 번호를 화면에 넘기기, 목록이 커질 때 `Page`·`Pageable`·`Sort` 로 쪽을 나누기와 `Page` 가 전체 개수·쪽수까지 들고 있는 점)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java` (실습 폴더마다 진입점을 두어 컴포넌트 스캔 범위를 나누는 구조의 반복 — 이 패키지 아래의 컨트롤러·서비스·리포지토리만 등록되는 자리)
 - `2026B_Spring/springweb/build.gradle` (스타터 한 줄로 JPA를 켜기 — `spring-boot-starter-data-jpa` 가 데려오는 것들(JPA 규격·하이버네이트 구현체·Spring Data JPA·커넥션 풀과 트랜잭션)과 의존성을 넣는 일이 곧 기능을 켜는 일이 되는 자동 설정 구조의 재확인, 엔티티를 찾아 표와 맞추고 리포지토리 인터페이스의 구현을 만드는 일이 함께 켜지는 자리, MySQL 드라이버가 여전히 `runtimeOnly` 인 이유 — JPA를 얹어도 맨 아래층은 JDBC라는 점, `spring.jpa.show-sql`·`format_sql` 로 나가는 SQL을 로그로 옮겨 보기와 `spring.jpa.hibernate.ddl-auto` 다섯 값의 갈림·`create` 계열이 뜰 때 표를 지우는 점과 표는 SQL로 만들고 `validate` 로 두는 배치)
 
