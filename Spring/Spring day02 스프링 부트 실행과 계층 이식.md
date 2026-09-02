@@ -8,9 +8,9 @@ tags: [학습, java]
 # Java Spring day02 — 스프링 부트 실행과 계층 이식
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day02/AppStart.java`, `Controller/BoardController.java`, `Controller/WaitingController.java`, `Model/Dao/BaseDao.java`, `Model/Dao/BoardDao.java`, `Model/Dao/WaitingDao.java`, `Model/Dto/BoardDto.java`, `Model/Dto/WaitingDto.java`, `sample.sql`, `src/main/resources/static/day02/index.html`, `src/main/resources/static/day02/index.js`, `src/main/resources/static/day02/index2.html`, `src/main/resources/static/day02/index2.js`, `springweb/build.gradle`
-> 허브: [[Java MOC]] · 이전: [[Java Spring day01 서블릿과 HTTP 메소드]] · 다음: [[Java Spring day03 애노테이션과 리플렉션]]
+> 허브: [[Java MOC]] · 이전: [[Spring day01 서블릿과 HTTP 메소드]] · 다음: [[Spring day03 애노테이션과 리플렉션]]
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
+[[Spring day01 서블릿과 HTTP 메소드]] 에서 요청을 받는 자리(서블릿)를 만들어 봤다. 이번에는 방향을 한 번 되짚어서, **스프링 부트 애플리케이션을 직접 띄우는 진입점**을 만들고 그 아래에 콘솔에서 쓰던 MVC 계층을 그대로 옮겨 온다.
 
 파일이 여럿 나오는데 역할이 뚜렷하게 갈린다. 앞의 여섯이 게시판 한 벌이고, 뒤의 셋은 같은 구조를 대기명단에 한 번 더 쓴 것이다.
 
@@ -44,7 +44,7 @@ tags: [학습, java]
 | 쓰는 방식 | 필요할 때 내가 부른다 | 내가 만든 것을 프레임워크가 부른다 |
 | 예 | `Math`·`Scanner` | 스프링·안드로이드 |
 
-[[Java Spring Boot 프로젝트 생성(분석)]] 3-1에서 제어의 역전으로 정리한 성질이 그대로다. 지금까지는 `main` 이 처음부터 끝까지 흐름을 쥐고 있었는데, 스프링을 쓰면 `main` 은 **시동만 걸고 물러난다.** 이후로는 요청이 들어올 때마다 스프링이 내 메소드를 불러 준다.
+[[Spring Boot 프로젝트 생성(분석)]] 3-1에서 제어의 역전으로 정리한 성질이 그대로다. 지금까지는 `main` 이 처음부터 끝까지 흐름을 쥐고 있었는데, 스프링을 쓰면 `main` 은 **시동만 걸고 물러난다.** 이후로는 요청이 들어올 때마다 스프링이 내 메소드를 불러 준다.
 
 그래서 프레임워크를 쓴다는 것은 "편한 함수를 가져다 쓴다"가 아니라 **정해진 틀 안에 내 코드를 끼워 넣는다**에 가깝다. 틀이 정해져 있는 만큼 자유도는 줄지만, 서버·요청 처리·연결 관리 같은 반복 작업을 직접 만들지 않아도 된다.
 
@@ -85,7 +85,7 @@ tags: [학습, java]
 - **내장 톰캣이 자동으로 세팅된다** — 서버를 따로 설치하거나 war 를 배포할 필요가 없다
 - **컨트롤러·컴포넌트가 자동으로 등록된다** — 클래스를 만들어 두면 스프링이 찾아 관리한다
 
-두 번째가 [[Java Spring day01 서블릿과 HTTP 메소드]] 1-7에서 주소를 일일이 등록하던 것과 대비되는 자리다. 서블릿 시절에는 "이 클래스를 이 주소에 붙여 달라"고 직접 말해야 했는데, 스프링은 **표시를 붙여 두면 찾아서 등록한다.**
+두 번째가 [[Spring day01 서블릿과 HTTP 메소드]] 1-7에서 주소를 일일이 등록하던 것과 대비되는 자리다. 서블릿 시절에는 "이 클래스를 이 주소에 붙여 달라"고 직접 말해야 했는데, 스프링은 **표시를 붙여 두면 찾아서 등록한다.**
 
 `@ComponentScan` 의 범위가 "시작 클래스가 있는 패키지부터 아래"라는 점은 기억해 둘 만하다. 클래스를 만들어도 그 범위 밖에 있으면 스프링이 알지 못한다.
 
@@ -147,7 +147,7 @@ http://127.0.0.1:8080
 
 `8080` 은 포트 번호다. 한 컴퓨터 안에서 **여러 프로그램을 구분하는 번호**라, 이미 그 번호를 쓰고 있는 프로그램이 있으면 새로 뜨지 못한다. 스프링 부트 프로젝트를 두 개 이상 동시에 켤 수 없는 것도 같은 이유고, 겹칠 때는 포트를 바꿔 주면 된다(2-1).
 
-주소를 등록하지 않은 상태에서 접속하면 오류 화면이 나온다. [[Java Spring day01 서블릿과 HTTP 메소드]] 2-3의 404 — 서버는 떠 있는데 그 주소를 담당할 자리가 없다는 뜻이라, **서버가 죽은 것과는 다른 상태**다.
+주소를 등록하지 않은 상태에서 접속하면 오류 화면이 나온다. [[Spring day01 서블릿과 HTTP 메소드]] 2-3의 404 — 서버는 떠 있는데 그 주소를 담당할 자리가 없다는 뜻이라, **서버가 죽은 것과는 다른 상태**다.
 
 ### 1-6. 패키지로 계층을 나눈다
 
@@ -297,7 +297,7 @@ public class BoardController {
 
 **① 서블릿 기능을 상속 대신 표시로 받는다**
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 에서는 `HttpServlet` 을 물려받아 `doGet`·`doPost` 를 덮어써야 했다. 스프링에서는 클래스 위에 `@Controller` 를 붙이는 것으로 같은 자리를 만든다.
+[[Spring day01 서블릿과 HTTP 메소드]] 에서는 `HttpServlet` 을 물려받아 `doGet`·`doPost` 를 덮어써야 했다. 스프링에서는 클래스 위에 `@Controller` 를 붙이는 것으로 같은 자리를 만든다.
 
 | | 서블릿 방식 | 스프링 방식 |
 | --- | --- | --- |
@@ -333,7 +333,7 @@ HTTP는 데이터를 실어 보낼 때 그 형태를 헤더로 함께 알려 준
 
 **④ @PostMapping — 메소드마다 주소를 붙인다**
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 1-6의 HTTP 방식과 CRUD 표가 그대로 짝을 이룬다.
+[[Spring day01 서블릿과 HTTP 메소드]] 1-6의 HTTP 방식과 CRUD 표가 그대로 짝을 이룬다.
 
 | 표시 | HTTP 방식 | 쓰는 자리 |
 | --- | --- | --- |
@@ -672,7 +672,7 @@ public boolean delete(int no) {
 
 **⑤ 부분 수정의 성격**
 
-`set content = ?` 만 두었으므로 이 메소드는 내용만 바꾼다. 작성자를 같이 바꾸려면 `set` 에 컬럼을 더하고 `?` 를 하나 늘리면 된다. HTTP 방식으로 보면 [[Java Spring day01 서블릿과 HTTP 메소드]] 1-6의 PUT과 PATCH가 갈리는 자리인데, 실습에서는 `@PutMapping` 하나로 둔다.
+`set content = ?` 만 두었으므로 이 메소드는 내용만 바꾼다. 작성자를 같이 바꾸려면 `set` 에 컬럼을 더하고 `?` 를 하나 늘리면 된다. HTTP 방식으로 보면 [[Spring day01 서블릿과 HTTP 메소드]] 1-6의 PUT과 PATCH가 갈리는 자리인데, 실습에서는 `@PutMapping` 하나로 둔다.
 
 ### 1-16. 컨트롤러 — 매핑 넷이 CRUD와 짝을 이룬다
 
@@ -746,7 +746,7 @@ mainClass = 'day02.AppStart'   →  day02 패키지 아래만 스캔
                                →  day01 의 서블릿 클래스는 등록되지 않는다
 ```
 
-[[Java Spring Boot 프로젝트 생성(분석)]] 에서 정리한 `build.gradle` 이 빌드·실행 설정을 담는 자리라는 것이 실제로 쓰인 형태다.
+[[Spring Boot 프로젝트 생성(분석)]] 에서 정리한 `build.gradle` 이 빌드·실행 설정을 담는 자리라는 것이 실제로 쓰인 형태다.
 
 ### 1-18. WAITING — 표를 하나 더 만든다
 
@@ -1720,8 +1720,8 @@ await axios.post(`/waiting/insert?pNumber=${pNumber}&hCount=${hCount}`);
 | --- | --- |
 | [[Java day09 MVC 종합예제]] | 콘솔에서 계층 나누기 |
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하기 |
-| [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
-| [[Java Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
+| [[Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
+| [[Spring day01 서블릿과 HTTP 메소드]] | 요청을 받는 자리 만들기 |
 | **이번** | 스프링 진입점 + 계층 이식 + CRUD 네 요청 잇기 + 같은 구조를 두 번째 표에 다시 쓰기 + 화면에서 axios로 CRUD 네 갈래 부르기 + 그 화면을 두 번째 도메인에 한 벌 더 |
 
 바뀐 것은 `main` 한 줄과 컨트롤러의 표시뿐이고 아래는 그대로다.
@@ -1827,7 +1827,7 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 | `application.properties` | 값만 고치면 된다, 환경별로 파일을 나눌 수 있다 |
 | 환경 변수·외부 파일 | 소스에 값이 남지 않는다 |
 
-[[Java Spring Boot 프로젝트 생성(분석)]] 2-7에서 설정 분리를 정리했는데, 연결 정보가 그 대상 중에서도 가장 먼저 빼야 하는 값이다. **비밀번호·키는 저장소에 올라가면 되돌리기 어렵다** — 커밋 이력에 남기 때문이다. 실습용 로컬 값이라도 습관을 들여 두는 편이 안전하다.
+[[Spring Boot 프로젝트 생성(분석)]] 2-7에서 설정 분리를 정리했는데, 연결 정보가 그 대상 중에서도 가장 먼저 빼야 하는 값이다. **비밀번호·키는 저장소에 올라가면 되돌리기 어렵다** — 커밋 이력에 남기 때문이다. 실습용 로컬 값이라도 습관을 들여 두는 편이 안전하다.
 
 환경별로 파일을 나눠 두고 골라 쓰는 방식도 있다.
 
@@ -2053,7 +2053,7 @@ return ResponseEntity.ok(result);                        // 200
 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();   // 400
 ```
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 2-3에서 정리한 상태 코드를 코드에서 직접 고르는 자리다.
+[[Spring day01 서블릿과 HTTP 메소드]] 2-3에서 정리한 상태 코드를 코드에서 직접 고르는 자리다.
 
 > 실습에서는 클래스에 `@RestController` 를 붙이는 쪽을 골랐다(1-13).
 
@@ -2127,7 +2127,7 @@ public boolean delete(@PathVariable int no) { ... }
 | `@PathVariable` | `/boards/3` | **무엇을 가리키는지** — 자원의 식별자 |
 | 커맨드 객체·`@RequestBody` | 본문 | 여러 값이 묶인 데이터 |
 
-어느 쪽이든 동작은 같으므로 실습에서 곧바로 바꿀 일은 아니지만, 남이 만든 API 문서를 읽을 때 오른쪽 형태를 자주 보게 된다. [[Java Spring day01 서블릿과 HTTP 메소드]] 2-5의 안전성·멱등성 정리와 함께 보면 왜 방식마다 자리가 정해져 있는지가 이어진다.
+어느 쪽이든 동작은 같으므로 실습에서 곧바로 바꿀 일은 아니지만, 남이 만든 API 문서를 읽을 때 오른쪽 형태를 자주 보게 된다. [[Spring day01 서블릿과 HTTP 메소드]] 2-5의 안전성·멱등성 정리와 함께 보면 왜 방식마다 자리가 정해져 있는지가 이어진다.
 
 폼에서 보낸 값을 받을 때와 JSON을 받을 때가 갈린다는 점도 봐 둔다. 커맨드 객체 바인딩(1-9 ⑤)은 `content=..&writer=..` 형태의 폼 인코딩을 읽는 것이라, 요청 본문이 JSON이면 `@RequestBody` 를 붙여야 값이 들어온다.
 
@@ -2789,4 +2789,4 @@ public class BoardPageController {
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring day03 애노테이션과 리플렉션]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day03 자료형과 연산자]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Spring day03 애노테이션과 리플렉션]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Java day16 스레드 동기화]] · [[Java day14 제네릭]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day04 제어문과 배열]] · [[Java day01 자바 구조와 자료형]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[JS day11 DOM 조작]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day10 함수]] · [[JS day05 반복문]] · [[JS day03 자료형과 연산자]] · [[JS day02 변수와 입출력]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day04 폼과 테이블]] · [[HTML day15 테이블 마크업]] · [[KDT_2026 학습 지도]]

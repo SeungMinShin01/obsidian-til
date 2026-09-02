@@ -106,6 +106,13 @@
       }
     },
     {
+      "query": "path:\"Spring/\"",
+      "color": {
+        "a": 1,
+        "rgb": 8172354
+      }
+    },
+    {
       "query": "path:\"JavaScript/\" path:코드정리/JS  ",
       "color": {
         "a": 1,

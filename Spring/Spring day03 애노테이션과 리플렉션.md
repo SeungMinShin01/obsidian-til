@@ -8,9 +8,9 @@ tags: [학습, java]
 # Java Spring day03 — 애노테이션과 리플렉션
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `RestController1.java`, `RestController2.java`, `AppStart.java`, `springweb/build.gradle`
-> 허브: [[Java MOC]] · 이전: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
+> 허브: [[Java MOC]] · 이전: [[Spring day02 스프링 부트 실행과 계층 이식]]
 
-[[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
+[[Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
 
 day03은 그 안쪽을 본다. 애노테이션을 직접 만들고, 만든 애노테이션을 클래스에 달고, **리플렉션으로 그 표시를 읽어 메소드를 실행**하는 데까지 한 파일에서 이어진다. 스프링이 하는 일을 아주 작게 줄여 놓은 축소판인 셈이다.
 
@@ -274,7 +274,7 @@ method.invoke(testClass);   // 메소드3 실행
 method.invoke(대상, 값1, 값2);
 ```
 
-기본 생성자가 필요한 자리가 또 나온 셈이다. [[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 DTO에 기본 생성자를 남겨 두던 이유와 같다 — **프레임워크가 객체를 만들 때 쓰는 통로**이기 때문이다.
+기본 생성자가 필요한 자리가 또 나온 셈이다. [[Spring day02 스프링 부트 실행과 계층 이식]] 에서 DTO에 기본 생성자를 남겨 두던 이유와 같다 — **프레임워크가 객체를 만들 때 쓰는 통로**이기 때문이다.
 
 ### 1-12. 정리 — 스프링이 하는 일의 축소판
 
@@ -303,7 +303,7 @@ method.invoke(대상, 값1, 값2);
 
 `exam1` 이 애노테이션을 **만들고 읽는** 쪽이었다면, `exam2` 는 이미 만들어져 있는 애노테이션을 **가져다 쓰는** 쪽이다. 여기서 쓰는 것이 롬복(Lombok)이다.
 
-롬복은 DTO를 만들 때마다 되풀이하던 코드 — 생성자, getter·setter, `toString`, `equals`·`hashCode` — 를 애노테이션 하나로 대신 만들어 주는 라이브러리다. [[Java day05 클래스와 인스턴스]] 부터 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 까지 DTO를 만들 때마다 손으로 적던 그 부분이다.
+롬복은 DTO를 만들 때마다 되풀이하던 코드 — 생성자, getter·setter, `toString`, `equals`·`hashCode` — 를 애노테이션 하나로 대신 만들어 주는 라이브러리다. [[Java day05 클래스와 인스턴스]] 부터 [[Spring day02 스프링 부트 실행과 계층 이식]] 까지 DTO를 만들 때마다 손으로 적던 그 부분이다.
 
 먼저 `build.gradle` 에 의존성을 추가한다.
 
@@ -475,7 +475,7 @@ class SampleController {
 }
 ```
 
-[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 컨트롤러가 DAO를 쓰던 모양 그대로다. **다른 클래스의 메소드를 부르려면 그 클래스의 객체가 필요하고, 그 객체를 자기가 직접 `new` 로 만든다.**
+[[Spring day02 스프링 부트 실행과 계층 이식]] 에서 컨트롤러가 DAO를 쓰던 모양 그대로다. **다른 클래스의 메소드를 부르려면 그 클래스의 객체가 필요하고, 그 객체를 자기가 직접 `new` 로 만든다.**
 
 여기에 두 가지가 걸려 있다.
 
@@ -592,7 +592,7 @@ public class AppStart {
 }
 ```
 
-[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 만든 것과 모양이 같다. 달라진 것은 **어느 패키지에 놓였는가** 하나뿐인데, 그 하나가 등록되는 빈의 범위를 정한다.
+[[Spring day02 스프링 부트 실행과 계층 이식]] 에서 만든 것과 모양이 같다. 달라진 것은 **어느 패키지에 놓였는가** 하나뿐인데, 그 하나가 등록되는 빈의 범위를 정한다.
 
 ```
 day02.AppStart  →  day02 패키지 아래만 스캔
@@ -620,7 +620,7 @@ public class RestController1 {
 | `@Component` | 컨테이너가 객체를 만들어 관리한다 |
 | `@Controller` | 그 위에 **HTTP 요청을 받아 처리하는 자리**라는 표시가 얹힌다 |
 
-3-2에서 정리한 합성 애노테이션이 실제로 쓰이는 첫 자리다. `@Controller` 는 `@Component` 를 품고 있어서, 붙이는 순간 빈 등록과 요청 처리 등록이 함께 일어난다. [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `HttpServlet` 을 물려받아 만들던 자리를 표시 한 줄이 대신하는 셈이다.
+3-2에서 정리한 합성 애노테이션이 실제로 쓰이는 첫 자리다. `@Controller` 는 `@Component` 를 품고 있어서, 붙이는 순간 빈 등록과 요청 처리 등록이 함께 일어난다. [[Spring day01 서블릿과 HTTP 메소드]] 에서 `HttpServlet` 을 물려받아 만들던 자리를 표시 한 줄이 대신하는 셈이다.
 
 계층별로 이름이 갈려 있는 것(`@Controller`·`@Service`·`@Repository`)도 같은 구조다. 셋 다 `@Component` 를 품고 있고, 읽는 쪽에서 계층을 구분할 수 있도록 이름만 나눠 둔 것이다(3-1).
 
@@ -654,7 +654,7 @@ public int task1() {
 | `@Controller` 만 | 보여 줄 **화면(뷰)의 이름** |
 | `@Controller` + `@ResponseBody` | **데이터 그 자체** |
 
-[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서는 클래스에 `@RestController` 를 붙여 이 둘을 한 번에 처리했다. 여기서는 `@Controller` 를 클래스에 두고 `@ResponseBody` 를 메소드마다 붙였는데, 결과는 같지만 **메소드 단위로 고를 수 있다**는 점이 다르다(2-17).
+[[Spring day02 스프링 부트 실행과 계층 이식]] 에서는 클래스에 `@RestController` 를 붙여 이 둘을 한 번에 처리했다. 여기서는 `@Controller` 를 클래스에 두고 `@ResponseBody` 를 메소드마다 붙였는데, 결과는 같지만 **메소드 단위로 고를 수 있다**는 점이 다르다(2-17).
 
 ### 1-26. 반환 타입이 Content-Type을 정한다
 
@@ -710,7 +710,7 @@ dto.setAge(10);
 return dto;
 ```
 
-돌아 나갈 때는 반대로 getter가 쓰인다. **JSON의 키를 정하는 것이 필드 이름이 아니라 getter 이름**이라, `getName()` 이 `"name"` 키가 된다. [[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 getter 이름과 JSON 키가 어긋나던 자리를 따져 본 것과 같은 이야기다.
+돌아 나갈 때는 반대로 getter가 쓰인다. **JSON의 키를 정하는 것이 필드 이름이 아니라 getter 이름**이라, `getName()` 이 `"name"` 키가 된다. [[Spring day02 스프링 부트 실행과 계층 이식]] 에서 getter 이름과 JSON 키가 어긋나던 자리를 따져 본 것과 같은 이야기다.
 
 여기서 오늘 본 것 둘이 한 줄에서 만난다.
 
@@ -720,7 +720,7 @@ return dto;
 
 1-14에서 갈라 둔 두 갈래 — 컴파일 시점에 코드를 만드는 쪽과 실행 중에 표시를 읽는 쪽 — 가 실제로 이어져 하나의 응답을 만든다. 롬복이 만들어 둔 메소드를 스프링이 실행 중에 리플렉션으로 찾아 부르는 것이라, 둘 중 하나만 빠져도 응답이 비어 나간다.
 
-DTO를 컨트롤러와 같은 파일에 둔 것은 실습 규모라서다. 계층을 나눈 [[Java Spring day02 스프링 부트 실행과 계층 이식]] 처럼 실제로는 `Model/Dto` 쪽으로 빼 두는 편이 찾기 쉽다.
+DTO를 컨트롤러와 같은 파일에 둔 것은 실습 규모라서다. 계층을 나눈 [[Spring day02 스프링 부트 실행과 계층 이식]] 처럼 실제로는 `Model/Dto` 쪽으로 빼 두는 편이 찾기 쉽다.
 
 정리하면 여기까지의 파일은 **앞에서 뜯어본 것을 다시 조립해 쓰는 자리**다. 애노테이션이 표시일 뿐이고 읽는 쪽이 있어야 동작한다는 것(1-1), 표시를 읽어 객체를 만들고 메소드를 부른다는 것(1-9~1-12), 그 관리가 컨테이너로 넘어간다는 것(1-19~1-22)이 `@Controller` + `@GetMapping` + `@ResponseBody` 세 줄로 압축되어 있다.
 
@@ -789,7 +789,7 @@ public int task6(@RequestParam String name, @RequestParam int age) {
 
 이름이 짝을 맞추는 기준이다. 쿼리스트링의 키와 매개변수 이름이 같으면 그대로 이어진다.
 
-눈여겨볼 것은 `age` 의 타입이다. HTTP로 오는 값은 전부 문자열인데 매개변수는 `int` 다. **문자열 `"10"` 을 `int` 10으로 바꾸는 일을 스프링이 대신 해 준다.** [[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `Integer.parseInt(request.getParameter("age"))` 라고 두 겹으로 적던 자리가 매개변수 선언 하나로 줄어든 셈이다.
+눈여겨볼 것은 `age` 의 타입이다. HTTP로 오는 값은 전부 문자열인데 매개변수는 `int` 다. **문자열 `"10"` 을 `int` 10으로 바꾸는 일을 스프링이 대신 해 준다.** [[Spring day01 서블릿과 HTTP 메소드]] 에서 `Integer.parseInt(request.getParameter("age"))` 라고 두 겹으로 적던 자리가 매개변수 선언 하나로 줄어든 셈이다.
 
 | | 서블릿 | 스프링 |
 | --- | --- | --- |
@@ -916,7 +916,7 @@ class ExamDto {
 @DeleteMapping("/task9")
 ```
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 에서 본 네 가지 방식이 각자의 짧은 표시를 갖는다.
+[[Spring day01 서블릿과 HTTP 메소드]] 에서 본 네 가지 방식이 각자의 짧은 표시를 갖는다.
 
 | 표시 | 방식 | 뜻하는 일 |
 | --- | --- | --- |
@@ -1147,7 +1147,7 @@ catch (InvocationTargetException e) {
 
 되짚어 둘 만한 지점이다. 애노테이션을 아무리 잘 정의하고 정성껏 달아도, **읽는 쪽 코드가 없으면 실행 결과는 달라지지 않는다.**
 
-이걸 알아 두면 스프링에서 애노테이션을 붙였는데 동작하지 않을 때 볼 자리가 좁혀진다. 대체로 "표시를 안 달았다"가 아니라 **"읽는 쪽이 그 클래스를 훑지 않았다"** 쪽인 경우가 많다 — 컴포넌트 스캔 범위 밖에 클래스가 있는 상황이 대표적이다. [[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 진입점의 패키지가 곧 스캔 범위가 된다고 본 그 이야기와 이어진다.
+이걸 알아 두면 스프링에서 애노테이션을 붙였는데 동작하지 않을 때 볼 자리가 좁혀진다. 대체로 "표시를 안 달았다"가 아니라 **"읽는 쪽이 그 클래스를 훑지 않았다"** 쪽인 경우가 많다 — 컴포넌트 스캔 범위 밖에 클래스가 있는 상황이 대표적이다. [[Spring day02 스프링 부트 실행과 계층 이식]] 에서 진입점의 패키지가 곧 스캔 범위가 된다고 본 그 이야기와 이어진다.
 
 롬복도 같은 이야기 위에 있다. 애노테이션을 아무리 붙여도 `annotationProcessor` 등록이 빠져 있으면 읽는 쪽이 없는 것이라 메소드가 생기지 않는다. IDE에서 `getName()` 을 못 찾겠다고 나오는 상황이 대체로 이 자리다.
 
@@ -1317,7 +1317,7 @@ public String task5(@RequestParam String name) {
 | `@RequestParam(required = false)` | 값이 없어도 된다 (없으면 `null`) |
 | `@RequestParam(defaultValue = "0")` | 값이 없을 때 채울 기본값 |
 
-[[Java Spring day01 서블릿과 HTTP 메소드]] 에서 `request.getParameter("name")` 으로 꺼내던 자리를 표시 하나가 대신한다. 문자열로 꺼내 형변환하던 과정도 매개변수 타입에 맞춰 스프링이 처리한다.
+[[Spring day01 서블릿과 HTTP 메소드]] 에서 `request.getParameter("name")` 으로 꺼내던 자리를 표시 하나가 대신한다. 문자열로 꺼내 형변환하던 과정도 매개변수 타입에 맞춰 스프링이 처리한다.
 
 값이 여럿이면 하나씩 나열하는 대신 DTO로 받을 수도 있다. 이때 스프링이 기본 생성자로 객체를 만들고 setter로 값을 채우는데, 1-11에서 본 `newInstance()` 가 실제로 쓰이는 자리이자 DTO에 기본 생성자를 남겨 두는 이유다. 1-32에서 `@ModelAttribute` 로 확인한 그대로다.
 
@@ -1452,7 +1452,7 @@ public class BoardController {
 - 필드 주입(`@Autowired` 를 멤버변수에 직접)보다 **생성자 주입이 권장되는 방식**이다
 - `final` 이라 만들어진 뒤 바뀌지 않고, 필요한 것이 없으면 객체 생성 자체가 실패해 문제가 일찍 드러난다
 
-[[Java Spring day02 스프링 부트 실행과 계층 이식]] 에서 컨트롤러가 DAO를 직접 `new` 로 만들던 자리가 이 구조로 바뀐다. 컨트롤러는 "필요하다"고 선언만 하고, 만들어 넣는 일은 컨테이너가 맡는 갈림이다.
+[[Spring day02 스프링 부트 실행과 계층 이식]] 에서 컨트롤러가 DAO를 직접 `new` 로 만들던 자리가 이 구조로 바뀐다. 컨트롤러는 "필요하다"고 선언만 하고, 만들어 넣는 일은 컨테이너가 맡는 갈림이다.
 
 ### 3-6. 리플렉션의 비용과 쓰는 자리
 
@@ -1590,4 +1590,4 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java Spring day01 서블릿과 HTTP 메소드]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day14 게시판 CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Spring day02 스프링 부트 실행과 계층 이식]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day14 게시판 CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]

@@ -51,7 +51,7 @@ VS Code (읽기 전용) → Claude (분석·작성) → Obsidian Vault (원본)
 ### 폴더 구조
 
 ```
-Java/ Python/ JavaScript/ HTML/ CSS/ RPA/ AI/ CS 이론/   ← 학습노트 (day별)
+Java/ Spring/ Python/ JavaScript/ HTML/ CSS/ RPA/ AI/ CS 이론/   ← 학습노트 (day별)
 프로젝트 코드 분석/<프로젝트명>/                            ← 실제 프로젝트 분석 (코드 폴더별 분산)
 프로젝트 노트/                                            ← 사용자가 말한 내용 정리 (고립 구역)
 Fast-EQA/                                                ← 비공개 고립 구역 (로컬 전용 — GitHub·노션 미동기화)
@@ -107,7 +107,7 @@ _규칙/  _템플릿/                                          ← 규칙과 템
 | 세션 | 관할 (쓰기 가능) | 하는 일 |
 | --- | --- | --- |
 | **마스터** | `CLAUDE.md` · `_규칙/` · `_템플릿/` · `.gitignore` · 그래프 설정 · 최상위 폴더 구조 · Sync Engine·GitHub 인프라 | 규칙 제안 검토·확정, 인프라 운영. **노트 작업은 하지 않는다** |
-| **KDT 학습** | 언어 폴더(Java·JavaScript·CSS·HTML·CS 이론·Python·RPA·AI) · `KDT_2026 학습 지도` · `Vault 홈` | VSCode 새 수업을 읽고 day 노트 작성·MOC 갱신 |
+| **KDT 학습** | 언어 폴더(Java·**Spring**·JavaScript·CSS·HTML·CS 이론·Python·RPA·AI) · `KDT_2026 학습 지도` · `Vault 홈` | VSCode 새 수업을 읽고 day 노트 작성·MOC 갱신. **Spring 수업(`2026B_Spring`)은 `Spring/` 폴더에 `Spring dayNN` 파일명으로** (Java 폴더 아님) |
 | **보드게임카페 분석** | `프로젝트 코드 분석/보드게임카페예약사이트 프로젝트/` | 추가 분석 세션, 학습 관점 갱신 |
 | **수집기** | `프로젝트 노트/` (`수집기` 접두사 노트) | 채용공고 수집기 프로젝트 기록 |
 | **WMS** | `프로젝트 노트/` (`WMS` 접두사 노트) | 이커머스 WMS 3주 팀 프로젝트(Spring Boot+React)의 **프로젝트 기록만** — 기준: "이 프로젝트에서 무엇을 왜 선택했나" (MySQL을 고른 이유, 계층형을 고른 이유, 범위를 자른 기준 등). 파일명 `WMS NN - 제목`. **순수 리스트 변형**: 세부 파생 노트(`NN-1`) 없이 최상위 리스트만 — 깊은 내용은 노트 본문의 절로 담는다. 앞뒤 사슬·개념 노트(주제 색인)·MOC 주차 절은 동일 적용 |

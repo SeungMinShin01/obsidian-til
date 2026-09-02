@@ -8,9 +8,9 @@ tags: [학습, java]
 # Java Spring day01 — 서블릿과 HTTP 메소드
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day01/BoardController.java`(서블릿의 정체와 `HttpServlet` 상속·생명주기 메소드 `init`·`service`·`destroy` 재정의·HTTP 방식별 `doGet`·`doPost`·`doPut`·`doDelete` 자리 잡기·`@WebServlet` 으로 주소 등록)
-> 허브: [[Java MOC]] · 이전: [[Java Spring Boot 프로젝트 생성(분석)]] · 다음: [[Java Spring day02 스프링 부트 실행과 계층 이식]]
+> 허브: [[Java MOC]] · 이전: [[Spring Boot 프로젝트 생성(분석)]] · 다음: [[Spring day02 스프링 부트 실행과 계층 이식]]
 
-[[Java Spring Boot 프로젝트 생성(분석)]] 에서 프로젝트 뼈대를 만들고 `main` 하나로 내장 톰캣이 뜨는 것까지 봤다. 그런데 서버만 떠 있고 브라우저에서 무엇을 요청해도 받아 줄 자리가 없었다. 이번에는 그 **요청을 받는 자리**를 처음 만든다.
+[[Spring Boot 프로젝트 생성(분석)]] 에서 프로젝트 뼈대를 만들고 `main` 하나로 내장 톰캣이 뜨는 것까지 봤다. 그런데 서버만 떠 있고 브라우저에서 무엇을 요청해도 받아 줄 자리가 없었다. 이번에는 그 **요청을 받는 자리**를 처음 만든다.
 
 만든 클래스는 `BoardController` 하나이고, 메소드는 전부 비어 있다(`super` 호출만 있다). 동작보다 **어떤 메소드가 언제 불리는지**를 눈에 익히는 것이 목적인 코드라, 여기서는 그 뼈대를 따라간다.
 
@@ -35,7 +35,7 @@ tags: [학습, java]
 | 서블릿 규격 | 톰캣과 내 코드가 만나는 약속 — 메소드 이름과 매개변수 |
 | 내 클래스 | 요청을 받아 실제 처리를 한다 |
 
-톰캣이 서블릿 컨테이너라고 불리는 이유가 여기 있다. **서블릿을 담아 두고 생명주기를 관리하는 그릇**이라는 뜻이다. [[Java Spring Boot 프로젝트 생성(분석)]] 1-4에서 `starter-webmvc` 에 톰캣이 들어 있다고 정리했는데, 그 톰캣이 지금 이 클래스를 부를 주체가 된다.
+톰캣이 서블릿 컨테이너라고 불리는 이유가 여기 있다. **서블릿을 담아 두고 생명주기를 관리하는 그릇**이라는 뜻이다. [[Spring Boot 프로젝트 생성(분석)]] 1-4에서 `starter-webmvc` 에 톰캣이 들어 있다고 정리했는데, 그 톰캣이 지금 이 클래스를 부를 주체가 된다.
 
 ### 1-2. jakarta.servlet — 패키지 이름이 갈린다
 
@@ -66,7 +66,7 @@ import jakarta.servlet.http.HttpServletResponse;
 | `HttpServletResponse` | 내보낼 응답 — 상태 코드·헤더·본문 출력 스트림 |
 | `ServletException` | 서블릿 처리 중 나는 예외 |
 
-요청과 응답이 **매개변수로 들어온다**는 점이 구조의 핵심이다. 내가 만들어 쓰는 것이 아니라 톰캣이 만들어 넘겨준다 — [[Java Spring Boot 프로젝트 생성(분석)]] 3-1에서 정리한 제어의 역전이 가장 먼저 눈에 보이는 자리다.
+요청과 응답이 **매개변수로 들어온다**는 점이 구조의 핵심이다. 내가 만들어 쓰는 것이 아니라 톰캣이 만들어 넘겨준다 — [[Spring Boot 프로젝트 생성(분석)]] 3-1에서 정리한 제어의 역전이 가장 먼저 눈에 보이는 자리다.
 
 ### 1-3. 상속으로 규격을 물려받는다
 
@@ -222,11 +222,11 @@ public class BoardController extends HttpServlet { ... }
 | 애노테이션 | `@WebServlet("/board")` — 클래스 위에 직접 |
 | 설정 파일 | `web.xml` 에 `<servlet-mapping>` 으로 — 예전 방식 |
 
-스프링 부트에서 이 애노테이션을 쓰려면 시작 클래스에 `@ServletComponentScan` 을 붙여 서블릿을 찾게 해 줘야 한다. [[Java Spring Boot 프로젝트 생성(분석)]] 1-6의 `@ComponentScan` 이 스프링 빈을 찾는 것과 별개로, 서블릿은 따로 훑어야 하기 때문이다.
+스프링 부트에서 이 애노테이션을 쓰려면 시작 클래스에 `@ServletComponentScan` 을 붙여 서블릿을 찾게 해 줘야 한다. [[Spring Boot 프로젝트 생성(분석)]] 1-6의 `@ComponentScan` 이 스프링 빈을 찾는 것과 별개로, 서블릿은 따로 훑어야 하기 때문이다.
 
 패키지 위치도 함께 짚어 둔다. 실습의 클래스는 `day01` 패키지에 있는데, 시작 클래스는 `com.example` 이다. 스캔 범위 밖이라 자동으로는 잡히지 않는 자리이므로, 서블릿을 등록하려면 스캔 범위를 맞추거나 등록용 설정을 따로 두게 된다.
 
-이 클래스는 처음에 `src/main/example/day01` 에 두었다가 나중에 `src/main/java/day01` 로 옮겼다. 그레이들이 소스로 인식하는 기본 경로가 `src/main/java` 라, 그 밖에 두면 컴파일 대상에 들어가지 않는다. 패키지 선언도 위치에 맞춰 `package day01;` 이 된다 — 자바에서 **패키지 이름과 폴더 경로는 같아야 한다**는 규칙이 소스 루트를 기준으로 적용되는 자리다. 뒤이어 만드는 `day02` 패키지가 `src/main/java` 아래에 바로 놓인 것도 같은 규칙을 따른 결과다([[Java Spring day02 스프링 부트 실행과 계층 이식]] 1-6).
+이 클래스는 처음에 `src/main/example/day01` 에 두었다가 나중에 `src/main/java/day01` 로 옮겼다. 그레이들이 소스로 인식하는 기본 경로가 `src/main/java` 라, 그 밖에 두면 컴파일 대상에 들어가지 않는다. 패키지 선언도 위치에 맞춰 `package day01;` 이 된다 — 자바에서 **패키지 이름과 폴더 경로는 같아야 한다**는 규칙이 소스 루트를 기준으로 적용되는 자리다. 뒤이어 만드는 `day02` 패키지가 `src/main/java` 아래에 바로 놓인 것도 같은 규칙을 따른 결과다([[Spring day02 스프링 부트 실행과 계층 이식]] 1-6).
 
 ### 1-8. 정리 — 요청이 도착하는 자리를 만들었다
 
@@ -236,7 +236,7 @@ public class BoardController extends HttpServlet { ... }
 | --- | --- |
 | [[Java day09 MVC 종합예제]] | 콘솔에서 View·Controller·DAO·DTO로 나누기 |
 | [[Java day12 종합예제 JDBC DAO]] | DAO가 실제 DB와 이야기하게 만들기 |
-| [[Java Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
+| [[Spring Boot 프로젝트 생성(분석)]] | 서버가 뜨는 프로젝트 만들기 |
 | **이번** | 그 서버로 들어온 요청을 **받는 자리** 만들기 |
 
 콘솔 프로그램에서 `Scanner` 로 입력을 받던 자리가 `HttpServletRequest` 로, `System.out.println` 으로 출력하던 자리가 `HttpServletResponse` 로 바뀐 셈이다. 아래 계층(Service·DAO·DTO)은 손댈 것이 없다.
@@ -422,7 +422,7 @@ public class EncodingFilter implements Filter {
 모든 요청 → 서블릿 하나 → 주소를 보고 담당 객체에 넘긴다
 ```
 
-이 하나를 프론트 컨트롤러라고 부르고, 스프링의 `DispatcherServlet` 이 정확히 그것이다 — [[Java Spring Boot 프로젝트 생성(분석)]] 3-4에서 그림으로 본 자리다. 스프링을 쓰면 서블릿을 직접 만들 일이 거의 없어지는 이유가 여기 있다. 서블릿은 하나뿐이고, 개발자는 그 뒤에 붙는 **메소드**만 만든다.
+이 하나를 프론트 컨트롤러라고 부르고, 스프링의 `DispatcherServlet` 이 정확히 그것이다 — [[Spring Boot 프로젝트 생성(분석)]] 3-4에서 그림으로 본 자리다. 스프링을 쓰면 서블릿을 직접 만들 일이 거의 없어지는 이유가 여기 있다. 서블릿은 하나뿐이고, 개발자는 그 뒤에 붙는 **메소드**만 만든다.
 
 | | 서블릿 직접 | 스프링 MVC |
 | --- | --- | --- |
@@ -475,7 +475,7 @@ public class BoardController {
 | 처리 값은 지역 변수로 | 스레드마다 따로 잡힌다 |
 | 공유가 꼭 필요하면 동기화·동시성 컬렉션 | day16 2-4 |
 
-스프링 빈이 기본적으로 싱글톤인 것([[Java Spring Boot 프로젝트 생성(분석)]] 3-2)도 같은 구조가 한 층 올라온 결과다. [[개념 - 싱글톤]] 을 직접 만들며 정리한 성질이 서블릿 컨테이너 수준에서 이미 적용돼 있는 셈이다.
+스프링 빈이 기본적으로 싱글톤인 것([[Spring Boot 프로젝트 생성(분석)]] 3-2)도 같은 구조가 한 층 올라온 결과다. [[개념 - 싱글톤]] 을 직접 만들며 정리한 성질이 서블릿 컨테이너 수준에서 이미 적용돼 있는 셈이다.
 
 톰캣의 스레드 수는 설정으로 조절한다.
 
@@ -532,7 +532,7 @@ JSP도 결국 서블릿으로 변환되어 실행된다 — 두 방식이 다른
 
 실제 운영에서는 앞에 웹서버를 두고 뒤에 WAS를 두는 구성을 자주 쓴다. 이미지·CSS 같은 정적 파일은 앞에서 바로 내보내고, 처리해야 하는 요청만 뒤로 넘기는 형태다.
 
-[[Java Spring Boot 프로젝트 생성(분석)]] 2-8에서 본 실행 가능한 jar 는 그 뒤쪽(WAS)을 통째로 안에 넣은 것이다.
+[[Spring Boot 프로젝트 생성(분석)]] 2-8에서 본 실행 가능한 jar 는 그 뒤쪽(WAS)을 통째로 안에 넣은 것이다.
 
 ### 3-7. 다음에 볼 키워드
 
@@ -565,4 +565,4 @@ JSP도 결국 서블릿으로 변환되어 실행된다 — 두 방식이 다른
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java Spring Boot 프로젝트 생성(분석)]] · [[Java Spring day02 스프링 부트 실행과 계층 이식]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day06 생성자와 콘솔 게시판]] · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[HTML day02 문서 구조와 미디어]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Spring day02 스프링 부트 실행과 계층 이식]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day06 생성자와 콘솔 게시판]] · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] · [[HTML day02 문서 구조와 미디어]] · [[KDT_2026 학습 지도]]
