@@ -44,7 +44,7 @@ try {
 | `ArrayIndexOutOfBoundsException` | 배열의 없는 인덱스(`arr[5]`)를 호출할 때 |
 | `InputMismatchException` | `Scanner.nextInt()` 에 숫자가 아닌 입력이 들어올 때 |
 
-`null` 은 "참조값이 없다 = 가리키는 객체(인스턴스)가 없다"는 뜻이라, 점(.) 연산자로 멤버에 접근하려는 순간 `NullPointerException` 이 난다. [[Java day05 클래스와 인스턴스]] 의 참조 개념과 바로 이어진다.
+`null` 은 "참조값이 없다 = 가리키는 객체(인스턴스)가 없다"는 뜻이라, 점(.) 연산자로 멤버에 접근하려는 순간 `NullPointerException` 이 난다. Java day05 클래스와 인스턴스 의 참조 개념과 바로 이어진다.
 
 ### 1-4. 다중 catch — 넓은 예외는 맨 아래
 
@@ -167,7 +167,7 @@ create table test (
 ```
 
 - `getConnection` 의 URL 끝(`.../mydb0813`)이 여기서 만든 데이터베이스 이름과 정확히 같아야 연결된다
-- `AUTO_INCREMENT` 라서 자바에서 `name` 만 넣어도 `no` 는 자동으로 매겨진다 — [[SQL day02 테이블과 제약조건]] 의 제약조건이 JDBC 실습의 밑바탕이다
+- `AUTO_INCREMENT` 라서 자바에서 `name` 만 넣어도 `no` 는 자동으로 매겨진다 — SQL day02 테이블과 제약조건 의 제약조건이 JDBC 실습의 밑바탕이다
 
 같은 `sample.sql` 에는 exam2가 쓰는 `test` 외에 게시판용 `board` 테이블도 함께 준비돼 있다. 이어지는 [[Java day12 종합예제 JDBC DAO]] 가 이 표를 대상으로 CRUD를 돌린다.
 
@@ -183,7 +183,7 @@ insert into board( content, writer ) values ( ..., ... ), ( ..., ... );  -- 조�
 
 - 컬럼(`no`·`content`·`writer`)이 [[Java day12 종합예제 JDBC DAO]] 의 `BoardDto` 필드와 1:1로 맞물린다 — 자바 DTO가 곧 이 표의 한 줄이다
 - 미리 넣어 둔 시드 2줄 덕분에, 종합예제에서 전체조회(`select * from board`)를 처음 실행할 때부터 결과가 비어 있지 않다
-- `PRIMARY KEY` 를 컬럼 뒤가 아니라 `constraint PRIMARY KEY( no )` 로 따로 지정하는 방식도 같은 결과다 — [[SQL day02 테이블과 제약조건]] 에서 정리한 제약조건 선언 위치의 두 갈래다
+- `PRIMARY KEY` 를 컬럼 뒤가 아니라 `constraint PRIMARY KEY( no )` 로 따로 지정하는 방식도 같은 결과다 — SQL day02 테이블과 제약조건 에서 정리한 제약조건 선언 위치의 두 갈래다
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -197,7 +197,7 @@ Throwable
      └─ RuntimeException (unchecked) 실행 중 발생: NullPointer, NumberFormat ...
 ```
 
-`Exception` 을 catch 하나로 다 잡을 수 있는 이유는 위 예외들이 전부 `Exception` 의 자식이라서다 — [[Java day10 상속과 다형성]] 의 업캐스팅이 예외 처리에도 적용된 것이다.
+`Exception` 을 catch 하나로 다 잡을 수 있는 이유는 위 예외들이 전부 `Exception` 의 자식이라서다 — Java day10 상속과 다형성 의 업캐스팅이 예외 처리에도 적용된 것이다.
 
 ### 2-2. JDBC 연동의 전체 흐름
 
@@ -251,4 +251,4 @@ JDBC의 핵심 타입이 전부 인터페이스라, MySQL 드라이버든 Oracle
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day05 클래스와 인스턴스]] · [[SQL day01 데이터베이스 기초]] · [[SQL day02 테이블과 제약조건]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · Java day10 상속과 다형성 · Java day05 클래스와 인스턴스 · SQL day01 데이터베이스 기초 · SQL day02 테이블과 제약조건 · [[KDT_2026 학습 지도]]

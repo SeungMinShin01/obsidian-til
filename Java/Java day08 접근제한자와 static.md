@@ -173,7 +173,7 @@ final void method() { }     // 메소드: 오버라이딩 불가
 final class Utils { }       // 클래스: 상속 불가 (String이 이 경우)
 ```
 
-**주의**: `final List<String> list = new ArrayList<>();`에서 `list.add("a")`는 **가능합니다.** final은 "참조를 바꿀 수 없다"이지 "내용을 바꿀 수 없다"가 아닙니다. JS의 `const`와 정확히 같습니다. → [[JS day02 변수와 입출력]]
+**주의**: `final List<String> list = new ArrayList<>();`에서 `list.add("a")`는 **가능합니다.** final은 "참조를 바꿀 수 없다"이지 "내용을 바꿀 수 없다"가 아닙니다. JS의 `const`와 정확히 같습니다. → JS day02 변수와 입출력
 
 ### 2-2. static 초기화 블록
 
@@ -249,4 +249,4 @@ DTO 관례 4가지가 전부 자동으로 만들어집니다. 단, 불변이라 
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day09 ArrayList]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[JS day10 함수]]
+[[Java MOC]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day09 ArrayList]] · Java 오버로딩 오버라이딩과 인터페이스(이관) · JS day10 함수

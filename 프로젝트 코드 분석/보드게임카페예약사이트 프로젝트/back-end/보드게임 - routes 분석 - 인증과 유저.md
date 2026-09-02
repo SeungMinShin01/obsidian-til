@@ -41,7 +41,7 @@ res.json({ user: { user_id: user.user_id, is_admin: user.is_admin } });
 >
 > **해싱**은 단방향이라 DB가 유출돼도 원래 비밀번호를 되돌릴 수 없다. 같은 비밀번호를 다른 사이트에 재사용하는 사용자가 많아서, 평문 저장의 피해는 이 서비스 밖으로 번진다.
 >
-> 그리고 로그인 성공이 **세션이나 토큰으로 이어졌어야 했다.** 지금은 응답 JSON을 프론트가 `localStorage`에 넣는 게 전부라, 서버는 이후 요청이 누구에게서 온 건지 알 방법이 없다. **JWT**를 발급하고 이후 요청의 `Authorization` 헤더를 검증하는 미들웨어가 다음 단계였다. → [[components 분석 - Login과 Admin]]
+> 그리고 로그인 성공이 **세션이나 토큰으로 이어졌어야 했다.** 지금은 응답 JSON을 프론트가 `localStorage`에 넣는 게 전부라, 서버는 이후 요청이 누구에게서 온 건지 알 방법이 없다. **JWT**를 발급하고 이후 요청의 `Authorization` 헤더를 검증하는 미들웨어가 다음 단계였다. → [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]]
 
 ## usersRoutes.js — 유저 목록
 
@@ -60,4 +60,4 @@ router.get("/users", async (req, res) => {
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 고객지원과 관리자]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - routes 분석 - 고객지원과 관리자|routes 분석 - 고객지원과 관리자]] · [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

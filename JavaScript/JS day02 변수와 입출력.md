@@ -61,7 +61,7 @@ alert("메시지");                                        // 브라우저 상�
 document.querySelector("선택자").innerHTML = "HTML";     // HTML 요소를 동적 변경
 ```
 
-세 번째가 [[JS day11 DOM 조작]] 의 예고편입니다.
+세 번째가 JS day11 DOM 조작 의 예고편입니다.
 
 ### 1-5. 입력 함수
 
@@ -118,7 +118,7 @@ arr.push(3);       // OK — 참조는 그대로
 arr = [1, 2, 3];   // TypeError — 재할당 불가
 ```
 
-Java의 `final`과 완전히 같은 성질입니다. → [[Java day08 접근제한자와 static]]
+Java의 `final`과 완전히 같은 성질입니다. → Java day08 접근제한자와 static
 
 ### 2-2. `prompt`의 결과는 문자열입니다
 
@@ -153,7 +153,7 @@ console.dir(dom)  // DOM을 객체 트리로
 console.time("t"); console.timeEnd("t");   // 실행 시간 측정
 ```
 
-`console.table`은 [[JS 과제 LevelUP과 게시판]] 의 회원·상품 배열을 볼 때 특히 좋습니다.
+`console.table`은 JS 과제 LevelUP과 게시판 의 회원·상품 배열을 볼 때 특히 좋습니다.
 
 ### 2-5. `<script>` 위치와 `defer`
 
@@ -189,7 +189,7 @@ const html = `
 `;
 ```
 
-[[JS day14 게시판 CRUD]] 에서 테이블 행을 만들 때 이 방식이 핵심입니다.
+JS day14 게시판 CRUD 에서 테이블 행을 만들 때 이 방식이 핵심입니다.
 
 ### 3-2. `"use strict";`
 
@@ -200,7 +200,7 @@ const html = `
 a = 10;   // ReferenceError (선언 없는 대입 금지)
 ```
 
-[[JS day10 함수]] 의 전역 오염 문제를 원천 차단합니다. ES 모듈(`type="module"`)은 자동으로 strict 모드입니다.
+JS day10 함수 의 전역 오염 문제를 원천 차단합니다. ES 모듈(`type="module"`)은 자동으로 strict 모드입니다.
 
 ### 3-3. 개발자 도구 활용
 
@@ -212,7 +212,7 @@ a = 10;   // ReferenceError (선언 없는 대입 금지)
 | Application | localStorage·sessionStorage·쿠키 확인 |
 | Network | 요청·응답 확인 |
 
-[[JS day13 웹 스토리지와 인터벌]] 에서 Application 탭을 본격적으로 씁니다.
+JS day13 웹 스토리지와 인터벌 에서 Application 탭을 본격적으로 씁니다.
 
 ## 실습 파일
 
@@ -223,4 +223,4 @@ a = 10;   // ReferenceError (선언 없는 대입 금지)
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day03 자료형과 연산자]] · [[HTML day02 문서 구조와 미디어]] · [[Java day01 자바 구조와 자료형]]
+[[JavaScript MOC]] · [[JS day03 자료형과 연산자]] · HTML day02 문서 구조와 미디어 · Java day01 자바 구조와 자료형

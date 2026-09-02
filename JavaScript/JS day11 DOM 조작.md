@@ -35,7 +35,7 @@ document.querySelector("#box3")   // 아이디
 document.querySelectorAll("div")  // 일치하는 전부 (NodeList)
 ```
 
-**CSS 선택자 문법을 그대로 씁니다.** [[CSS day06 선택자와 기본 속성]] 에서 배운 게 여기서 그대로 쓰입니다.
+**CSS 선택자 문법을 그대로 씁니다.** CSS day06 선택자와 기본 속성 에서 배운 게 여기서 그대로 쓰입니다.
 
 ### 1-3. 주요 속성
 
@@ -117,7 +117,7 @@ Object.assign(제목마크업.style, { color: "red", fontSize: "5px" });
 제목마크업.classList.add("highlight");
 ```
 
-스타일은 CSS에, 로직은 JS에 — 역할이 분리됩니다. → [[CSS day11 커뮤니티와 예약 사이트]]
+스타일은 CSS에, 로직은 JS에 — 역할이 분리됩니다. → CSS day11 커뮤니티와 예약 사이트
 
 ### 2-3. `querySelectorAll`은 배열이 아닙니다
 
@@ -143,7 +143,7 @@ el.innerHTML = 입력;   // 스크립트가 실행됩니다!
 el.textContent = 입력; // 안전
 ```
 
-[[JS day14 게시판 CRUD]] 에서 제목·내용을 `innerHTML`로 출력하고 있는데, 실무라면 `textContent`를 쓰거나 이스케이프 처리를 해야 합니다. **정보처리기사 보안 파트의 XSS가 정확히 이 이야기입니다.**
+JS day14 게시판 CRUD 에서 제목·내용을 `innerHTML`로 출력하고 있는데, 실무라면 `textContent`를 쓰거나 이스케이프 처리를 해야 합니다. **정보처리기사 보안 파트의 XSS가 정확히 이 이야기입니다.**
 
 ### 2-5. `onclick` 속성 대신 `addEventListener`
 
@@ -218,7 +218,7 @@ for (const item of list) tbody.innerHTML += `<tr>...</tr>`;
 tbody.innerHTML = list.map(item => `<tr>...</tr>`).join("");
 ```
 
-[[JS day14 게시판 CRUD]] 의 `list.js`에 그대로 적용됩니다.
+JS day14 게시판 CRUD 의 `list.js`에 그대로 적용됩니다.
 
 ### 3-2. 이벤트 위임
 
@@ -275,4 +275,4 @@ React는 "무엇을 보여줄지"만 선언하면 DOM 갱신을 알아서 해줍
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day10 함수]] · [[JS day12 제품 사원 관리 CRUD]] · [[CSS day11 커뮤니티와 예약 사이트]] · [[HTML day04 폼과 테이블]]
+[[JavaScript MOC]] · [[JS day10 함수]] · [[JS day12 제품 사원 관리 CRUD]] · CSS day11 커뮤니티와 예약 사이트 · HTML day04 폼과 테이블

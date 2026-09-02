@@ -8,7 +8,7 @@ tags: [학습, css]
 # CSS day14 — position과 가상요소
 
 > 실습 파일: `day14/exam/exam1.css`(position), `exam2.css`(링크·가상요소), `Note/day/day14`, `day14/practice/index.css`, `practice9~10.css`
-> 허브: [[CSS MOC]] · 이전: [[CSS day11 커뮤니티와 예약 사이트]] · 다음: [[CSS day15 테이블과 배경]]
+> 허브: [[CSS MOC]] · 이전: CSS day11 커뮤니티와 예약 사이트 · 다음: [[CSS day15 테이블과 배경]]
 
 ## 1. 배운 내용
 
@@ -121,7 +121,7 @@ HTML을 건드리지 않고 요소 앞뒤에 콘텐츠를 추가합니다. **`co
 
 **② flex 축**
 > row → align-items (세로) justify-content (가로)
-→ [[CSS day08 flexbox]]
+→ CSS day08 flexbox
 
 **③ position 기준**
 > 부모가 static을 제외하면 하위 요소가 absolute로 부모 기준으로 위치를 잡는다.
@@ -364,4 +364,4 @@ li:first-child, li:last-child, li:nth-child(2n) { }
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day11 커뮤니티와 예약 사이트]] · [[CSS day15 테이블과 배경]] · [[CSS day08 flexbox]] · [[JS day14 게시판 CRUD]]
+[[CSS MOC]] · CSS day11 커뮤니티와 예약 사이트 · [[CSS day15 테이블과 배경]] · CSS day08 flexbox · JS day14 게시판 CRUD

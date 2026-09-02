@@ -12,7 +12,7 @@ tags: [프로젝트, javascript]
 
 ## 1. useRef 실행 플래그 — state와 ref의 선택 기준
 
-결제 성공 페이지( [[components 분석 - Reservation과 결제]] )에서 예약 POST가 두 번 나가는 사고를 막은 코드입니다.
+결제 성공 페이지( [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]] )에서 예약 POST가 두 번 나가는 사고를 막은 코드입니다.
 
 ```javascript
 const didSubmit = useRef(false);
@@ -38,11 +38,11 @@ React 18 StrictMode는 개발 모드에서 effect를 **일부러 두 번** 실�
 
 ### 활용
 
-`setInterval` ID 보관( JS day13 웹 스토리지와 인터벌 의 정리 패턴), 이전 값 기억, 스크롤 위치 저장 — 전부 같은 기준으로 ref입니다. 근본 해법은 결제 승인을 서버로 옮겨 프론트 effect에서 부수효과를 없애는 것( → [[더 나아가기 - 서버 상태와 결제]] ).
+`setInterval` ID 보관( JS day13 웹 스토리지와 인터벌 의 정리 패턴), 이전 값 기억, 스크롤 위치 저장 — 전부 같은 기준으로 ref입니다. 근본 해법은 결제 승인을 서버로 옮겨 프론트 effect에서 부수효과를 없애는 것( → [[보드게임 - 더 나아가기 - 서버 상태와 결제|더 나아가기 - 서버 상태와 결제]] ).
 
 ## 2. 커스텀 훅 — 클로저가 상태를 가둔다
 
-훅 8개( [[hooks 분석]] ) 중 하나를 골라 구조를 뜯어보면 JS day10 함수 의 클로저가 실전에서 어떻게 쓰이는지 보입니다.
+훅 8개( [[보드게임 - hooks 분석|hooks 분석]] ) 중 하나를 골라 구조를 뜯어보면 JS day10 함수 의 클로저가 실전에서 어떻게 쓰이는지 보입니다.
 
 ```javascript
 export default function useReservationForm() {
@@ -70,11 +70,11 @@ JS:    클로저 변수 + 반환된 함수        → JS day10 함수
 
 ### 활용 기준
 
-"컴포넌트에서 fetch·상태·계산이 스크롤 한 화면을 넘으면 훅으로 뺀다." `MainPage.js` 705줄이 버틴 이유가 로직이 `useCarousel`로 빠져 있어서였다는 것( [[components 분석 - MainPage와 고객지원]] )이 실증 사례입니다. 훅을 나누는 단위는 기술이 아니라 **책임**입니다 — `useReservationForm`은 "예약 폼의 모든 것"이지 "fetch 모음"이 아닙니다.
+"컴포넌트에서 fetch·상태·계산이 스크롤 한 화면을 넘으면 훅으로 뺀다." `MainPage.js` 705줄이 버틴 이유가 로직이 `useCarousel`로 빠져 있어서였다는 것( [[보드게임 - components 분석 - MainPage와 고객지원|components 분석 - MainPage와 고객지원]] )이 실증 사례입니다. 훅을 나누는 단위는 기술이 아니라 **책임**입니다 — `useReservationForm`은 "예약 폼의 모든 것"이지 "fetch 모음"이 아닙니다.
 
 ## 3. 낙관적 업데이트 — 한 줄에 세 가지 원리
 
-추천 버튼( [[hooks 분석]] 의 `useBoardGameList`)의 한 줄입니다.
+추천 버튼( [[보드게임 - hooks 분석|hooks 분석]] 의 `useBoardGameList`)의 한 줄입니다.
 
 ```javascript
 setBoardGames((prev) => prev.map((g) =>
@@ -99,7 +99,7 @@ try { await axios.post(...); }
 catch { setBoardGames(prev); }         // 실패 시 복원
 ```
 
-이 연습을 해보면 TanStack Query의 `onMutate`(스냅샷) / `onError`(복원)가 정확히 이걸 패턴화한 것임이 보입니다 → [[더 나아가기 - 서버 상태와 결제]]
+이 연습을 해보면 TanStack Query의 `onMutate`(스냅샷) / `onError`(복원)가 정확히 이걸 패턴화한 것임이 보입니다 → [[보드게임 - 더 나아가기 - 서버 상태와 결제|더 나아가기 - 서버 상태와 결제]]
 
 ### 함께 볼 것 — 쓰로틀과 디바운스
 
@@ -112,4 +112,4 @@ catch { setBoardGames(prev); }         // 실패 시 복원
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트에서 배울 것]] · [[공부할 코드 - SQL과 데이터]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트에서 배울 것]] · [[보드게임 - 공부할 코드 - SQL과 데이터|공부할 코드 - SQL과 데이터]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

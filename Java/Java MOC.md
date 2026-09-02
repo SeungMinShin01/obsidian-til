@@ -89,7 +89,7 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 
 ## 스프링
 
-스프링 학습노트는 [[Spring MOC]]로 분리되었다.
+스프링 학습노트는 Spring MOC로 분리되었다.
 
 ## 종합
 
@@ -99,20 +99,20 @@ day11 종합예제(인터페이스 DAO) ─→ day12 예외 처리·JDBC ─→ 
 
 | Java 개념 | 대응하는 JS 개념 |
 | --- | --- |
-| 정적 타입 | [[JS day03 자료형과 연산자]] 동적 타입 |
-| 배열(고정 길이) | [[JS day03 자료형과 연산자]] 배열(가변) |
-| 클래스·인스턴스 | [[JS day07 객체]] 객체 리터럴 |
-| `Map`·`HashMap` ([[Java day15 Map과 HashMap]]) | [[JS day07 객체]] 객체 `{ }` 와 JSON |
-| 메소드 오버로딩 | [[JS day10 함수]] 오버로딩 없음, 기본값 매개변수 |
-| 상속·다형성 | [[JS day07 객체]] 프로토타입 체인 |
-| `private` + getter/setter | [[JS day10 함수]] 클로저 |
-| 콘솔 게시판 | [[JS day14 게시판 CRUD]] localStorage 게시판 |
-| MVC 4계층 | [[JS day12 제품 사원 관리 CRUD]] 상태·렌더링 분리 |
-| DTO 클래스 | [[SQL day02 테이블과 제약조건]] 테이블 |
-| `equals()` 값 비교 / `==` 주소 비교 ([[Java day13 Object 클래스와 리플렉션]]) | [[JS day03 자료형과 연산자]] `==` 느슨한 비교 / `===` 엄격한 비교 |
+| 정적 타입 | JS day03 자료형과 연산자 동적 타입 |
+| 배열(고정 길이) | JS day03 자료형과 연산자 배열(가변) |
+| 클래스·인스턴스 | JS day07 객체 객체 리터럴 |
+| `Map`·`HashMap` ([[Java day15 Map과 HashMap]]) | JS day07 객체 객체 `{ }` 와 JSON |
+| 메소드 오버로딩 | JS day10 함수 오버로딩 없음, 기본값 매개변수 |
+| 상속·다형성 | JS day07 객체 프로토타입 체인 |
+| `private` + getter/setter | JS day10 함수 클로저 |
+| 콘솔 게시판 | JS day14 게시판 CRUD localStorage 게시판 |
+| MVC 4계층 | JS day12 제품 사원 관리 CRUD 상태·렌더링 분리 |
+| DTO 클래스 | SQL day02 테이블과 제약조건 테이블 |
+| `equals()` 값 비교 / `==` 주소 비교 ([[Java day13 Object 클래스와 리플렉션]]) | JS day03 자료형과 연산자 `==` 느슨한 비교 / `===` 엄격한 비교 |
 
 ## 데이터베이스
 
-- [[SQL day01 데이터베이스 기초]]
-- [[SQL day02 테이블과 제약조건]]
-- [[SQL day03 DML과 조인]]
+- SQL day01 데이터베이스 기초
+- SQL day02 테이블과 제약조건
+- SQL day03 DML과 조인

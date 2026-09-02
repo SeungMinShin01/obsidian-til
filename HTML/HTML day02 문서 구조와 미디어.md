@@ -8,7 +8,7 @@ tags: [학습, html]
 # HTML day02 — 문서 구조와 미디어
 
 > 실습 파일: `day02/index.html`, `day02/exam/exam1.html`, `exam2.html`, `day02/pracitce/*.html`, `day02/assets/`
-> 허브: [[HTML MOC]] · 다음: [[HTML day04 폼과 테이블]]
+> 허브: [[HTML MOC]] · 다음: HTML day04 폼과 테이블
 
 ## 1. 배운 내용
 
@@ -65,7 +65,7 @@ tags: [학습, html]
 </body>
 ```
 
-CSS를 배우기 전 단계라 `style` 속성을 직접 썼습니다. → [[CSS day06 선택자와 기본 속성]] 에서 외부 파일로 분리합니다.
+CSS를 배우기 전 단계라 `style` 속성을 직접 썼습니다. → CSS day06 선택자와 기본 속성 에서 외부 파일로 분리합니다.
 
 ### 1-4. 미디어 — day02/assets
 
@@ -167,7 +167,7 @@ CSS를 배우기 전 단계라 `style` 속성을 직접 썼습니다. → [[CSS 
 | 관련된 내용의 묶음인가 | `<section>` |
 | 의미 없이 스타일링만 필요한가 | `<div>` |
 
-[[CSS day10 카메라 강의 사이트]], [[CSS day11 커뮤니티와 예약 사이트]] 의 페이지를 시맨틱 구조로 바꿔보면 감이 빨리 옵니다.
+CSS day10 카메라 강의 사이트, CSS day11 커뮤니티와 예약 사이트 의 페이지를 시맨틱 구조로 바꿔보면 감이 빨리 옵니다.
 
 ### 3-2. SEO 기본 메타 태그
 
@@ -199,7 +199,7 @@ CSS를 배우기 전 단계라 `style` 속성을 직접 썼습니다. → [[CSS 
 <time datetime="2026-08-10">2026년 8월 10일</time>
 ```
 
-`<dialog>`는 [[JS day14 게시판 CRUD]] 의 `alert`/`confirm`을 대체하기 좋습니다.
+`<dialog>`는 JS day14 게시판 CRUD 의 `alert`/`confirm`을 대체하기 좋습니다.
 
 ## 실습 파일
 
@@ -211,4 +211,4 @@ CSS를 배우기 전 단계라 `style` 속성을 직접 썼습니다. → [[CSS 
 
 ## 관련 노트
 
-[[HTML MOC]] · [[HTML day04 폼과 테이블]] · [[JS day02 변수와 입출력]] · [[CSS day06 선택자와 기본 속성]]
+[[HTML MOC]] · HTML day04 폼과 테이블 · JS day02 변수와 입출력 · CSS day06 선택자와 기본 속성

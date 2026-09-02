@@ -8,11 +8,11 @@ tags: [학습, java]
 # Java — Spring Boot 프로젝트 생성
 
 > 실습 파일: `2026B_Spring/springweb/build.gradle` · `settings.gradle` · `gradle/wrapper/gradle-wrapper.properties` · `src/main/java/com/example/SpringwebApplication.java` · `src/main/resources/application.properties` · `src/test/java/com/example/SpringwebApplicationTests.java`
-> 허브: [[Java MOC]] · 이전: [[Java day16 스레드 동기화]] · 다음: [[Spring day01 서블릿과 HTTP 메소드]]
+> 허브: Java MOC · 이전: Java day16 스레드 동기화 · 다음: Spring day01 서블릿과 HTTP 메소드
 
 여기서부터 저장소가 하나 늘었다. `2026B_BE` 는 순수 자바로 콘솔 프로그램을 만들던 자리였고, 새로 생긴 `2026B_Spring` 은 **웹 애플리케이션**을 만드는 자리다. 아직 화면도 요청 처리도 없고 뼈대만 있는 상태라, 이번에는 만들어진 파일 하나하나가 무엇을 맡는지부터 정리해 둔다.
 
-[[Java day16 스레드 동기화]] 에서 "요청마다 스레드를 붙이는 웹서버(톰캣)"를 이야기로만 봤는데, 이 프로젝트를 실행하면 그 톰캣이 실제로 뜬다. 지금까지 개념으로 다룬 것들이 어디에 놓이는지 확인하기 좋은 지점이다.
+Java day16 스레드 동기화 에서 "요청마다 스레드를 붙이는 웹서버(톰캣)"를 이야기로만 봤는데, 이 프로젝트를 실행하면 그 톰캣이 실제로 뜬다. 지금까지 개념으로 다룬 것들이 어디에 놓이는지 확인하기 좋은 지점이다.
 
 ## 1. 배운 내용
 
@@ -47,7 +47,7 @@ springweb/
 
 ### 1-2. build.gradle — 무엇을 쓸지 적어 두는 파일
 
-지금까지는 필요한 라이브러리를 직접 내려받아 `lib/` 에 넣고 클래스패스를 잡았다. [[Java day12 예외 처리와 JDBC]] 에서 MySQL 커넥터를 붙이던 방식이 그것이다. 빌드 도구를 쓰면 그 일을 **파일에 적어 두는 것**으로 바꾼다.
+지금까지는 필요한 라이브러리를 직접 내려받아 `lib/` 에 넣고 클래스패스를 잡았다. Java day12 예외 처리와 JDBC 에서 MySQL 커넥터를 붙이던 방식이 그것이다. 빌드 도구를 쓰면 그 일을 **파일에 적어 두는 것**으로 바꾼다.
 
 ```groovy
 plugins {
@@ -132,7 +132,7 @@ spring-boot-starter-webmvc
 
 즉 **앱이 서버 위에 올라가는 것이 아니라, 앱이 서버를 들고 있는** 형태다. 그래서 지금까지 해 오던 것처럼 `main` 메소드를 실행하는 것만으로 웹서버가 뜬다. 기본 포트는 8080이다.
 
-[[Java day16 스레드 동기화]] 1-1의 그림이 여기서 실물이 된다 — 이 톰캣이 요청마다 스레드를 붙이고, 우리가 작성할 코드는 그 스레드 위에서 돈다.
+Java day16 스레드 동기화 1-1의 그림이 여기서 실물이 된다 — 이 톰캣이 요청마다 스레드를 붙이고, 우리가 작성할 코드는 그 스레드 위에서 돈다.
 
 ### 1-5. 그레이들 래퍼 — 빌드 도구까지 프로젝트가 들고 있다
 
@@ -184,7 +184,7 @@ public class SpringwebApplication {
 
 두 번째인 자동 구성은 "톰캣이 클래스패스에 있으면 웹서버를 띄우고, DB 드라이버가 있으면 커넥션 풀을 준비한다" 같은 판단을 대신해 주는 부분이다. 설정 파일을 길게 쓰지 않아도 도는 이유가 여기 있다.
 
-**`SpringApplication.run(...)`** 은 스프링 컨테이너를 만들고, 컴포넌트를 찾아 등록하고, 내장 톰캣을 띄우는 일을 한 줄로 처리한다. 이 한 줄이 끝나도 프로그램이 종료되지 않는데, 톰캣의 스레드가 계속 살아 요청을 기다리기 때문이다 — [[Java day16 스레드 동기화]] 1-12에서 본 비데몬 스레드와 같은 성질이다.
+**`SpringApplication.run(...)`** 은 스프링 컨테이너를 만들고, 컴포넌트를 찾아 등록하고, 내장 톰캣을 띄우는 일을 한 줄로 처리한다. 이 한 줄이 끝나도 프로그램이 종료되지 않는데, 톰캣의 스레드가 계속 살아 요청을 기다리기 때문이다 — Java day16 스레드 동기화 1-12에서 본 비데몬 스레드와 같은 성질이다.
 
 ### 1-7. application.properties — 설정을 코드 밖으로
 
@@ -201,7 +201,7 @@ spring.application.name=springweb
 | `spring.datasource.url` | DB 접속 주소 |
 | `logging.level.<패키지>` | 로그 상세도 |
 
-[[Java day12 예외 처리와 JDBC]] 에서 DB 주소·계정을 자바 코드 안에 문자열로 박아 두었는데, 스프링에서는 이런 값이 전부 이쪽으로 나온다. 접속 정보처럼 환경마다 달라지는 값을 코드에서 떼어 내면, 같은 코드로 개발·운영 환경을 모두 돌릴 수 있다.
+Java day12 예외 처리와 JDBC 에서 DB 주소·계정을 자바 코드 안에 문자열로 박아 두었는데, 스프링에서는 이런 값이 전부 이쪽으로 나온다. 접속 정보처럼 환경마다 달라지는 값을 코드에서 떼어 내면, 같은 코드로 개발·운영 환경을 모두 돌릴 수 있다.
 
 계정·비밀번호가 이 파일에 들어가므로 **버전 관리에 올릴 때 주의가 필요한 파일**이기도 하다. 실제로는 환경 변수나 별도 설정으로 빼는 방식을 쓴다.
 
@@ -239,7 +239,7 @@ class SpringwebApplicationTests {
 | 설정 | 코드 안에 문자열로 | `application.properties` 로 분리 |
 | 객체 생성 | `new` 로 직접, 싱글톤도 직접 구현 | 컨테이너가 만들고 넣어 준다 (다음 주제) |
 
-마지막 줄이 앞으로의 핵심이다. [[Java day11 종합예제 인터페이스 DAO]] · [[Java day12 종합예제 JDBC DAO]] 에서 `getInstance()` 로 직접 만들던 [[개념 - 싱글톤]] 구조를, 스프링에서는 컨테이너가 대신한다. 지금 프로젝트에 클래스가 하나뿐이라 그 장면이 아직 안 보일 뿐이다.
+마지막 줄이 앞으로의 핵심이다. Java day11 종합예제 인터페이스 DAO · Java day12 종합예제 JDBC DAO 에서 `getInstance()` 로 직접 만들던 [[개념 - 싱글톤]] 구조를, 스프링에서는 컨테이너가 대신한다. 지금 프로젝트에 클래스가 하나뿐이라 그 장면이 아직 안 보일 뿐이다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -275,7 +275,7 @@ public class HelloController {
 | `@Controller` | **화면 이름** — 템플릿 파일을 찾아 렌더링 |
 | `@RestController` | **데이터 그 자체** — 문자열·JSON으로 응답 |
 
-[[JS day13 웹 스토리지와 인터벌]] · [[JS day14 게시판 CRUD]] 에서 프론트가 데이터를 받아 화면을 그렸던 구조라면 `@RestController` 쪽이 짝이 된다.
+JS day13 웹 스토리지와 인터벌 · JS day14 게시판 CRUD 에서 프론트가 데이터를 받아 화면을 그렸던 구조라면 `@RestController` 쪽이 짝이 된다.
 
 ### 2-2. 요청 방식과 값 받기
 
@@ -303,7 +303,7 @@ public String find2(@PathVariable int no) { ... }        // /board/3
 public String write(@RequestBody BoardDto dto) { ... }   // 본문의 JSON을 DTO로
 ```
 
-세 번째가 특히 편한 부분이다. 요청 본문의 JSON을 자바 객체로 **알아서 변환**해 준다 — [[Java day15 Map과 HashMap]] 에서 정리한 JSON과 Map·DTO의 대응을 라이브러리가 대신 처리하는 자리다.
+세 번째가 특히 편한 부분이다. 요청 본문의 JSON을 자바 객체로 **알아서 변환**해 준다 — Java day15 Map과 HashMap 에서 정리한 JSON과 Map·DTO의 대응을 라이브러리가 대신 처리하는 자리다.
 
 ### 2-3. 의존성 주입 — new를 쓰지 않는다
 
@@ -334,9 +334,9 @@ public class BoardController {
 | `@Repository` | 데이터 접근 계층 (DAO) |
 | `@Component` | 위에 해당하지 않는 일반 관리 대상 |
 
-[[Java day09 MVC 종합예제]] 의 네 계층이 이름만 바꿔 그대로 있다. 달라진 것은 **배선을 누가 하느냐**뿐이다 — 직접 `getInstance()` 를 불러 연결하던 자리를 컨테이너가 맡는다.
+Java day09 MVC 종합예제 의 네 계층이 이름만 바꿔 그대로 있다. 달라진 것은 **배선을 누가 하느냐**뿐이다 — 직접 `getInstance()` 를 불러 연결하던 자리를 컨테이너가 맡는다.
 
-주입 방법은 생성자 주입을 쓰는 편이 낫다. 필드에 `@Autowired` 를 붙이는 방식보다 `final` 로 굳힐 수 있고, 테스트할 때 다른 구현을 넣기도 쉽다 — [[Java day11 인터페이스]] 의 "인터페이스로 받고 구현체를 갈아 끼운다"가 여기서 프레임워크 기능이 된다.
+주입 방법은 생성자 주입을 쓰는 편이 낫다. 필드에 `@Autowired` 를 붙이는 방식보다 `final` 로 굳힐 수 있고, 테스트할 때 다른 구현을 넣기도 쉽다 — Java day11 인터페이스 의 "인터페이스로 받고 구현체를 갈아 끼운다"가 여기서 프레임워크 기능이 된다.
 
 ### 2-4. 자주 쓰는 설정값
 
@@ -369,7 +369,7 @@ spring:
 
 ### 2-5. 의존성 더하기 — DB를 붙일 때
 
-[[Java day12 예외 처리와 JDBC]] 에서 하던 일을 스프링에서 이어 가려면 `build.gradle` 에 두 줄을 더한다.
+Java day12 예외 처리와 JDBC 에서 하던 일을 스프링에서 이어 가려면 `build.gradle` 에 두 줄을 더한다.
 
 ```groovy
 implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -433,7 +433,7 @@ java -jar springweb-0.0.1-SNAPSHOT.jar
 
 라이브러리와 프레임워크가 갈리는 자리가 여기다. `Scanner` 는 내가 필요할 때 부르는 도구지만, `@GetMapping` 을 붙인 메소드는 **내가 부르지 않는다** — 요청이 들어오면 스프링이 부른다. 만든 코드가 언제 실행될지를 프레임워크가 정하는 구조다.
 
-[[Java day11 인터페이스]] 에서 익명 구현체로 만들어 넘기던 것, [[Java day16 스레드 동기화]] 에서 `Runnable` 을 만들어 풀에 넘기던 것이 작은 규모의 같은 형태다 — **할 일만 정의하고 실행 시점은 넘긴다.**
+Java day11 인터페이스 에서 익명 구현체로 만들어 넘기던 것, Java day16 스레드 동기화 에서 `Runnable` 을 만들어 풀에 넘기던 것이 작은 규모의 같은 형태다 — **할 일만 정의하고 실행 시점은 넘긴다.**
 
 ### 3-2. 빈과 컨테이너 — 싱글톤이 기본인 이유
 
@@ -445,7 +445,7 @@ java -jar springweb-0.0.1-SNAPSHOT.jar
 | `prototype` | 요청할 때마다 새로 |
 | `request` | HTTP 요청마다 하나 |
 
-여기서 [[Java day16 스레드 동기화]] 2-6이 그대로 이어진다. 컨트롤러·서비스·리포지토리가 전부 싱글톤이니, **여러 요청 스레드가 같은 객체의 메소드를 동시에 부른다.** 그래서 이 클래스들에 상태를 담는 필드를 두면 경쟁 상태가 생긴다.
+여기서 Java day16 스레드 동기화 2-6이 그대로 이어진다. 컨트롤러·서비스·리포지토리가 전부 싱글톤이니, **여러 요청 스레드가 같은 객체의 메소드를 동시에 부른다.** 그래서 이 클래스들에 상태를 담는 필드를 두면 경쟁 상태가 생긴다.
 
 - 안전한 형태 — 필드에는 주입받은 다른 빈만 두고(`final`), 처리에 쓰는 값은 매개변수와 지역 변수로
 - 위험한 형태 — 처리 중인 데이터를 필드에 담아 두기
@@ -486,7 +486,7 @@ Repository          ← DB 접근 (JDBC·JPA)
 MySQL
 ```
 
-[[Java day09 MVC 종합예제]] 에서 View·Controller·DAO·DTO로 나눈 구조가 웹으로 옮겨온 모습이다. 달라진 부분은 맨 위 두 층 — 콘솔에서 `Scanner` 로 받던 입력이 HTTP 요청이 되고, 그것을 나눠 주는 `DispatcherServlet` 이 앞에 선다.
+Java day09 MVC 종합예제 에서 View·Controller·DAO·DTO로 나눈 구조가 웹으로 옮겨온 모습이다. 달라진 부분은 맨 위 두 층 — 콘솔에서 `Scanner` 로 받던 입력이 HTTP 요청이 되고, 그것을 나눠 주는 `DispatcherServlet` 이 앞에 선다.
 
 `DispatcherServlet` 하나가 모든 요청을 받아 담당자에게 넘기는 구조를 프론트 컨트롤러 패턴이라고 부른다.
 
@@ -506,9 +506,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 }
 ```
 
-구현 클래스를 만들지 않았는데 동작한다. 인터페이스의 **메소드 이름을 해석해** 스프링이 구현체를 만들어 넣는 방식이다. [[Java day11 종합예제 인터페이스 DAO]] 에서 인터페이스로 규격을 잡고 구현을 따로 만들던 구조에서, 구현 쪽을 프레임워크가 가져간 형태로 볼 수 있다.
+구현 클래스를 만들지 않았는데 동작한다. 인터페이스의 **메소드 이름을 해석해** 스프링이 구현체를 만들어 넣는 방식이다. Java day11 종합예제 인터페이스 DAO 에서 인터페이스로 규격을 잡고 구현을 따로 만들던 구조에서, 구현 쪽을 프레임워크가 가져간 형태로 볼 수 있다.
 
-편한 만큼 안에서 어떤 SQL이 나가는지 모르면 성능 문제로 이어지기 쉬워서, JDBC와 SQL을 먼저 본 순서가 도움이 된다 — [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] 의 조인 이해가 그대로 쓰인다.
+편한 만큼 안에서 어떤 SQL이 나가는지 모르면 성능 문제로 이어지기 쉬워서, JDBC와 SQL을 먼저 본 순서가 도움이 된다 — SQL day03 DML과 조인 · SQL day05 외래키 CASCADE와 조인 의 조인 이해가 그대로 쓰인다.
 
 ### 3-6. 빌드 도구 — 그레이들과 메이븐
 
@@ -567,4 +567,4 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
 ## 관련 노트
 
-[[Java MOC]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Java day16 스레드 동기화]] · [[Java day15 Map과 HashMap]] · [[Java day12 예외 처리와 JDBC]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day09 MVC 종합예제]] · [[개념 - 싱글톤]] · [[개념 - CRUD]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS day14 게시판 CRUD]] · [[KDT_2026 학습 지도]]
+Java MOC · Spring day01 서블릿과 HTTP 메소드 · Java day16 스레드 동기화 · Java day15 Map과 HashMap · Java day12 예외 처리와 JDBC · Java day12 종합예제 JDBC DAO · Java day11 인터페이스 · Java day11 종합예제 인터페이스 DAO · Java day09 MVC 종합예제 · [[개념 - 싱글톤]] · [[개념 - CRUD]] · SQL day03 DML과 조인 · SQL day05 외래키 CASCADE와 조인 · JS day14 게시판 CRUD · [[KDT_2026 학습 지도]]

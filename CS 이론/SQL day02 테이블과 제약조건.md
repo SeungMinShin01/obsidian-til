@@ -64,7 +64,7 @@ TINYINT UNSIGNED    0 ~ 255
 `CHAR`는 길이가 항상 같은 값(주민번호, 우편번호, 코드), `VARCHAR`는 제각각인 값(이름, 제목)에 씁니다.
 
 **`DECIMAL`** — 문자 기반이라 **소수점 오차가 없습니다.** 느리지만 **돈 계산에는 필수**입니다.
-Java의 `BigDecimal`([[Java day01 자바 구조와 자료형]]), JS의 정수 변환([[JS day03 자료형과 연산자]])과 같은 맥락입니다.
+Java의 `BigDecimal`(Java day01 자바 구조와 자료형), JS의 정수 변환(JS day03 자료형과 연산자)과 같은 맥락입니다.
 
 `TEXT`는 `VARCHAR`와 달리 기본값을 줄 수 없고 인덱스에 제약이 있습니다. 길이를 예측할 수 있으면 `VARCHAR`가 낫습니다.
 
@@ -126,7 +126,7 @@ CREATE TABLE CLOTHESSYMBOLLIST (
 );
 ```
 
-이 스키마가 그대로 [[Java day07 메소드와 미니프로젝트]] 의 `의류`, `의류별세탁법` 클래스가 되었습니다. **DB 테이블 → 자바 클래스** 매핑이 DTO의 본질입니다. → [[Java day08 접근제한자와 static]]
+이 스키마가 그대로 Java day07 메소드와 미니프로젝트 의 `의류`, `의류별세탁법` 클래스가 되었습니다. **DB 테이블 → 자바 클래스** 매핑이 DTO의 본질입니다. → Java day08 접근제한자와 static
 
 ### 1-5. practice2 — 쇼핑몰 스키마 4테이블
 
@@ -196,7 +196,7 @@ ORDERS (주문 1건)
   └─ ORDER_ITEMS (상품 N개)
 ```
 
-[[JS 과제 LevelUP과 게시판]] 의 `주문`/`주문상세` 분리, [[JS day12 제품 사원 관리 CRUD]] 의 카테고리/제품 분리와 완전히 같은 사고입니다.
+JS 과제 LevelUP과 게시판 의 `주문`/`주문상세` 분리, JS day12 제품 사원 관리 CRUD 의 카테고리/제품 분리와 완전히 같은 사고입니다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -233,7 +233,7 @@ CREATE TABLE board (
 - `deleted` — 실제로 지우지 않고 플래그만 세우는 **소프트 삭제**. 복구 가능하고 통계도 남습니다
 - `ON UPDATE CURRENT_TIMESTAMP` — 수정 시각 자동 갱신
 
-[[JS day14 게시판 CRUD]] 의 `boardList` 객체와 비교해보면 실제 DB가 얼마나 더 챙기는지 보입니다.
+JS day14 게시판 CRUD 의 `boardList` 객체와 비교해보면 실제 DB가 얼마나 더 챙기는지 보입니다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -289,7 +289,7 @@ try (Connection con = DriverManager.getConnection(url, id, pw);
 }
 ```
 
-`activity.sql`의 스키마와 [[Java day07 메소드와 미니프로젝트]] 의 클래스가 이미 1:1 대응이라, JDBC만 붙이면 메모리 저장이 DB 저장으로 바뀝니다.
+`activity.sql`의 스키마와 Java day07 메소드와 미니프로젝트 의 클래스가 이미 1:1 대응이라, JDBC만 붙이면 메모리 저장이 DB 저장으로 바뀝니다.
 
 ## 실습 파일
 
@@ -299,4 +299,4 @@ try (Connection con = DriverManager.getConnection(url, id, pw);
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day01 데이터베이스 기초]] · [[SQL day03 DML과 조인]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day08 접근제한자와 static]]
+[[CS 이론 MOC]] · [[SQL day01 데이터베이스 기초]] · [[SQL day03 DML과 조인]] · Java day07 메소드와 미니프로젝트 · Java day08 접근제한자와 static

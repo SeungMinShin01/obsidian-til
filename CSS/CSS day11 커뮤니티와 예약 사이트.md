@@ -8,11 +8,11 @@ tags: [학습, css]
 # CSS day11 — 커뮤니티와 예약 사이트
 
 > 실습 파일: `day11/practice/practiceCSS7.html/css`(베이킹 커뮤니티), `practiceCSS8.html/css`(스튜디오 예약), `practice7.*`, `teampractice/`, `assets/practice7`·`practice8`
-> 허브: [[CSS MOC]] · 이전: [[CSS day10 카메라 강의 사이트]] · 다음: [[CSS day14 position과 가상요소]]
+> 허브: [[CSS MOC]] · 이전: [[CSS day10 카메라 강의 사이트]] · 다음: CSS day14 position과 가상요소
 
 ## 1. 배운 내용
 
-JS DOM을 배우던 날([[JS day11 DOM 조작]])에 CSS로는 **완성도 높은 사이트 두 개**를 만들었습니다.
+JS DOM을 배우던 날(JS day11 DOM 조작)에 CSS로는 **완성도 높은 사이트 두 개**를 만들었습니다.
 
 | 파일 | 사이트 |
 | --- | --- |
@@ -178,7 +178,7 @@ li {
 }
 ```
 
-한 제목 안에서 일부만 다른 색을 주려고 `<span>`으로 감쌌습니다. **`<span>`의 대표적인 용도**입니다. → [[CSS day06 선택자와 기본 속성]]
+한 제목 안에서 일부만 다른 색을 주려고 `<span>`으로 감쌌습니다. **`<span>`의 대표적인 용도**입니다. → CSS day06 선택자와 기본 속성
 
 ### 1-7. practiceCSS8 — 아이콘 + 텍스트 2열
 
@@ -227,7 +227,7 @@ li {
 #main { width: 800px; margin: 0 auto; }
 ```
 
-바깥 컨테이너는 넓게, 실제 이미지는 1280px로 가운데 정렬했습니다. `display: block`을 준 이유는 `<img>`가 기본 inline이라 **아래에 3~4px 여백**이 생기기 때문입니다. → [[CSS day05 첫 스타일링]]
+바깥 컨테이너는 넓게, 실제 이미지는 1280px로 가운데 정렬했습니다. `display: block`을 준 이유는 `<img>`가 기본 inline이라 **아래에 3~4px 여백**이 생기기 때문입니다. → CSS day05 첫 스타일링
 
 콘텐츠 폭이 구역마다 다릅니다 — 헤더 820px, 메인 이미지 1280px, 본문 800px. 의도적인 리듬일 수도 있지만, 보통은 하나의 `.container` 폭으로 통일하고 **풀블리드(full-bleed)가 필요한 요소만 예외**로 둡니다.
 
@@ -307,9 +307,9 @@ document.querySelector(".next").addEventListener("click", () => {
 });
 ```
 
-`% total`이 끝에서 처음으로 돌아가게 합니다. → [[JS day13 웹 스토리지와 인터벌]]
+`% total`이 끝에서 처음으로 돌아가게 합니다. → JS day13 웹 스토리지와 인터벌
 
-`position: absolute` + 부모 `relative`는 [[CSS day14 position과 가상요소]] 의 핵심 패턴입니다.
+`position: absolute` + 부모 `relative`는 CSS day14 position과 가상요소 의 핵심 패턴입니다.
 
 ### 2-4. 갤러리 그리드
 
@@ -349,7 +349,7 @@ document.querySelector(".next").addEventListener("click", () => {
 .sns img:hover { opacity: 1; transform: scale(1.1); }
 ```
 
-아이콘이 3개뿐이면 개별 파일도 괜찮지만, 많아지면 SVG 스프라이트가 유리합니다. → [[CSS day15 테이블과 배경]]
+아이콘이 3개뿐이면 개별 파일도 괜찮지만, 많아지면 SVG 스프라이트가 유리합니다. → CSS day15 테이블과 배경
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -402,7 +402,7 @@ document.querySelector(".hamburger").addEventListener("click", () => {
 });
 ```
 
-**CSS가 모양을, JS가 클래스만 토글**하는 게 표준 패턴입니다. → [[JS day11 DOM 조작]]
+**CSS가 모양을, JS가 클래스만 토글**하는 게 표준 패턴입니다. → JS day11 DOM 조작
 
 ### 3-3. 이미지 용량
 
@@ -421,9 +421,9 @@ document.querySelector(".hamburger").addEventListener("click", () => {
 
 `day11`에서 만든 페이지에 JS를 붙이면 완성도가 크게 올라갑니다.
 
-- 슬라이드 자동 재생 → [[JS day13 웹 스토리지와 인터벌]]
-- 예약 폼 검증 → [[JS day04 조건문]], [[HTML day04 폼과 테이블]]
-- 갤러리 라이트박스 → `<dialog>` + [[JS day11 DOM 조작]]
+- 슬라이드 자동 재생 → JS day13 웹 스토리지와 인터벌
+- 예약 폼 검증 → JS day04 조건문, HTML day04 폼과 테이블
+- 갤러리 라이트박스 → `<dialog>` + JS day11 DOM 조작
 
 ## 실습 파일
 
@@ -437,4 +437,4 @@ document.querySelector(".hamburger").addEventListener("click", () => {
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day10 카메라 강의 사이트]] · [[CSS day14 position과 가상요소]] · [[JS day11 DOM 조작]] · [[CSS day09 카페 키오스크]]
+[[CSS MOC]] · [[CSS day10 카메라 강의 사이트]] · CSS day14 position과 가상요소 · JS day11 DOM 조작 · CSS day09 카페 키오스크

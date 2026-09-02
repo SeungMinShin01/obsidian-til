@@ -43,10 +43,10 @@ day15 테이블·배경 ←─ day14 position·가상요소 ←─ day11 커뮤�
 
 ## 함께 쓰는 언어
 
-- [[HTML MOC]] — CSS가 꾸미는 대상
-- [[JavaScript MOC]] — `classList`, `.style`로 CSS를 바꾸는 것
+- HTML MOC — CSS가 꾸미는 대상
+- JavaScript MOC — `classList`, `.style`로 CSS를 바꾸는 것
 
-**CSS 선택자 문법을 JS가 그대로 씁니다.** `document.querySelector(".box")` → [[JS day11 DOM 조작]]
+**CSS 선택자 문법을 JS가 그대로 씁니다.** `document.querySelector(".box")` → JS day11 DOM 조작
 
 ## 자주 쓰는 리셋
 

@@ -238,4 +238,4 @@ FROM buy;
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · [[Java day09 ArrayList]]
+[[CS 이론 MOC]] · [[SQL day03 DML과 조인]] · [[SQL day05 외래키 CASCADE와 조인]] · Java day09 ArrayList

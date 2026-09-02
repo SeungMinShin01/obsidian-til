@@ -32,7 +32,7 @@ ArrayList<String> 변수명1 = new ArrayList<>();
 ArrayList<int> list;       // 컴파일 에러
 ArrayList<Integer> list;   // 정답
 ```
-자바가 자동으로 감싸주는 걸 **오토박싱**이라고 합니다. → [[Java day02 타입 변환]]
+자바가 자동으로 감싸주는 걸 **오토박싱**이라고 합니다. → Java day02 타입 변환
 
 ### 1-2. 주요 메소드 12가지
 
@@ -91,7 +91,7 @@ for (String str : list) { }
 | 길이 | `arr.length` | `list.size()` |
 | 출력 | `Arrays.toString(arr)` | `System.out.println(list)` |
 
-`System.out.println(list)`가 바로 내용을 출력하는 이유는 `ArrayList`가 `toString()`을 오버라이딩해 뒀기 때문입니다. → [[Java day05 클래스와 인스턴스]]
+`System.out.println(list)`가 바로 내용을 출력하는 이유는 `ArrayList`가 `toString()`을 오버라이딩해 뒀기 때문입니다. → Java day05 클래스와 인스턴스
 
 ### 1-5. practice11 — 리스트 실습 8문제
 
@@ -116,7 +116,7 @@ bookList.add(new Book("책이름1", "저자1"));
 bookList.add(new Book("책이름2", "저자2"));
 ```
 
-`ArrayList<String>`을 그냥 출력하면 `[유재석, 강호동, 신동엽]`처럼 내용이 바로 나옵니다. 배열이 주소를 출력하던 것과 대비됩니다. → [[Java day04 제어문과 배열]]
+`ArrayList<String>`을 그냥 출력하면 `[유재석, 강호동, 신동엽]`처럼 내용이 바로 나옵니다. 배열이 주소를 출력하던 것과 대비됩니다. → Java day04 제어문과 배열
 
 **6번의 `ArrayList<Book>`이 가장 중요한 문제입니다.** 제네릭에 **내가 만든 클래스**를 넣는 순간, 리스트가 실전에서 쓰이는 형태가 됩니다.
 
@@ -126,9 +126,9 @@ for (Book b : bookList) {
 }
 ```
 
-`Book`에 `toString()`을 추가하면 목록이 그대로 읽힙니다. → [[Java day05 클래스와 인스턴스]]
+`Book`에 `toString()`을 추가하면 목록이 그대로 읽힙니다. → Java day05 클래스와 인스턴스
 
-이게 [[Java day06 생성자와 콘솔 게시판]] 의 `Post[100]`을 `ArrayList<Post>`로 바꾸는 것과 같은 형태입니다.
+이게 Java day06 생성자와 콘솔 게시판 의 `Post[100]`을 `ArrayList<Post>`로 바꾸는 것과 같은 형태입니다.
 
 나머지 세 문제는 배열로는 못 하거나 번거로웠던 조작을 다룹니다.
 
@@ -152,7 +152,7 @@ for (;;) {                                   // 조건 없는 무한 루프
 }
 ```
 
-7번이 리스트를 쓰는 이유를 가장 잘 보여줍니다. **입력 개수를 미리 모르는 상황**이라 배열이면 크기를 얼마로 잡을지부터 막히는데, 리스트는 그냥 계속 `add` 하면 됩니다. `for(;;)`는 `while(true)`와 같은 뜻이고, 빠져나오는 통로가 `break` 하나뿐이므로 종료 조건을 먼저 써 두는 편이 안전합니다. 문자열 비교는 `==`가 아니라 `equals`라는 점도 여기서 다시 걸립니다. → [[Java day03 연산자]]
+7번이 리스트를 쓰는 이유를 가장 잘 보여줍니다. **입력 개수를 미리 모르는 상황**이라 배열이면 크기를 얼마로 잡을지부터 막히는데, 리스트는 그냥 계속 `add` 하면 됩니다. `for(;;)`는 `while(true)`와 같은 뜻이고, 빠져나오는 통로가 `break` 하나뿐이므로 종료 조건을 먼저 써 두는 편이 안전합니다. 문자열 비교는 `==`가 아니라 `equals`라는 점도 여기서 다시 걸립니다. → Java day03 연산자
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -208,11 +208,11 @@ list.sort(Comparator.comparing(p -> p.no));          // 특정 필드 기준
 list.sort(Comparator.comparing(Post::getNo).reversed());  // 역순
 ```
 
-[[JS day13 웹 스토리지와 인터벌]] 의 최신글 정렬과 같은 목적입니다.
+JS day13 웹 스토리지와 인터벌 의 최신글 정렬과 같은 목적입니다.
 
 ### 2-5. OverallController 리팩터링
 
-[[Java day06 생성자와 콘솔 게시판]] 의 배열 100칸 버전을 다시 쓰면:
+Java day06 생성자와 콘솔 게시판 의 배열 100칸 버전을 다시 쓰면:
 
 ```java
 ArrayList<Post> posts = new ArrayList<>();
@@ -249,7 +249,7 @@ posts.put(1, new Post("내용", "작성자"));
 Post p = posts.get(1);
 ```
 
-JS 객체 `{ }`와 개념이 같습니다. → [[JS day07 객체]]
+JS 객체 `{ }`와 개념이 같습니다. → JS day07 객체
 
 **Set이 필요한 순간**: 중복 제거.
 ```java
@@ -270,7 +270,7 @@ long count = posts.stream().filter(p -> p != null).count();
 int total = nums.stream().mapToInt(Integer::intValue).sum();
 ```
 
-`for` + `if` + `add` 3단 구조가 한 줄이 됩니다. JS의 `filter`/`map`/`reduce`와 같은 개념입니다. → [[JS day05 반복문]]
+`for` + `if` + `add` 3단 구조가 한 줄이 됩니다. JS의 `filter`/`map`/`reduce`와 같은 개념입니다. → JS day05 반복문
 
 ### 3-3. 불변 리스트
 
@@ -295,7 +295,7 @@ JDBC + MySQL           ← database/*.sql이 이미 준비됨
 Spring Boot + JPA
 ```
 
-[[JS day13 웹 스토리지와 인터벌]] 이 `localStorage`로 해결한 문제를 백엔드에서는 DB로 해결합니다. **프론트의 localStorage ≒ 백엔드의 DB** — 같은 문제의 다른 답입니다.
+JS day13 웹 스토리지와 인터벌 이 `localStorage`로 해결한 문제를 백엔드에서는 DB로 해결합니다. **프론트의 localStorage ≒ 백엔드의 DB** — 같은 문제의 다른 답입니다.
 
 ## 실습 파일
 
@@ -304,4 +304,4 @@ Spring Boot + JPA
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day08 접근제한자와 static]] · [[Java day04 제어문과 배열]] · [[Java day06 생성자와 콘솔 게시판]] · [[SQL day03 DML과 조인]]
+[[Java MOC]] · [[Java day08 접근제한자와 static]] · Java day04 제어문과 배열 · Java day06 생성자와 콘솔 게시판 · SQL day03 DML과 조인

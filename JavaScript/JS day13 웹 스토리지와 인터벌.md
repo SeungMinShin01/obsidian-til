@@ -125,7 +125,7 @@ else list = JSON.parse(list);
 const list = JSON.parse(localStorage.getItem("boardList") ?? "[]");
 ```
 
-`??`(nullish 병합)를 쓰면 `null`/`undefined`일 때만 기본값이 들어갑니다. → [[JS day03 자료형과 연산자]]
+`??`(nullish 병합)를 쓰면 `null`/`undefined`일 때만 기본값이 들어갑니다. → JS day03 자료형과 연산자
 
 ### 2-2. 시간 표시 개선
 
@@ -217,7 +217,7 @@ const q = url.get("q");   // URLSearchParams가 자동 디코딩
 
 **"내 PC의 이 브라우저에서만 보이는 게시판"** 이 현재 상태입니다. 다른 기기에서 열면 글이 하나도 없습니다.
 
-이게 백엔드가 필요한 이유이고, `2026B_BE`에서 Java와 MySQL을 배우는 이유입니다. → [[Java day09 ArrayList]]
+이게 백엔드가 필요한 이유이고, `2026B_BE`에서 Java와 MySQL을 배우는 이유입니다. → Java day09 ArrayList
 
 ### 3-2. `storage` 이벤트 — 탭 간 동기화
 
@@ -258,14 +258,14 @@ setInterval(() => {
 }, 3000);
 ```
 
-`% imgs.length`가 배열 끝에서 0으로 돌아가게 합니다. → [[Java day03 연산자]]
+`% imgs.length`가 배열 끝에서 0으로 돌아가게 합니다. → Java day03 연산자
 
 CSS와 조합하면 페이드 효과가 붙습니다.
 ```css
 .slide { opacity: 0; transition: opacity .5s; }
 .slide.active { opacity: 1; }
 ```
-→ [[CSS day14 position과 가상요소]]
+→ CSS day14 position과 가상요소
 
 ## 실습 파일
 
@@ -277,4 +277,4 @@ CSS와 조합하면 페이드 효과가 붙습니다.
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day14 게시판 CRUD]] · [[JS day07 객체]] · [[SQL day03 DML과 조인]]
+[[JavaScript MOC]] · [[JS day12 제품 사원 관리 CRUD]] · [[JS day14 게시판 CRUD]] · JS day07 객체 · SQL day03 DML과 조인

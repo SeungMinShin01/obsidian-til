@@ -114,9 +114,9 @@ switch (ch) {
 
 [[Java day08 접근제한자와 static]] 에서 배우는 MVC 패턴의 **M과 C를 실제로 분리**한 형태입니다.
 
-**DB 스키마와의 대응**: `database/activity.sql`의 `CLOTHES`, `WASHINGGUIDE` 테이블이 그대로 `의류`, `의류별세탁법` 클래스가 되었습니다. **DB 테이블 → 자바 클래스** 매핑이 DTO의 본질입니다. → [[SQL day02 테이블과 제약조건]]
+**DB 스키마와의 대응**: `database/activity.sql`의 `CLOTHES`, `WASHINGGUIDE` 테이블이 그대로 `의류`, `의류별세탁법` 클래스가 되었습니다. **DB 테이블 → 자바 클래스** 매핑이 DTO의 본질입니다. → SQL day02 테이블과 제약조건
 
-`scan.nextLine()`을 case마다 반복해서 넣은 이유는 [[Java day01 자바 구조와 자료형]] 2-1의 버퍼 문제 때문입니다.
+`scan.nextLine()`을 case마다 반복해서 넣은 이유는 Java day01 자바 구조와 자료형 2-1의 버퍼 문제 때문입니다.
 
 ### 1-4. practice9 — 메소드 8문제
 
@@ -193,7 +193,7 @@ if (pr1.sell(10)) {
 
 반환값을 그대로 찍는 대신 호출부에서 `if`로 갈라 두면, 실패했을 때 **왜 실패했는지 한 줄을 더 붙일 자리**가 생깁니다. 4번 `isEven`과 같은 `boolean` 반환이지만 쓰임이 다릅니다 — `isEven`은 상태를 묻는 판정이고, `sell`은 **동작을 시도한 결과**를 돌려줍니다. 뒤쪽이 실무에서 더 흔한 형태라 성공/실패 분기를 함께 쓰는 습관을 들이는 편이 좋습니다.
 
-메소드 안에서 화면 출력을 하지 않고 `boolean`만 돌려준 덕분에 이 분기가 가능해집니다. 판단은 메소드가 하고 **출력은 호출부가 하는** 이 분리가 나중에 [[Java day09 MVC 종합예제]] 의 Controller ↔ View 구분으로 이어집니다.
+메소드 안에서 화면 출력을 하지 않고 `boolean`만 돌려준 덕분에 이 분기가 가능해집니다. 판단은 메소드가 하고 **출력은 호출부가 하는** 이 분리가 나중에 Java day09 MVC 종합예제 의 Controller ↔ View 구분으로 이어집니다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -212,7 +212,7 @@ int add(int x, int y) { }
 double add(int x, int y) { }   // 컴파일 에러!
 ```
 
-JS에는 오버로딩이 없어서 나중 정의가 앞의 것을 덮어씁니다. → [[JS day10 함수]]
+JS에는 오버로딩이 없어서 나중 정의가 앞의 것을 덮어씁니다. → JS day10 함수
 
 ### 2-2. 가변 인자
 
@@ -271,7 +271,7 @@ public boolean update(int 의류ID, String 새의류명) {
 }
 ```
 
-[[JS day14 게시판 CRUD]] 의 `view.js` 삭제 로직과 구조가 똑같습니다.
+JS day14 게시판 CRUD 의 `view.js` 삭제 로직과 구조가 똑같습니다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -290,7 +290,7 @@ class DbClothesRepository implements ClothesRepository { ... }
 
 Controller는 `ClothesRepository` 타입만 알면 되므로, **메모리 저장 → DB 저장으로 갈아탈 때 Controller를 한 줄도 안 고쳐도 됩니다.** Spring이 이 원리로 돌아갑니다.
 
-→ [[Java 오버로딩 오버라이딩과 인터페이스(이관)]]
+→ Java 오버로딩 오버라이딩과 인터페이스(이관)
 
 ### 3-2. 싱글톤
 
@@ -320,7 +320,7 @@ try (Connection con = DriverManager.getConnection(url, id, pw);
 }
 ```
 
-**`PreparedStatement`를 반드시 쓰세요.** 문자열을 이어붙이면 SQL 인젝션에 뚫립니다. → [[SQL day03 DML과 조인]]
+**`PreparedStatement`를 반드시 쓰세요.** 문자열을 이어붙이면 SQL 인젝션에 뚫립니다. → SQL day03 DML과 조인
 
 ## 실습 파일
 
@@ -330,4 +330,4 @@ try (Connection con = DriverManager.getConnection(url, id, pw);
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[JS day10 함수]]
+[[Java MOC]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day08 접근제한자와 static]] · SQL day02 테이블과 제약조건 · JS day10 함수

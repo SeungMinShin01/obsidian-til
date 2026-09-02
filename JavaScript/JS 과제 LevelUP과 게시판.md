@@ -42,7 +42,7 @@ const 음료 = [
 ];
 ```
 
-**"코드를 짜라"가 아니라 "무엇을 저장할지 정하라"** 는 문제입니다. [[JS day12 제품 사원 관리 CRUD]] 의 메모리 설계와 완전히 같은 종류의 사고이고, 실제로 day12에서 이 방식이 체계화됩니다.
+**"코드를 짜라"가 아니라 "무엇을 저장할지 정하라"** 는 문제입니다. JS day12 제품 사원 관리 CRUD 의 메모리 설계와 완전히 같은 종류의 사고이고, 실제로 day12에서 이 방식이 체계화됩니다.
 
 한 걸음 더 나가면 코드 대신 문자열로 참조하고, 주문·주문상세를 분리하게 됩니다.
 
@@ -67,7 +67,7 @@ const 주문상세 = [
 ];
 ```
 
-**"고객2가 두 카테고리에서 각각 주문"** 이라는 조건이 `주문`과 `주문상세`를 나눠야 하는 이유입니다. 주문 1건에 음료가 여러 개 들어가기 때문입니다. [[SQL day02 테이블과 제약조건]] 의 1:N 관계와 같습니다.
+**"고객2가 두 카테고리에서 각각 주문"** 이라는 조건이 `주문`과 `주문상세`를 나눠야 하는 이유입니다. 주문 1건에 음료가 여러 개 들어가기 때문입니다. SQL day02 테이블과 제약조건 의 1:N 관계와 같습니다.
 
 `LevelUp2.html`, `LevelUp2.js`는 같은 폴더에서 화면과 연결하는 연습입니다.
 
@@ -99,7 +99,7 @@ let hour =
           : `0${parseInt(second / 3600)}`;
 ```
 
-중첩 삼항 5단으로 **음수 / 0시간 / 100시간 초과 / 두 자리 / 한 자리**를 전부 분기했습니다. [[JS day03 자료형과 연산자]] 의 중첩 삼항이 실전에서 어디까지 갈 수 있는지 보여주는 예입니다.
+중첩 삼항 5단으로 **음수 / 0시간 / 100시간 초과 / 두 자리 / 한 자리**를 전부 분기했습니다. JS day03 자료형과 연산자 의 중첩 삼항이 실전에서 어디까지 갈 수 있는지 보여주는 예입니다.
 
 `Math` 금지라 `Math.floor` 대신 `parseInt`로 정수 부분을 얻은 것도 조건을 잘 우회한 부분입니다.
 
@@ -110,7 +110,7 @@ const toHMS = (s) =>
   `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
 ```
 
-`padStart(2, "0")`가 "한 자리면 앞에 0" 조건을 한 번에 처리합니다. `% 60`이 분을 0~59로 가둡니다. [[JS day13 웹 스토리지와 인터벌]] 의 시계 함수에서 쓴 `second < 10 ? "0" + second : second`도 `padStart`로 대체됩니다.
+`padStart(2, "0")`가 "한 자리면 앞에 0" 조건을 한 번에 처리합니다. `% 60`이 분을 0~59로 가둡니다. JS day13 웹 스토리지와 인터벌 의 시계 함수에서 쓴 `second < 10 ? "0" + second : second`도 `padStart`로 대체됩니다.
 
 **이 과제의 목적**은 결국 "삼항으로 이렇게까지 할 수 있지만, 그래서 `if`와 헬퍼 함수가 왜 필요한가"를 느끼게 하는 것입니다.
 
@@ -162,7 +162,7 @@ for (const [a, b, c] of 승리조건) {
 
 2차원 배열(`게임판[i][j]`)보다 1차원 배열(`판[0]`~`판[8]`)이 이 문제에는 더 편합니다. 입력이 0~8 한 자리 번호이기 때문입니다.
 
-`day04/practice/tictackto.js`에서 만든 버전과 비교해보면, 함수를 쓸 수 있을 때와 없을 때의 차이가 드러납니다. → [[JS day04 조건문]]
+`day04/practice/tictackto.js`에서 만든 버전과 비교해보면, 함수를 쓸 수 있을 때와 없을 때의 차이가 드러납니다. → JS day04 조건문
 
 ### 1-4. LevelUp5 — 객체 배열 조인
 
@@ -191,7 +191,7 @@ const 구독내역 = [
 회원정보 ─(회원코드)─ 구독내역 ─(상품코드)─ 구독상품
 ```
 
-**사실상 DB의 JOIN을 JS로 구현하는 문제입니다.** `database/day03.sql`의 `member` ↔ `buy` 관계와 같은 구조이고, `구독내역`이 N:M을 푸는 중간 테이블 역할을 합니다. → [[SQL day03 DML과 조인]]
+**사실상 DB의 JOIN을 JS로 구현하는 문제입니다.** `database/day03.sql`의 `member` ↔ `buy` 관계와 같은 구조이고, `구독내역`이 N:M을 푸는 중간 테이블 역할을 합니다. → SQL day03 DML과 조인
 
 ### 1-5. LevelUp5 풀이 방향
 
@@ -225,7 +225,7 @@ const 전체 = 회원정보.map(m => {
 });
 ```
 
-`박서버`(회원코드 3)는 구독내역이 없어 `find`가 `undefined`를 반환합니다. `?.`와 `??`로 처리합니다. → [[JS day03 자료형과 연산자]]
+`박서버`(회원코드 3)는 구독내역이 없어 `find`가 `undefined`를 반환합니다. `?.`와 `??`로 처리합니다. → JS day03 자료형과 연산자
 
 **GROUP BY 흉내내기**
 ```javascript
@@ -260,11 +260,11 @@ const 결과 = 구독내역.map(내역 => ({
 }));
 ```
 
-`find`를 반복문 안에서 쓰면 O(n×m), Map을 쓰면 O(n+m)입니다. DB가 인덱스를 쓰는 이유와 완전히 같습니다. [[JS day12 제품 사원 관리 CRUD]] 의 카테고리 조회에도 그대로 적용됩니다.
+`find`를 반복문 안에서 쓰면 O(n×m), Map을 쓰면 O(n+m)입니다. DB가 인덱스를 쓰는 이유와 완전히 같습니다. JS day12 제품 사원 관리 CRUD 의 카테고리 조회에도 그대로 적용됩니다.
 
 ### 1-7. LevelUpHTML
 
-`LevelUpHTML/LevelUP1.html`은 마크업만 다루는 별도 과제입니다. → [[HTML MOC]]
+`LevelUpHTML/LevelUP1.html`은 마크업만 다루는 별도 과제입니다. → HTML MOC
 
 ## 2. Message_Board — 제약이 만든 설계
 
@@ -289,7 +289,7 @@ const 결과 = 구독내역.map(내역 => ({
 
 ### 2-3. Java 버전과 완전히 같은 발상
 
-[[Java day06 생성자와 콘솔 게시판]] 의 `OverallController.java`
+Java day06 생성자와 콘솔 게시판 의 `OverallController.java`
 ```java
 for (int index = 0; index <= posts.length - 1; index++) {
     if (posts[index] == null) {   // 빈 칸 찾기
@@ -321,7 +321,7 @@ else if (index2 === -1) { title2 = 제목; index2 = ++currentIndex; }
 | 개수 제한 | 10개 | 무제한 |
 | 코드 길이 | 수백 줄 | 수십 줄 |
 
-그래서 [[JS day14 게시판 CRUD]] 에서 배열 + 객체 + localStorage로 다시 만들었을 때 코드가 1/5로 줄어든 겁니다.
+그래서 JS day14 게시판 CRUD 에서 배열 + 객체 + localStorage로 다시 만들었을 때 코드가 1/5로 줄어든 겁니다.
 
 ### 2-5. 배열로 다시 쓰면
 
@@ -361,12 +361,12 @@ JS의 `sort()`는 엔진마다 다르지만 대체로 팀소트(병합+삽입 �
 
 ### 3-2. LevelUp1·4 — HTML/JS 연동
 
-`LevelUPJS/1`, `4`는 HTML과 JS를 함께 다루는 과제입니다. `LevelUpHTML/LevelUP1.html`은 마크업 연습입니다. → [[HTML MOC]]
+`LevelUPJS/1`, `4`는 HTML과 JS를 함께 다루는 과제입니다. `LevelUpHTML/LevelUP1.html`은 마크업 연습입니다. → HTML MOC
 
 ### 3-3. 이 과제들의 다음 단계
 
-- **LevelUp5** → 실제 DB와 JOIN 쿼리로 → [[SQL day03 DML과 조인]]
-- **Message_Board** → localStorage 게시판 → [[JS day14 게시판 CRUD]] → 서버 API
+- **LevelUp5** → 실제 DB와 JOIN 쿼리로 → SQL day03 DML과 조인
+- **Message_Board** → localStorage 게시판 → JS day14 게시판 CRUD → 서버 API
 
 ## 실습 파일
 
@@ -378,4 +378,4 @@ JS의 `sort()`는 엔진마다 다르지만 대체로 팀소트(병합+삽입 �
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day14 게시판 CRUD]] · [[JS day07 객체]] · [[SQL day03 DML과 조인]] · [[Java day06 생성자와 콘솔 게시판]]
+[[JavaScript MOC]] · JS day14 게시판 CRUD · JS day07 객체 · SQL day03 DML과 조인 · Java day06 생성자와 콘솔 게시판

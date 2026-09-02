@@ -56,8 +56,8 @@ public/data/*.json → fetch   → 런타임 로드, 번들 크기와 무관
 
 ## styles/GlobalStyle.js
 
-`createGlobalStyle` 리셋 + Pretendard 웹폰트. 상세는 [[App과 공통 레이아웃 분석]] 에 적었다 — 요약하면 전역/지역 경계는 명확하나, 디자인 토큰(색·간격)이 없어서 스타일 값이 컴포넌트마다 흩어졌다.
+`createGlobalStyle` 리셋 + Pretendard 웹폰트. 상세는 [[보드게임 - App과 공통 레이아웃 분석|App과 공통 레이아웃 분석]] 에 적었다 — 요약하면 전역/지역 경계는 명확하나, 디자인 토큰(색·간격)이 없어서 스타일 값이 컴포넌트마다 흩어졌다.
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[App과 공통 레이아웃 분석]] · [[components 분석 - BoardGame과 Rule]] · [[crawler 분석]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - App과 공통 레이아웃 분석|App과 공통 레이아웃 분석]] · [[보드게임 - components 분석 - BoardGame과 Rule|components 분석 - BoardGame과 Rule]] · [[보드게임 - crawler 분석|crawler 분석]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

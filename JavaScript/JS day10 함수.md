@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # JS day10 — 함수
 
 > 실습 파일: `day10/exam/exam1.js`, `Note/day/day10`, `day10/pracitce/practice0~2.js`
-> 허브: [[JavaScript MOC]] · 이전: [[JS day07 객체]] · 다음: [[JS day11 DOM 조작]]
+> 허브: [[JavaScript MOC]] · 이전: JS day07 객체 · 다음: [[JS day11 DOM 조작]]
 
 ## 1. 배운 내용
 
@@ -82,7 +82,7 @@ let 컵2 = 믹서기함수("포도");   // "포도주스"
 | **반환값 없음** | `func2()` | `fun3(x)` — `console.log()` 계열 |
 | **반환값 있음** | `fun5()` | `fun4(x)` — `prompt()` 계열 |
 
-Java의 메소드 4조합과 정확히 대응합니다. → [[Java day07 메소드와 미니프로젝트]]
+Java의 메소드 4조합과 정확히 대응합니다. → Java day07 메소드와 미니프로젝트
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -128,7 +128,7 @@ function f() {
 
 **안쪽에서 바깥은 볼 수 있지만, 바깥에서 안쪽은 못 봅니다.**
 
-`var`는 블록 스코프가 없어서 `if` 밖에서도 보입니다. 그래서 안 씁니다. → [[JS day02 변수와 입출력]]
+`var`는 블록 스코프가 없어서 `if` 밖에서도 보입니다. 그래서 안 씁니다. → JS day02 변수와 입출력
 
 ### 2-3. 호이스팅
 
@@ -153,7 +153,7 @@ const greet = () => { console.log("hi"); };
 const makeObj = () => ({ a: 1 }); // 객체 반환은 괄호로 감싸야 함
 ```
 
-**`this`가 다릅니다.** 객체의 메소드에는 쓰지 마세요. 반대로 `map`, `filter`, `addEventListener` 콜백에는 훨씬 편합니다. → [[JS day07 객체]]
+**`this`가 다릅니다.** 객체의 메소드에는 쓰지 마세요. 반대로 `map`, `filter`, `addEventListener` 콜백에는 훨씬 편합니다. → JS day07 객체
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -175,9 +175,9 @@ c.현재값();   // 2
 // c.count   // undefined — 직접 접근 불가
 ```
 
-`count`는 함수 밖에서 절대 건드릴 수 없습니다. Java의 `private` + getter/setter와 목적이 같습니다. → [[Java day08 접근제한자와 static]]
+`count`는 함수 밖에서 절대 건드릴 수 없습니다. Java의 `private` + getter/setter와 목적이 같습니다. → Java day08 접근제한자와 static
 
-[[JS day13 웹 스토리지와 인터벌]] 의 타이머에서 `time`, `timeInter`를 전역에 둔 부분을 클로저로 감싸면 안전해집니다.
+JS day13 웹 스토리지와 인터벌 의 타이머에서 `time`, `timeInter`를 전역에 둔 부분을 클로저로 감싸면 안전해집니다.
 
 ### 3-2. 고차 함수
 
@@ -221,7 +221,7 @@ function 등록함수() {
 }
 ```
 
-**한 함수는 한 가지 일만** 하도록 쪼개면 재사용과 테스트가 쉬워집니다. [[JS day14 게시판 CRUD]] 에서 `common.js`로 분리하는 게 이 원칙의 적용입니다.
+**한 함수는 한 가지 일만** 하도록 쪼개면 재사용과 테스트가 쉬워집니다. JS day14 게시판 CRUD 에서 `common.js`로 분리하는 게 이 원칙의 적용입니다.
 
 ## 실습 파일
 
@@ -231,4 +231,4 @@ function 등록함수() {
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day07 객체]] · [[JS day11 DOM 조작]] · [[CSS day10 카메라 강의 사이트]] · [[Java day07 메소드와 미니프로젝트]]
+[[JavaScript MOC]] · JS day07 객체 · [[JS day11 DOM 조작]] · CSS day10 카메라 강의 사이트 · Java day07 메소드와 미니프로젝트

@@ -28,8 +28,8 @@ HTML 관련 노트의 허브입니다. 상위 지도는 [[KDT_2026 학습 지도
 
 ## 함께 쓰는 언어
 
-- [[CSS MOC]] — HTML을 꾸미는 것
-- [[JavaScript MOC]] — HTML을 조작하는 것
+- CSS MOC — HTML을 꾸미는 것
+- JavaScript MOC — HTML을 조작하는 것
 
 HTML 관련 정리는 `day04/exam/exam.txt`(입력 요소)와 `day08/exam/CSS.txt` 앞부분에 담겨 있습니다.
 
@@ -42,7 +42,7 @@ HTML  <div class="box" id="main">
         └────────────────────────── 뼈대
 ```
 
-**CSS 선택자 문법을 그대로 JS가 씁니다.** [[CSS day06 선택자와 기본 속성]] 에서 배운 게 [[JS day11 DOM 조작]] 에서 그대로 쓰입니다.
+**CSS 선택자 문법을 그대로 JS가 씁니다.** CSS day06 선택자와 기본 속성 에서 배운 게 JS day11 DOM 조작 에서 그대로 쓰입니다.
 
 | HTML 태그 | JS 속성 | 이유 |
 | --- | --- | --- |

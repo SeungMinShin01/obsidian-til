@@ -12,7 +12,7 @@ tags: [학습, css]
 
 ## 1. 배운 내용
 
-JS 함수를 배우던 날([[JS day10 함수]])에 CSS로는 **카메라 강의 사이트**의 뼈대를 잡았습니다.
+JS 함수를 배우던 날(JS day10 함수)에 CSS로는 **카메라 강의 사이트**의 뼈대를 잡았습니다.
 
 ### 1-1. 3단 구조 + container 패턴
 
@@ -183,7 +183,7 @@ JS 함수를 배우던 날([[JS day10 함수]])에 CSS로는 **카메라 강의 
 }
 ```
 
-`width` 고정이면 화면이 좁을 때 넘칩니다. `100%` + `object-fit: cover`가 안전합니다. → [[CSS day15 테이블과 배경]]
+`width` 고정이면 화면이 좁을 때 넘칩니다. `100%` + `object-fit: cover`가 안전합니다. → CSS day15 테이블과 배경
 
 ### 2-5. 헤더를 flex로 정렬
 
@@ -196,7 +196,7 @@ JS 함수를 배우던 날([[JS day10 함수]])에 CSS로는 **카메라 강의 
 }
 ```
 
-`#header`에 `height: 50px`을 줬으니 `.container`에 `align-items: center`를 주면 로고가 세로 가운데로 옵니다. → [[CSS day08 flexbox]]
+`#header`에 `height: 50px`을 줬으니 `.container`에 `align-items: center`를 주면 로고가 세로 가운데로 옵니다. → CSS day08 flexbox
 
 ### 2-6. 푸터 배경 이미지 마감
 
@@ -209,7 +209,7 @@ JS 함수를 배우던 날([[JS day10 함수]])에 CSS로는 **카메라 강의 
 }
 ```
 
-`background-image`만 쓰면 원본 크기대로 깔리고 모자라면 반복됩니다. `cover` + `no-repeat`가 기본 조합입니다. → [[CSS day15 테이블과 배경]]
+`background-image`만 쓰면 원본 크기대로 깔리고 모자라면 반복됩니다. `cover` + `no-repeat`가 기본 조합입니다. → CSS day15 테이블과 배경
 
 배경 위에 로고가 잘 안 보이면 오버레이를 겹칩니다.
 ```css
@@ -243,7 +243,7 @@ JS 함수를 배우던 날([[JS day10 함수]])에 CSS로는 **카메라 강의 
 <footer>...</footer>
 ```
 
-`#header`/`#section`/`#footer` 로 이미 역할을 나눠뒀으니 태그만 바꾸면 됩니다. 사이드바에는 `<aside>` 가 맞습니다. → [[HTML day02 문서 구조와 미디어]]
+`#header`/`#section`/`#footer` 로 이미 역할을 나눠뒀으니 태그만 바꾸면 됩니다. 사이드바에는 `<aside>` 가 맞습니다. → HTML day02 문서 구조와 미디어
 
 ### 3-2. 반응형 전환
 
@@ -278,7 +278,7 @@ document.querySelector(".sidebar ul").innerHTML = lectures
   .join("");
 ```
 
-→ [[JS day11 DOM 조작]]
+→ JS day11 DOM 조작
 
 ### 3-4. CSS 변수로 사이즈 관리
 
@@ -304,8 +304,8 @@ document.querySelector(".sidebar ul").innerHTML = lectures
 ### 3-5. 다음 단계
 
 - [[CSS day11 커뮤니티와 예약 사이트]] — 같은 구조를 3열 커뮤니티·예약 사이트로 확장
-- [[CSS day14 position과 가상요소]] — 헤더 고정, 드롭다운 메뉴
-- [[JS day10 함수]] — 같은 날 배운 함수로 사이드바 동작 붙이기
+- CSS day14 position과 가상요소 — 헤더 고정, 드롭다운 메뉴
+- JS day10 함수 — 같은 날 배운 함수로 사이드바 동작 붙이기
 
 ## 실습 파일
 
@@ -316,4 +316,4 @@ document.querySelector(".sidebar ul").innerHTML = lectures
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day09 카페 키오스크]] · [[CSS day11 커뮤니티와 예약 사이트]] · [[JS day10 함수]] · [[HTML day02 문서 구조와 미디어]]
+[[CSS MOC]] · [[CSS day09 카페 키오스크]] · [[CSS day11 커뮤니티와 예약 사이트]] · JS day10 함수 · HTML day02 문서 구조와 미디어

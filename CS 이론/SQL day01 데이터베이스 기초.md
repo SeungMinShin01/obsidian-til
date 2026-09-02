@@ -177,7 +177,7 @@ REVOKE INSERT ON boardService.* FROM 'devuser'@'localhost';
 
 **정합성이 중요하면 RDB, 규모와 유연성이 중요하면 NoSQL** 이 대략의 기준입니다.
 
-[[JS day13 웹 스토리지와 인터벌]] 의 `localStorage`는 키-값 저장소라 NoSQL 계열에 가깝습니다.
+JS day13 웹 스토리지와 인터벌 의 `localStorage`는 키-값 저장소라 NoSQL 계열에 가깝습니다.
 
 ### 3-2. 트랜잭션과 ACID
 
@@ -213,8 +213,8 @@ mysqldump -u root -p --all-databases > all.sql        # 전체
 ### 3-4. 다음 단계
 
 - [[SQL day02 테이블과 제약조건]] — 테이블 설계
-- [[SQL day03 DML과 조인]] — 데이터 조작
-- JDBC — [[Java day07 메소드와 미니프로젝트]] 를 실제 DB에 연결
+- SQL day03 DML과 조인 — 데이터 조작
+- JDBC — Java day07 메소드와 미니프로젝트 를 실제 DB에 연결
 
 ## 실습 파일
 
@@ -223,4 +223,4 @@ mysqldump -u root -p --all-databases > all.sql        # 전체
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[Java day07 메소드와 미니프로젝트]]
+[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · SQL day03 DML과 조인 · Java day07 메소드와 미니프로젝트

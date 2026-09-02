@@ -333,13 +333,13 @@ Calculator add = (x, y) -> x + y;      // 클래스 선언 없이 구현
 System.out.println(add.calc(3, 4));    // 7
 ```
 
-[[Java day09 ArrayList]] 에서 본 Stream API의 `filter(s -> s.length() > 3)`가 바로 이것 — `Predicate`라는 함수형 인터페이스의 람다 구현이다. JS의 화살표 함수와 겉모양이 같은 이유가 여기 있다.
+Java day09 ArrayList 에서 본 Stream API의 `filter(s -> s.length() > 3)`가 바로 이것 — `Predicate`라는 함수형 인터페이스의 람다 구현이다. JS의 화살표 함수와 겉모양이 같은 이유가 여기 있다.
 
 ### 3-3. 인터페이스가 실무에서 서 있는 자리
 
 - **JDBC**: `Connection`, `Statement`, `ResultSet`이 전부 인터페이스다. MySQL 드라이버든 Oracle 드라이버든 같은 코드로 쓰는 이유
 - **컬렉션**: `List<String> list = new ArrayList<>()` — 왼쪽이 인터페이스, 오른쪽이 구현체. `ArrayList`를 `LinkedList`로 바꿔도 쓰는 코드는 그대로
-- **[[Java day09 MVC 종합예제]] 의 다음 단계**: DAO를 인터페이스로 뽑으면 메모리 저장 ↔ DB 저장을 갈아끼울 수 있다 (3-1에서 예고했던 그 구조)
+- **Java day09 MVC 종합예제 의 다음 단계**: DAO를 인터페이스로 뽑으면 메모리 저장 ↔ DB 저장을 갈아끼울 수 있다 (3-1에서 예고했던 그 구조)
 
 ### 3-4. 다음에 볼 키워드
 
@@ -357,4 +357,4 @@ System.out.println(add.calc(3, 4));    // 7
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day09 ArrayList]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[Repository Pattern]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day10 상속과 다형성]] · Java day09 MVC 종합예제 · Java day09 ArrayList · Java 오버로딩 오버라이딩과 인터페이스(이관) · [[Repository Pattern]] · [[KDT_2026 학습 지도]]

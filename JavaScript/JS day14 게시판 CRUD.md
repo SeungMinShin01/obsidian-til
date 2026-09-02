@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # JS day14 — 게시판 CRUD
 
 > 실습 파일: `day14/test/note`(설계 문서), `write.js`, `list.js`, `view.js`, `update.js`
-> 허브: [[JavaScript MOC]] · 이전: [[JS day13 웹 스토리지와 인터벌]] · 다음: [[JS 과제 LevelUP과 게시판]]
+> 허브: [[JavaScript MOC]] · 이전: [[JS day13 웹 스토리지와 인터벌]] · 다음: JS 과제 LevelUP과 게시판
 
 ## 1. 배운 내용
 
@@ -59,7 +59,7 @@ function writefunc() {
 }
 ```
 
-**글번호 자동 증가**가 핵심입니다. `AUTO_INCREMENT`를 JS로 흉내낸 것입니다. → [[SQL day02 테이블과 제약조건]]
+**글번호 자동 증가**가 핵심입니다. `AUTO_INCREMENT`를 JS로 흉내낸 것입니다. → SQL day02 테이블과 제약조건
 
 **막힌 지점과 해결 과정을 주석으로 남겨두면** 나중에 같은 자리에서 다시 막혔을 때 큰 도움이 됩니다.
 
@@ -172,7 +172,7 @@ function updatereadfunc() {
 }
 ```
 
-**`<input>`·`<textarea>`에는 `innerHTML`이 아니라 `.value`** 입니다. 조회 화면(`view.js`)은 `<div>`에 출력하므로 `innerHTML`, 수정 화면은 입력창에 채우므로 `.value` — 두 화면에서 정확히 구분해 써야 합니다. → [[JS day11 DOM 조작]]
+**`<input>`·`<textarea>`에는 `innerHTML`이 아니라 `.value`** 입니다. 조회 화면(`view.js`)은 `<div>`에 출력하므로 `innerHTML`, 수정 화면은 입력창에 채우므로 `.value` — 두 화면에서 정확히 구분해 써야 합니다. → JS day11 DOM 조작
 
 ```javascript
 function updatefunc() {
@@ -234,7 +234,7 @@ function getQueryNo() {
 
 "서로 다른 .js 파일이 동일한 HTML에 포함되면 코드 공유가 가능하다" 는 원리를 그대로 쓰는 것입니다.
 
-이게 사실상 **Repository 패턴**이고, [[Java day07 메소드와 미니프로젝트]] 의 `OverallRepository`와 역할이 똑같습니다.
+이게 사실상 **Repository 패턴**이고, Java day07 메소드와 미니프로젝트 의 `OverallRepository`와 역할이 똑같습니다.
 
 리팩터링 후 `write.js`
 ```javascript
@@ -290,7 +290,7 @@ tbody.innerHTML = list
   .join("");
 ```
 
-→ [[JS day11 DOM 조작]]
+→ JS day11 DOM 조작
 
 ### 2-5. XSS 대비
 
@@ -306,7 +306,7 @@ const escape = (s) => String(s).replace(/[&<>"']/g,
 tbody.innerHTML = `<td>${escape(b.title)}</td>`;
 ```
 
-또는 `createElement` + `textContent`를 씁니다. → [[JS day11 DOM 조작]]
+또는 `createElement` + `textContent`를 씁니다. → JS day11 DOM 조작
 
 ### 2-6. 비밀번호를 평문으로 저장하지 마세요
 
@@ -380,11 +380,11 @@ async function saveBoard(board) {
 | `setItem` (수정) | `PUT /boards/3` | `UPDATE` |
 | `splice` | `DELETE /boards/3` | `DELETE` |
 
-→ [[SQL day03 DML과 조인]]
+→ SQL day03 DML과 조인
 
 ### 3-3. 백엔드 버전과 비교하기
 
-[[Java day06 생성자와 콘솔 게시판]] 의 `OverallController.java`와 나란히 놓고 보세요.
+Java day06 생성자와 콘솔 게시판 의 `OverallController.java`와 나란히 놓고 보세요.
 
 | | JS (day14) | Java (day06) |
 | --- | --- | --- |
@@ -408,4 +408,4 @@ async function saveBoard(board) {
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS 과제 LevelUP과 게시판]] · [[Java day06 생성자와 콘솔 게시판]] · [[CSS day14 position과 가상요소]]
+[[JavaScript MOC]] · [[JS day13 웹 스토리지와 인터벌]] · JS 과제 LevelUP과 게시판 · Java day06 생성자와 콘솔 게시판 · CSS day14 position과 가상요소

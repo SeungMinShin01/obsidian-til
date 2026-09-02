@@ -10,7 +10,7 @@ tags: [학습, java]
 > 실습 파일: `day11/종합예제/` (AppStart, MainView, BoardController·ProductController, BoardDao·ProductDao·IBaseDao, BoardDto·ProductDto·BaseTime)
 > 허브: [[Java MOC]] · 이전: [[Java day11 인터페이스]] · 다음: [[Java day12 예외 처리와 JDBC]]
 
-[[Java day09 MVC 종합예제]] 의 구조를 그대로 가져오되, DAO를 **인터페이스로 규격화**한 버전이다. day11에서 배운 인터페이스가 실제 4계층 프로젝트의 어디에 꽂히는지가 이 예제의 핵심이다.
+Java day09 MVC 종합예제 의 구조를 그대로 가져오되, DAO를 **인터페이스로 규격화**한 버전이다. day11에서 배운 인터페이스가 실제 4계층 프로젝트의 어디에 꽂히는지가 이 예제의 핵심이다.
 
 ## 1. 배운 내용
 
@@ -71,7 +71,7 @@ private static final MainView instance = new MainView();
 public static MainView getInstance() { return instance; }
 ```
 
-계층마다 인스턴스가 하나만 존재하도록 고정한다. Controller가 여러 번 new 되어 저장소가 갈라지는 사고를 막는 구조로, [[Java day09 MVC 종합예제]] 에서 익힌 싱글톤을 계층 전체로 넓힌 셈이다.
+계층마다 인스턴스가 하나만 존재하도록 고정한다. Controller가 여러 번 new 되어 저장소가 갈라지는 사고를 막는 구조로, Java day09 MVC 종합예제 에서 익힌 싱글톤을 계층 전체로 넓힌 셈이다.
 
 ### 1-5. Controller — 규격 타입으로 DAO를 받는다
 
@@ -139,7 +139,7 @@ public class BoardDao implements IBaseDao<BoardDto> {
 }
 ```
 
-[[Java day09 ArrayList]] 에서 본 `ArrayList<String>` 의 제네릭이 규격 설계에도 그대로 쓰인다. 규격에 타입을 흘려보내면 쓰는 쪽이 안전해진다.
+Java day09 ArrayList 에서 본 `ArrayList<String>` 의 제네릭이 규격 설계에도 그대로 쓰인다. 규격에 타입을 흘려보내면 쓰는 쪽이 안전해진다.
 
 ### 2-2. 규격 타입으로 받으면 교체가 자유롭다
 
@@ -176,4 +176,4 @@ BoardDao·ProductDao의 `save`·`findAll` 본문이 거의 같다. 공통 부분
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day11 인터페이스]] · [[Java day12 예외 처리와 JDBC]] · [[Java day09 MVC 종합예제]] · [[Java day10 상속과 다형성]] · [[Java day09 ArrayList]] · [[Repository Pattern]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day11 인터페이스]] · [[Java day12 예외 처리와 JDBC]] · Java day09 MVC 종합예제 · [[Java day10 상속과 다형성]] · Java day09 ArrayList · [[Repository Pattern]] · [[KDT_2026 학습 지도]]

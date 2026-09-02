@@ -76,7 +76,7 @@ object-position: left;   /* cover/contain에서 어느 부분을 보여줄지 */
 
 **실무 기본값은 `cover`입니다.** 썸네일, 카드 이미지, 프로필 사진이 전부 `cover`입니다. 크기가 제각각인 이미지를 같은 틀에 넣어도 안 찌그러집니다.
 
-`exam3.html`이 같은 이미지를 6개 상자에 넣고 값만 바꿔 비교하는 구조인데, [[CSS day08 flexbox]] 의 `.flexbox1~10`과 같은 좋은 학습법입니다.
+`exam3.html`이 같은 이미지를 6개 상자에 넣고 값만 바꿔 비교하는 구조인데, CSS day08 flexbox 의 `.flexbox1~10`과 같은 좋은 학습법입니다.
 
 ### 1-4. background 속성군 — exam4.css
 
@@ -125,7 +125,7 @@ img { width: 100%; height: 200px; object-fit: cover; }   /* 동작 */
 .thumb { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
 ```
 
-[[CSS day09 카페 키오스크]] 의 카페 메뉴, [[CSS day11 커뮤니티와 예약 사이트]] 의 갤러리에 그대로 적용됩니다.
+CSS day09 카페 키오스크 의 카페 메뉴, CSS day11 커뮤니티와 예약 사이트 의 갤러리에 그대로 적용됩니다.
 
 ### 2-2. `background` vs `<img>` 선택 기준
 
@@ -150,7 +150,7 @@ background:
 background-size: cover;
 ```
 
-배너 이미지 위에 흰 글씨를 올릴 때 오버레이는 사실상 필수입니다. → [[CSS day10 카메라 강의 사이트]]
+배너 이미지 위에 흰 글씨를 올릴 때 오버레이는 사실상 필수입니다. → CSS day10 카메라 강의 사이트
 
 ### 2-4. background 단축 속성
 
@@ -251,7 +251,7 @@ thead th {
 }
 ```
 
-행이 많은 게시판 목록에서 유용합니다. → [[JS day14 게시판 CRUD]]
+행이 많은 게시판 목록에서 유용합니다. → JS day14 게시판 CRUD
 
 ## 실습 파일
 
@@ -264,4 +264,4 @@ thead th {
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day14 position과 가상요소]] · [[HTML day15 테이블 마크업]] · [[CSS day09 카페 키오스크]] · [[JS day14 게시판 CRUD]]
+[[CSS MOC]] · [[CSS day14 position과 가상요소]] · HTML day15 테이블 마크업 · CSS day09 카페 키오스크 · JS day14 게시판 CRUD

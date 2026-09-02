@@ -53,13 +53,13 @@ CS 이론·정보처리기사·데이터베이스 노트의 허브입니다. 상
 | --- | --- |
 | 트랜잭션 ACID | [[SQL day03 DML과 조인]] `COMMIT`/`ROLLBACK` |
 | 무결성 제약조건 | [[SQL day02 테이블과 제약조건]] `PRIMARY KEY`, `FOREIGN KEY` |
-| 조인 종류 | [[SQL day03 DML과 조인]] / [[JS 과제 LevelUP과 게시판]] 배열 조인 |
+| 조인 종류 | [[SQL day03 DML과 조인]] / JS 과제 LevelUP과 게시판 배열 조인 |
 | 정규화 | [[SQL day02 테이블과 제약조건]] `activity.sql` 7개 테이블 |
-| XSS | [[JS day11 DOM 조작]] `innerHTML` 처리 |
+| XSS | JS day11 DOM 조작 `innerHTML` 처리 |
 | SQL 인젝션 | [[SQL day03 DML과 조인]] `PreparedStatement` |
-| 응집도·결합도 | [[Java day07 메소드와 미니프로젝트]] Controller/Repository 분리 |
-| 캡슐화 | [[Java day08 접근제한자와 static]] private + getter/setter |
-| 다형성·인터페이스 | [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] |
-| 부동소수점 | [[Java day01 자바 구조와 자료형]] / [[JS day03 자료형과 연산자]] |
-| 비트 연산(서브넷) | [[Java day03 연산자]] |
-| 시간 복잡도 | [[JS day05 반복문]] / [[Java day04 제어문과 배열]] |
+| 응집도·결합도 | Java day07 메소드와 미니프로젝트 Controller/Repository 분리 |
+| 캡슐화 | Java day08 접근제한자와 static private + getter/setter |
+| 다형성·인터페이스 | Java 오버로딩 오버라이딩과 인터페이스(이관) |
+| 부동소수점 | Java day01 자바 구조와 자료형 / JS day03 자료형과 연산자 |
+| 비트 연산(서브넷) | Java day03 연산자 |
+| 시간 복잡도 | JS day05 반복문 / Java day04 제어문과 배열 |

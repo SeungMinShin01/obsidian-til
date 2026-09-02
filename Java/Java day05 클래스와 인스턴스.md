@@ -117,9 +117,9 @@ bank1.balance -= 3000;    // 12000
 | `Rectangle` | 데이터로 계산 (넓이) |
 | `BankAccount` | 상태가 계속 변함 (입출금) |
 
-`BankAccount`의 `balance += 5000`처럼 **필드를 직접 조작**하는 방식이 day08에서 `deposit()` 메서드와 setter로 바뀝니다. 잔액이 음수가 되는 걸 막을 수 없다는 게 여기서의 한계입니다. → [[Java day08 접근제한자와 static]]
+`BankAccount`의 `balance += 5000`처럼 **필드를 직접 조작**하는 방식이 day08에서 `deposit()` 메서드와 setter로 바뀝니다. 잔액이 음수가 되는 걸 막을 수 없다는 게 여기서의 한계입니다. → Java day08 접근제한자와 static
 
-`Rectangle`의 넓이 계산도 지금은 `main`에 있지만, day07에서 `getArea()` 메서드로 클래스 안에 들어갑니다. → [[Java day07 메소드와 미니프로젝트]]
+`Rectangle`의 넓이 계산도 지금은 `main`에 있지만, day07에서 `getArea()` 메서드로 클래스 안에 들어갑니다. → Java day07 메소드와 미니프로젝트
 
 **day05 → day06 → day07 → day08이 같은 클래스를 계속 개선해가는 흐름**입니다.
 
@@ -201,7 +201,7 @@ public String toString() {
 
 `println`이 내부적으로 `toString()`을 부르기 때문에 이것만 해두면 디버깅이 훨씬 편해집니다. VSCode에서 클래스 안에 커서를 두고 `Ctrl+.` → "Generate toString()"으로 자동 생성됩니다.
 
-→ [[Java day08 접근제한자와 static]] 에서 실제로 적용합니다.
+→ Java day08 접근제한자와 static 에서 실제로 적용합니다.
 
 ### 2-5. 멤버변수 이름은 소문자로
 
@@ -233,7 +233,7 @@ s.studentName = "유재석";
 const s = { studentName: "유재석" };   // 설계도 없이 즉석 생성
 ```
 
-Java는 **클래스 → 인스턴스**, JS는 **객체 리터럴을 바로** 만듭니다. 대신 JS도 `class` 문법을 지원합니다. → [[JS day07 객체]]
+Java는 **클래스 → 인스턴스**, JS는 **객체 리터럴을 바로** 만듭니다. 대신 JS도 `class` 문법을 지원합니다. → JS day07 객체
 
 참조 복사 성질은 완전히 같습니다.
 ```javascript
@@ -260,4 +260,4 @@ record Book(String title, String author) { }
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day04 제어문과 배열]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day08 접근제한자와 static]] · [[JS day07 객체]]
+[[Java MOC]] · [[Java day04 제어문과 배열]] · [[Java day06 생성자와 콘솔 게시판]] · Java day08 접근제한자와 static · JS day07 객체

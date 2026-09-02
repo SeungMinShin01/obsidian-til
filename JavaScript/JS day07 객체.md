@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # JS day07 — 객체
 
 > 실습 파일: `Note/day/day07`, `day07/activity/activity1.js`, `day07/practice/practicce6.js`
-> 허브: [[JavaScript MOC]] · 이전: [[JS day05 반복문]] · 다음: [[JS day10 함수]]
+> 허브: [[JavaScript MOC]] · 이전: JS day05 반복문 · 다음: JS day10 함수
 
 ## 1. 배운 내용
 
@@ -122,7 +122,7 @@ const key = "이름";
 const obj3 = { [key]: "유재석" };                  // 계산된 속성명 → { 이름: "유재석" }
 ```
 
-[[JS day14 게시판 CRUD]] 의 `write.js`에서 `const object = { title, content, pwd };`가 단축 문법입니다.
+JS day14 게시판 CRUD 의 `write.js`에서 `const object = { title, content, pwd };`가 단축 문법입니다.
 
 ### 2-3. 구조 분해 할당
 
@@ -151,7 +151,7 @@ shallow.info.age = 50;
 console.log(a.info.age);   // 50 ← 안쪽 객체는 여전히 공유!
 ```
 
-Python의 `m[:]` 얕은 복사, Java의 배열 참조 복사와 완전히 같은 원리입니다. → [[Java day05 클래스와 인스턴스]]
+Python의 `m[:]` 얕은 복사, Java의 배열 참조 복사와 완전히 같은 원리입니다. → Java day05 클래스와 인스턴스
 
 ### 2-5. 옵셔널 체이닝과 기본값
 
@@ -212,7 +212,7 @@ class Post {
 const p = new Post("제목", "내용");
 ```
 
-Java의 클래스와 문법이 거의 같습니다. → [[Java day05 클래스와 인스턴스]]
+Java의 클래스와 문법이 거의 같습니다. → Java day05 클래스와 인스턴스
 
 **private 필드** (`#` 접두어)
 ```javascript
@@ -221,7 +221,7 @@ class User {
   setPassword(pw) { this.#password = pw; }
 }
 ```
-Java의 `private`과 같은 역할입니다. → [[Java day08 접근제한자와 static]]
+Java의 `private`과 같은 역할입니다. → Java day08 접근제한자와 static
 
 ### 3-3. `Map` — 객체로 부족할 때
 
@@ -241,7 +241,7 @@ map.delete("키");
 | 크기 | `Object.keys().length` | `.size` |
 | 순회 | `for...in` | `for...of` 바로 가능 |
 
-Java의 `HashMap`과 대응합니다. → [[Java day09 ArrayList]]
+Java의 `HashMap`과 대응합니다. → Java day09 ArrayList
 
 ### 3-4. JSON 변환
 
@@ -253,7 +253,7 @@ JSON.stringify(obj, null, 2);  // 들여쓰기 2칸 (읽기 좋게)
 
 **함수와 `undefined`는 JSON에 담기지 않습니다.** `Date`는 문자열로 변합니다.
 
-[[JS day13 웹 스토리지와 인터벌]] 에서 localStorage에 객체를 저장할 때 필수입니다.
+JS day13 웹 스토리지와 인터벌 에서 localStorage에 객체를 저장할 때 필수입니다.
 
 ## 실습 파일
 
@@ -264,4 +264,4 @@ JSON.stringify(obj, null, 2);  // 들여쓰기 2칸 (읽기 좋게)
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day05 반복문]] · [[JS day10 함수]] · [[JS day13 웹 스토리지와 인터벌]] · [[Java day05 클래스와 인스턴스]]
+[[JavaScript MOC]] · JS day05 반복문 · JS day10 함수 · JS day13 웹 스토리지와 인터벌 · Java day05 클래스와 인스턴스

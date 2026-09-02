@@ -258,7 +258,7 @@ ViewModel은 "약속"만 알기 때문에, 뒤에서 진짜↔가짜를 갈아�
 | --- | --- | --- |
 | Java `BoardDAO` — [[Java day09 MVC 종합예제]] | 게시글 저장·조회 담당 | ArrayList인지 DB인지 |
 | JS 게시판의 저장 함수 묶음 — [[JS day14 게시판 CRUD]] | localStorage 읽기/쓰기 담당 | localStorage인지 서버인지 |
-| 보드게임카페 프로젝트의 `models/` — [[controllers와 models 분석]] | SQL 담당 (만들다 중단됨) | 어떤 쿼리를 쓰는지 |
+| 보드게임카페 프로젝트의 `models/` — [[보드게임 - controllers와 models 분석|controllers와 models 분석]] | SQL 담당 (만들다 중단됨) | 어떤 쿼리를 쓰는지 |
 | Android `Repository` (이 노트) | 네트워크/Room 조달 담당 | 어느 데이터 소스인지 |
 
 전부 같은 한 문장으로 요약된다: **"데이터를 어디서 어떻게 가져오는지는 한 계층만 알고, 나머지는 모르게 한다."**
@@ -280,4 +280,4 @@ ViewModel은 "약속"만 알기 때문에, 뒤에서 진짜↔가짜를 갈아�
 
 ## 관련 노트
 
-[[Java day09 MVC 종합예제]] · [[Java day10 상속과 다형성]] · [[JS day14 게시판 CRUD]] · [[controllers와 models 분석]] · [[전문용어 정리]] · [[더 나아가기 - 테스트와 배포]]
+[[Java day09 MVC 종합예제]] · [[Java day10 상속과 다형성]] · [[JS day14 게시판 CRUD]] · [[보드게임 - controllers와 models 분석|controllers와 models 분석]] · [[보드게임 - 전문용어 정리|전문용어 정리]] · [[보드게임 - 더 나아가기 - 테스트와 배포|더 나아가기 - 테스트와 배포]]

@@ -21,7 +21,7 @@ react-router-dom 7로 전체 화면을 한 파일에서 배선한다. 일반 화
 
 두 가지가 눈에 걸린다.
 
-**① `AdminRoute`를 import하고 쓰지 않았다.** 관리자 가드 컴포넌트( → [[components 분석 - Login과 Admin]] )를 만들어놓고 라우트를 감싸지 않아서, URL만 알면 관리자 화면이 열린다.
+**① `AdminRoute`를 import하고 쓰지 않았다.** 관리자 가드 컴포넌트( → [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]] )를 만들어놓고 라우트를 감싸지 않아서, URL만 알면 관리자 화면이 열린다.
 
 **② 결제 경로에 개발 날짜가 박혔다.** `/users/20250324/success` — Toss 개발자 콘솔에 등록한 리다이렉트 URL을 그대로 두면서 작업 날짜가 URL 구조로 굳었다.
 
@@ -38,7 +38,7 @@ const isAdmin = localStorage.getItem("is_admin") === "1";
 // 관리자면 관리자 메뉴, 아니면 일반 메뉴
 ```
 
-`localStorage`를 읽어 관리자/일반 메뉴를 분기하고, 로그인 상태면 이름을 보여준다. 메뉴 항목은 하드코딩이 아니라 `data/NavmenuData.js`의 `subMenus` 객체를 `map`으로 돌린다 — **데이터 주도(config-driven) 렌더링**이라 메뉴 추가가 JSX 수정 없이 끝난다. → [[data와 styles 분석]]
+`localStorage`를 읽어 관리자/일반 메뉴를 분기하고, 로그인 상태면 이름을 보여준다. 메뉴 항목은 하드코딩이 아니라 `data/NavmenuData.js`의 `subMenus` 객체를 `map`으로 돌린다 — **데이터 주도(config-driven) 렌더링**이라 메뉴 추가가 JSX 수정 없이 끝난다. → [[보드게임 - data와 styles 분석|data와 styles 분석]]
 
 로그아웃은 `localStorage.clear()`.
 
@@ -52,4 +52,4 @@ const isAdmin = localStorage.getItem("is_admin") === "1";
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - Login과 Admin]] · [[data와 styles 분석]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]] · [[보드게임 - data와 styles 분석|data와 styles 분석]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

@@ -23,7 +23,7 @@ day04는 그 조립을 연습한다. 새로 나오는 표시는 `@PostMapping`·
 | 메소드 본문 세 줄 | 넘기고 · 받고 · 돌려주기 (1-5) |
 | 반환 타입 `boolean`·`ArrayList<TestDto>`·`TestDto` | 응답의 모양이 여기서 정해진다 (1-6) |
 
-[[Spring day02 스프링 부트 실행과 계층 이식]] 에서 게시판·대기명단으로 같은 계층을 두 번 만들었는데, 여기서는 그 골격만 남기고 세 번째로 다시 써 보는 셈이다. **되풀이되는 모양이 있다는 것을 손으로 확인하는 자리**다.
+Spring day02 스프링 부트 실행과 계층 이식 에서 게시판·대기명단으로 같은 계층을 두 번 만들었는데, 여기서는 그 골격만 남기고 세 번째로 다시 써 보는 셈이다. **되풀이되는 모양이 있다는 것을 손으로 확인하는 자리**다.
 
 ## 1. 배운 내용
 
@@ -49,7 +49,7 @@ day03.exam.AppStart      →  day03.exam 아래만 스캔
 day04.practice.AppStart  →  day04.practice 아래만 스캔
 ```
 
-같은 프로젝트 안에 진입점이 여러 개 쌓여 가는 구조라, 어느 것을 띄우느냐에 따라 살아나는 컨트롤러가 갈린다. `main` 이 여럿일 때 `build.gradle` 의 `mainClass` 로 하나를 고르는 이야기는 [[Spring day02 스프링 부트 실행과 계층 이식]] 에 정리해 두었다.
+같은 프로젝트 안에 진입점이 여러 개 쌓여 가는 구조라, 어느 것을 띄우느냐에 따라 살아나는 컨트롤러가 갈린다. `main` 이 여럿일 때 `build.gradle` 의 `mainClass` 로 하나를 고르는 이야기는 Spring day02 스프링 부트 실행과 계층 이식 에 정리해 두었다.
 
 정리하면 **패키지를 나누는 것이 곧 실습 단위를 나누는 것**이 된다. day마다 폴더를 새로 파고 진입점을 하나 두면, 앞의 실습과 주소가 겹쳐도 서로를 건드리지 않는다.
 
@@ -102,7 +102,7 @@ public class TestController {
 | `@PutMapping` | PUT | Update | 고치기 |
 | `@DeleteMapping` | DELETE | Delete | 지우기 |
 
-[[Spring day01 서블릿과 HTTP 메소드]] 에서 `doGet`·`doPost`·`doPut`·`doDelete` 로 갈라 받던 그 구조다. 서블릿에서는 메소드 이름이 방식을 정했고, 여기서는 표시가 정한다. 갈라지는 기준 자체는 바뀌지 않았다.
+Spring day01 서블릿과 HTTP 메소드 에서 `doGet`·`doPost`·`doPut`·`doDelete` 로 갈라 받던 그 구조다. 서블릿에서는 메소드 이름이 방식을 정했고, 여기서는 표시가 정한다. 갈라지는 기준 자체는 바뀌지 않았다.
 
 넷 모두 `@RequestMapping(method = ...)` 의 합성 표기라는 점도 [[Spring day03 애노테이션과 리플렉션]] 에서 본 그대로다. 짧은 이름이 따로 있는 것은 자주 쓰는 조합에 이름을 붙여 둔 것이지 다른 장치가 아니다.
 
@@ -147,7 +147,7 @@ public ArrayList<TestDto> testPrint() {
 | Dao | DB와 이야기한다 |
 | Dto | 오가는 값을 담는다 |
 
-[[Spring day02 스프링 부트 실행과 계층 이식]] 에서 나눠 둔 계층이 그대로다. 컨트롤러를 얇게 두는 이유는 **바뀌는 이유가 다른 것들을 섞지 않기 위해서**다. 주소 체계가 바뀌면 컨트롤러만, 쿼리가 바뀌면 DAO만 손대면 된다.
+Spring day02 스프링 부트 실행과 계층 이식 에서 나눠 둔 계층이 그대로다. 컨트롤러를 얇게 두는 이유는 **바뀌는 이유가 다른 것들을 섞지 않기 위해서**다. 주소 체계가 바뀌면 컨트롤러만, 쿼리가 바뀌면 DAO만 손대면 된다.
 
 메소드 이름을 `testWrite`·`testPrint`·`testDetail`·`testDelete`·`testUpdate` 로 두고 DAO에도 같은 이름을 둔 것도 같은 맥락이다. 이름이 층을 관통하면 따라 읽기가 쉬워진다.
 
@@ -201,7 +201,7 @@ DTO에 값이 채워지는 과정도 앞에서 본 그대로다 — 기본 생�
 반환 타입     boolean / 목록 / DTO                        ← 나가는 모양
 ```
 
-도메인이 바뀌어도 이 다섯 줄의 모양은 그대로고 이름만 갈린다. [[Spring day02 스프링 부트 실행과 계층 이식]] 에서 게시판을 만든 뒤 대기명단을 만들 때 손대는 파일이 다섯 개로 정해져 있던 이유가 여기 있다.
+도메인이 바뀌어도 이 다섯 줄의 모양은 그대로고 이름만 갈린다. Spring day02 스프링 부트 실행과 계층 이식 에서 게시판을 만든 뒤 대기명단을 만들 때 손대는 파일이 다섯 개로 정해져 있던 이유가 여기 있다.
 
 되풀이가 눈에 보인다는 것은 **줄일 자리가 있다**는 신호이기도 하다. 줄이는 방향은 두 갈래다 — 공통 부분을 상위 클래스나 제네릭으로 올리는 쪽(`BaseDao` 가 그랬다), 그리고 아예 코드를 쓰지 않고 규약으로 대신하는 쪽(JPA·`JdbcTemplate`)이다. 3-1에서 이어서 본다.
 
@@ -427,4 +427,4 @@ public class GlobalExceptionHandler {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day03 애노테이션과 리플렉션]] · [[Spring day02 스프링 부트 실행과 계층 이식]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Java MOC]] · [[Java day11 인터페이스]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day15 Map과 HashMap]] · [[JS day14 게시판 CRUD]] · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day03 애노테이션과 리플렉션]] · Spring day02 스프링 부트 실행과 계층 이식 · Spring day01 서블릿과 HTTP 메소드 · Spring Boot 프로젝트 생성(분석) · Java MOC · Java day11 인터페이스 · Java day12 종합예제 JDBC DAO · Java day15 Map과 HashMap · JS day14 게시판 CRUD · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]

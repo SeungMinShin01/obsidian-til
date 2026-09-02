@@ -120,7 +120,7 @@ DELETE FROM BOOKS  WHERE STOCK <= 0;
 DELETE FROM ORDERS WHERE ORDER_QTY >= 3;
 ```
 
-`orders.book_id`가 `books.book_id`를 참조하는 외래키라, 부모인 `books`를 지울 때 자식 주문이 남아 있으면 막힙니다. 이 실습 파일은 외래키에 `ON DELETE CASCADE`를 걸어 두어 부모가 지워지면 관련 주문도 함께 사라집니다 — 편한 만큼 지워지는 범위가 넓으니 지우기 전에 `SELECT`로 대상을 먼저 확인하는 순서가 필요합니다. → 2-1, [[SQL day05 외래키 CASCADE와 조인]]
+`orders.book_id`가 `books.book_id`를 참조하는 외래키라, 부모인 `books`를 지울 때 자식 주문이 남아 있으면 막힙니다. 이 실습 파일은 외래키에 `ON DELETE CASCADE`를 걸어 두어 부모가 지워지면 관련 주문도 함께 사라집니다 — 편한 만큼 지워지는 범위가 넓으니 지우기 전에 `SELECT`로 대상을 먼저 확인하는 순서가 필요합니다. → 2-1, SQL day05 외래키 CASCADE와 조인
 
 **SELECT — WHERE 조건 문법 총정리**
 
@@ -191,7 +191,7 @@ LEFT JOIN buy b ON m.mid = b.mid;
 
 `오마이걸`, `잇지`는 구매 기록이 없으므로 `INNER JOIN`에서는 빠지고 `LEFT JOIN`에서는 `NULL`로 나옵니다.
 
-[[JS 과제 LevelUP과 게시판]] 의 `map` + `find`가 정확히 `LEFT JOIN`입니다.
+JS 과제 LevelUP과 게시판 의 `map` + `find`가 정확히 `LEFT JOIN`입니다.
 
 | SQL | JS |
 | --- | --- |
@@ -308,7 +308,7 @@ PreparedStatement ps = con.prepareStatement(sql);
 ps.setString(1, input);
 ```
 
-`PreparedStatement`는 값을 **데이터로만** 취급해서 SQL 구문으로 해석되지 않습니다. 정보처리기사 보안 파트의 SQL 인젝션이 정확히 이 이야기이고, [[JS day11 DOM 조작]] 의 XSS와 같은 부류의 문제입니다.
+`PreparedStatement`는 값을 **데이터로만** 취급해서 SQL 구문으로 해석되지 않습니다. 정보처리기사 보안 파트의 SQL 인젝션이 정확히 이 이야기이고, JS day11 DOM 조작 의 XSS와 같은 부류의 문제입니다.
 
 ### 3-2. VIEW
 
@@ -346,7 +346,7 @@ EXPLAIN SELECT * FROM member WHERE mname = '트와이스';
 | ORM (JPA/Hibernate) | 자바 객체 ↔ 테이블 자동 매핑 |
 | NoSQL | Redis(캐시), MongoDB(문서) |
 
-[[Java day09 ArrayList]] 3-4의 "영속화 로드맵"과 이어집니다.
+Java day09 ArrayList 3-4의 "영속화 로드맵"과 이어집니다.
 
 ## 실습 파일
 
@@ -355,4 +355,4 @@ EXPLAIN SELECT * FROM member WHERE mname = '트와이스';
 
 ## 관련 노트
 
-[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · [[SQL day04 집계와 정렬]] · [[SQL day05 외래키 CASCADE와 조인]] · [[JS 과제 LevelUP과 게시판]] · [[Java day09 ArrayList]] · [[JS day14 게시판 CRUD]]
+[[CS 이론 MOC]] · [[SQL day02 테이블과 제약조건]] · [[SQL day04 집계와 정렬]] · SQL day05 외래키 CASCADE와 조인 · JS 과제 LevelUP과 게시판 · Java day09 ArrayList · JS day14 게시판 CRUD

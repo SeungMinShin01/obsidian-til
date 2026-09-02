@@ -8,7 +8,7 @@ tags: [학습, html]
 # HTML day15 — 테이블 마크업
 
 > 실습 파일: `day15/exam/exam1.html`(테이블 구조), `exam2~4.html`
-> 허브: [[HTML MOC]] · 이전: [[HTML day04 폼과 테이블]]
+> 허브: [[HTML MOC]] · 이전: HTML day04 폼과 테이블
 
 ## 1. 배운 내용
 
@@ -38,7 +38,7 @@ day04에서 형태를 배웠다면, day15에서는 **CSS로 꾸미기 위한 구
 ```css
 .styleTable > tbody > tr:nth-of-type(even) { background-color: #eeeeee; }
 ```
-→ [[CSS day15 테이블과 배경]]
+→ CSS day15 테이블과 배경
 
 ### 1-2. day15의 나머지 HTML
 
@@ -49,7 +49,7 @@ day04에서 형태를 배웠다면, day15에서는 **CSS로 꾸미기 위한 구
 | `exam3.html` | `exam3.css` | `<img>` + `object-fit` 5종 |
 | `exam4.html` | `exam4.css` | `background` 속성군, 스프라이트 |
 
-`exam3.html`은 같은 이미지를 `.imgBox` 6개에 넣고 `object-fit` 값만 바꿔 비교하는 구조입니다. **속성 하나씩 격리해서 확인하는 방식**은 [[CSS day08 flexbox]] 의 `.flexbox1~10`과 같은 좋은 학습법입니다.
+`exam3.html`은 같은 이미지를 `.imgBox` 6개에 넣고 `object-fit` 값만 바꿔 비교하는 구조입니다. **속성 하나씩 격리해서 확인하는 방식**은 CSS day08 flexbox 의 `.flexbox1~10`과 같은 좋은 학습법입니다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -129,7 +129,7 @@ HTML은 구조, CSS는 표현 — 역할 분리 원칙입니다. `border-collaps
 <td data-label="제목">첫 번째 글</td>
 ```
 
-`content: attr(data-label)`은 [[CSS day14 position과 가상요소]] 의 가상요소 활용입니다.
+`content: attr(data-label)`은 CSS day14 position과 가상요소 의 가상요소 활용입니다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -142,7 +142,7 @@ HTML은 구조, CSS는 표현 — 역할 분리 원칙입니다. `border-collaps
 | 화면 레이아웃 (사이드바 + 본문) | `<table>` X → flex/grid |
 | 카드 나열 | `<table>` X → flex/grid |
 
-레이아웃은 [[CSS day08 flexbox]] 와 grid로 합니다.
+레이아웃은 CSS day08 flexbox 와 grid로 합니다.
 
 ### 3-2. 정렬 가능한 테이블
 
@@ -156,7 +156,7 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
 });
 ```
 
-[[JS day11 DOM 조작]] 의 이벤트 위임 + [[JS day14 게시판 CRUD]] 의 정렬을 합친 형태입니다.
+JS day11 DOM 조작 의 이벤트 위임 + JS day14 게시판 CRUD 의 정렬을 합친 형태입니다.
 
 ### 3-3. 큰 테이블의 성능
 
@@ -169,7 +169,7 @@ document.querySelectorAll("th[data-sort]").forEach(th => {
 ```css
 thead th { position: sticky; top: 0; background: #fff; z-index: 1; }
 ```
-→ [[CSS day14 position과 가상요소]]
+→ CSS day14 position과 가상요소
 
 ## 실습 파일
 
@@ -179,4 +179,4 @@ thead th { position: sticky; top: 0; background: #fff; z-index: 1; }
 
 ## 관련 노트
 
-[[HTML MOC]] · [[HTML day04 폼과 테이블]] · [[CSS day15 테이블과 배경]] · [[JS day14 게시판 CRUD]]
+[[HTML MOC]] · HTML day04 폼과 테이블 · CSS day15 테이블과 배경 · JS day14 게시판 CRUD

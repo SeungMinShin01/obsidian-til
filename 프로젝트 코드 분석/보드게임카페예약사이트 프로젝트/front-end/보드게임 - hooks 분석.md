@@ -49,7 +49,7 @@ else                           url = "/api/games?page=...";
 - `formatDateToMySQL`로 날짜를 MySQL 형식으로 변환
 - 제출하면 예약 데이터를 `localStorage`에 넣고 Toss 결제 위젯을 연다 — 결제 성공 페이지가 꺼내 쓰는 **페이지 간 전달 통로**다
 
-> **피드백** — Toss `clientKey`가 코드에 하드코딩돼 있다. 클라이언트 키는 원래 공개되는 값이지만 환경변수(`REACT_APP_*`)로 빼는 게 운영 전환 시의 실수를 막는다. localStorage 전달 방식은 동작하지만, 새로고침·다중 탭에서 꼬일 수 있는 구조라 결제 위젯의 `orderId`에 예약 정보를 서버 세션으로 묶는 방식이 정석이다. → [[components 분석 - Reservation과 결제]]
+> **피드백** — Toss `clientKey`가 코드에 하드코딩돼 있다. 클라이언트 키는 원래 공개되는 값이지만 환경변수(`REACT_APP_*`)로 빼는 게 운영 전환 시의 실수를 막는다. localStorage 전달 방식은 동작하지만, 새로고침·다중 탭에서 꼬일 수 있는 구조라 결제 위젯의 `orderId`에 예약 정보를 서버 세션으로 묶는 방식이 정석이다. → [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]]
 
 ## useStore — 외부 스크립트 대기
 
@@ -63,8 +63,8 @@ else                           url = "/api/games?page=...";
 - `useCustomerSupport`: 공지 조회와 문의 등록. 문의자 이름을 `localStorage`의 `user_name`으로 미리 채운다.
 - `useCarousel`: `setInterval` 자동재생 + 마우스오버 일시정지. 클린업에서 인터벌을 정리한다 — JS day13 웹 스토리지와 인터벌 에서 다룬 패턴의 실전판.
 - `useImageSlider`: 인덱스 상태 + 썸네일 버퍼 계산.
-- `useRuleData`: `fetch("/data/rules.json")` — DB가 아니라 정적 파일을 데이터 소스로 쓴다. → [[data와 styles 분석]]
+- `useRuleData`: `fetch("/data/rules.json")` — DB가 아니라 정적 파일을 데이터 소스로 쓴다. → [[보드게임 - data와 styles 분석|data와 styles 분석]]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - BoardGame과 Rule]] · [[components 분석 - Reservation과 결제]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - components 분석 - BoardGame과 Rule|components 분석 - BoardGame과 Rule]] · [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

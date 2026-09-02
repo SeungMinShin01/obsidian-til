@@ -155,7 +155,7 @@ Integer boxed = i;        // 오토박싱  int → Integer
 int unboxed = boxed;      // 언박싱   Integer → int
 ```
 
-제네릭(`ArrayList<Integer>`)에는 기본 타입을 못 넣기 때문에 필요합니다. → [[Java day09 ArrayList]]
+제네릭(`ArrayList<Integer>`)에는 기본 타입을 못 넣기 때문에 필요합니다. → Java day09 ArrayList
 
 **주의**: `Integer`끼리 `==`로 비교하면 안 됩니다.
 ```java
@@ -173,7 +173,7 @@ String s = String.valueOf(123);
 String s2 = 123 + "";       // 동작하지만 비권장
 ```
 
-JS의 `Number()` / `parseInt()`와 대응합니다. → [[JS day03 자료형과 연산자]]
+JS의 `Number()` / `parseInt()`와 대응합니다. → JS day03 자료형과 연산자
 
 ### 3-3. `char`는 사실 정수입니다
 
@@ -186,7 +186,7 @@ System.out.println('A' + 1); // 66 (char + int => int)
 
 `System.out.println('A' + 'B')`가 `"AB"`가 아니라 `131`이 나오는 이유입니다. 문자열로 이으려면 `"" + 'A' + 'B'`.
 
-이 성질이 [[Java day04 제어문과 배열]] 의 중첩 switch 문제와 연결됩니다.
+이 성질이 Java day04 제어문과 배열 의 중첩 switch 문제와 연결됩니다.
 
 ## 실습 파일
 
@@ -195,4 +195,4 @@ System.out.println('A' + 1); // 66 (char + int => int)
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day01 자바 구조와 자료형]] · [[Java day03 연산자]] · [[JS day03 자료형과 연산자]]
+[[Java MOC]] · [[Java day01 자바 구조와 자료형]] · [[Java day03 연산자]] · JS day03 자료형과 연산자

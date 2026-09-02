@@ -67,12 +67,12 @@ DELETE /api/admin/users/1
 > };
 > ```
 >
-> 이게 미들웨어 체인의 힘이다 — **횡단 관심사**(인증·로깅·검증)를 라우트마다 반복하지 않고 앞단에 한 번 끼운다. 로그인에서 JWT를 발급하지 않은 것( → [[routes 분석 - 인증과 유저]] )이 여기서 발목을 잡았다. 인증은 기능이 아니라 기반이라, 미루면 모든 층에 구멍이 남는다.
+> 이게 미들웨어 체인의 힘이다 — **횡단 관심사**(인증·로깅·검증)를 라우트마다 반복하지 않고 앞단에 한 번 끼운다. 로그인에서 JWT를 발급하지 않은 것( → [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]] )이 여기서 발목을 잡았다. 인증은 기능이 아니라 기반이라, 미루면 모든 층에 구멍이 남는다.
 
 ## 프론트에만 있는 관리자 로그인
 
-`Admin/Admin_Login.js`는 `/api/admin/login`을 호출하는데, **백엔드에 이 라우트가 없다.** 일반 로그인(`/api/login`)의 `is_admin` 분기로 방향을 바꾸면서 백엔드를 안 만들었거나 지운 것으로 보인다. 죽은 화면이 하나 남은 셈이다. → [[components 분석 - Login과 Admin]]
+`Admin/Admin_Login.js`는 `/api/admin/login`을 호출하는데, **백엔드에 이 라우트가 없다.** 일반 로그인(`/api/login`)의 `is_admin` 분기로 방향을 바꾸면서 백엔드를 안 만들었거나 지운 것으로 보인다. 죽은 화면이 하나 남은 셈이다. → [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[controllers와 models 분석]] · [[routes 분석 - 인증과 유저]] · [[components 분석 - Login과 Admin]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - controllers와 models 분석|controllers와 models 분석]] · [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]] · [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

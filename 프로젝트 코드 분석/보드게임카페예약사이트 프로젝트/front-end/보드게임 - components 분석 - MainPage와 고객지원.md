@@ -12,7 +12,7 @@ tags: [프로젝트, javascript]
 
 ## MainPage.js — 705줄의 얼굴
 
-사이트 첫 화면. 메인 캐러셀 + 소개 섹션 + 인기 게임(TOP3) + 바로가기들이 한 파일에 있다. 705줄 중 절반 이상이 styled-components 정의다. 캐러셀 로직은 `useCarousel` 훅으로 빠져 있어서( → [[hooks 분석]] ) 로직 자체는 얇다.
+사이트 첫 화면. 메인 캐러셀 + 소개 섹션 + 인기 게임(TOP3) + 바로가기들이 한 파일에 있다. 705줄 중 절반 이상이 styled-components 정의다. 캐러셀 로직은 `useCarousel` 훅으로 빠져 있어서( → [[보드게임 - hooks 분석|hooks 분석]] ) 로직 자체는 얇다.
 
 파일 하단에 `MainImageCarousel`을 별도 함수 컴포넌트로 두고 훅을 그 안에서 쓰는 구조 — 한 파일 안에서라도 역할을 쪼갠 흔적이다.
 
@@ -26,7 +26,7 @@ tags: [프로젝트, javascript]
 
 ## store.js — 매장 찾기
 
-`data/storeData.js`의 매장 정보(좌표·주소·영업시간)를 `useStore` 훅에 넘겨 **카카오맵**을 그린다. 본문 지도와 모달 확대 지도가 각각 `mapRef`를 가진다. 매장 데이터가 코드와 분리돼 있어서 지점 추가는 데이터 파일 수정으로 끝난다. → [[data와 styles 분석]]
+`data/storeData.js`의 매장 정보(좌표·주소·영업시간)를 `useStore` 훅에 넘겨 **카카오맵**을 그린다. 본문 지도와 모달 확대 지도가 각각 `mapRef`를 가진다. 매장 데이터가 코드와 분리돼 있어서 지점 추가는 데이터 파일 수정으로 끝난다. → [[보드게임 - data와 styles 분석|data와 styles 분석]]
 
 ## Beverage.js — 음료 메뉴
 
@@ -43,4 +43,4 @@ tags: [프로젝트, javascript]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[hooks 분석]] · [[routes 분석 - 고객지원과 관리자]] · [[data와 styles 분석]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - hooks 분석|hooks 분석]] · [[보드게임 - routes 분석 - 고객지원과 관리자|routes 분석 - 고객지원과 관리자]] · [[보드게임 - data와 styles 분석|data와 styles 분석]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

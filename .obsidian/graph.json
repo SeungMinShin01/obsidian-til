@@ -113,10 +113,24 @@
       }
     },
     {
-      "query": "path:\"JavaScript/\" path:코드정리/JS  ",
+      "query": "path:\"개념/\"",
+      "color": {
+        "a": 1,
+        "rgb": 16749099
+      }
+    },
+    {
+      "query": "path:\"JavaScript/\"",
       "color": {
         "a": 1,
         "rgb": 16709704
+      }
+    },
+    {
+      "query": "path:\"코드정리/JS/\"",
+      "color": {
+        "a": 1,
+        "rgb": 16771450
       }
     },
     {
@@ -221,6 +235,6 @@
   "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.1305106644919979,
-  "close": true
+  "scale": 0.9367962483643159,
+  "close": false
 }

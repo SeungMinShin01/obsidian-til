@@ -137,7 +137,7 @@ scan.nextLine();                // 버퍼 비우기
 String 제목 = scan.nextLine();  // 정상
 ```
 
-[[Java day07 메소드와 미니프로젝트]] 의 `miniProject.java`에서 `scan.nextLine()`을 반복해서 넣은 이유가 이것입니다.
+Java day07 메소드와 미니프로젝트 의 `miniProject.java`에서 `scan.nextLine()`을 반복해서 넣은 이유가 이것입니다.
 
 ### 2-2. 실수 계산은 BigDecimal
 
@@ -156,7 +156,7 @@ System.out.println(a.add(b));           // 0.3 (정확)
 ```
 
 `new BigDecimal(0.1)`처럼 double을 넣으면 이미 오차가 낀 값이 들어가 의미가 없습니다.
-같은 문제의 JS 버전은 [[JS day03 자료형과 연산자]] 참고.
+같은 문제의 JS 버전은 JS day03 자료형과 연산자 참고.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -208,4 +208,4 @@ var scan = new Scanner(System.in);   // Scanner로 타입 추론
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day02 타입 변환]] · [[JS day02 변수와 입출력]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day02 타입 변환]] · JS day02 변수와 입출력 · [[KDT_2026 학습 지도]]

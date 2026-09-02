@@ -8,7 +8,7 @@ tags: [학습, html]
 # HTML day04 — 폼과 테이블
 
 > 실습 파일: `day04/exam/exam.txt`(입력 요소 정리), `exam1.html`, `exam2.html`(테이블)
-> 허브: [[HTML MOC]] · 이전: [[HTML day02 문서 구조와 미디어]] · 다음: [[HTML day15 테이블 마크업]]
+> 허브: [[HTML MOC]] · 이전: HTML day02 문서 구조와 미디어 · 다음: HTML day15 테이블 마크업
 
 ## 1. 배운 내용
 
@@ -54,7 +54,7 @@ tags: [학습, html]
 <button>버튼</button>
 ```
 
-`<input type="text">`가 [[JS day11 DOM 조작]] 의 `.value`와 짝을 이룹니다. `<textarea>`, `<select>`도 마찬가지입니다.
+`<input type="text">`가 JS day11 DOM 조작 의 `.value`와 짝을 이룹니다. `<textarea>`, `<select>`도 마찬가지입니다.
 
 ### 1-4. 테이블 — exam2.html
 
@@ -88,7 +88,7 @@ tags: [학습, html]
 
 `colspan`/`rowspan`으로 셀을 병합합니다. 주석에 정확히 적어두셨습니다.
 
-이 테이블 구조가 [[JS day14 게시판 CRUD]] 의 목록 화면에 그대로 쓰입니다.
+이 테이블 구조가 JS day14 게시판 CRUD 의 목록 화면에 그대로 쓰입니다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -136,7 +136,7 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
 });
 ```
-→ [[JS day12 제품 사원 관리 CRUD]]
+→ JS day12 제품 사원 관리 CRUD
 
 ### 2-4. 브라우저 기본 검증
 
@@ -151,7 +151,7 @@ form.addEventListener("submit", (e) => {
 <input type="range" min="0" max="100" />
 ```
 
-`required`, `min`, `max`, `pattern`, `maxlength`는 **JS 없이도 브라우저가 검증**해줍니다. [[JS day14 게시판 CRUD]] 의 글쓰기 폼에 `required`만 넣어도 빈 글 등록을 막을 수 있습니다.
+`required`, `min`, `max`, `pattern`, `maxlength`는 **JS 없이도 브라우저가 검증**해줍니다. JS day14 게시판 CRUD 의 글쓰기 폼에 `required`만 넣어도 빈 글 등록을 막을 수 있습니다.
 
 단, **클라이언트 검증은 우회 가능**하므로 서버 검증이 반드시 필요합니다.
 
@@ -167,7 +167,7 @@ form.addEventListener("submit", (e) => {
 
 ### 2-6. `<table>`을 레이아웃에 쓰지 않기
 
-옛날에는 화면 배치를 `<table>`로 했지만, 지금은 **표 형태의 데이터에만** 씁니다. 레이아웃은 flex와 grid로 합니다. → [[CSS day08 flexbox]]
+옛날에는 화면 배치를 `<table>`로 했지만, 지금은 **표 형태의 데이터에만** 씁니다. 레이아웃은 flex와 grid로 합니다. → CSS day08 flexbox
 
 접근성을 위해 `<caption>`과 `scope`를 추가하면 좋습니다.
 ```html
@@ -197,7 +197,7 @@ form.addEventListener("submit", (e) => {
 | 용도 | 검색, 조회 | 등록, 수정, 로그인 |
 | 노출 | URL에 보임 | 안 보임 |
 
-**GET 폼이 만드는 URL이 정확히 쿼리스트링입니다.** → [[JS day13 웹 스토리지와 인터벌]]
+**GET 폼이 만드는 URL이 정확히 쿼리스트링입니다.** → JS day13 웹 스토리지와 인터벌
 
 ```
 form action="/search" method="GET" + input name="q"
@@ -220,7 +220,7 @@ data.get("title");
 Object.fromEntries(data);   // { title: "...", content: "..." }
 ```
 
-`querySelector`로 하나씩 꺼내는 대신 폼 전체를 한 번에 객체로 만들 수 있습니다. [[JS day14 게시판 CRUD]] 의 `write.js`를 간결하게 만들 수 있습니다.
+`querySelector`로 하나씩 꺼내는 대신 폼 전체를 한 번에 객체로 만들 수 있습니다. JS day14 게시판 CRUD 의 `write.js`를 간결하게 만들 수 있습니다.
 
 ### 3-3. 테이블을 JS로 그리기
 
@@ -230,7 +230,7 @@ tbody.innerHTML = list
   .join("");
 ```
 
-day04에서 배운 `<tbody>`가 [[JS day11 DOM 조작]] 의 대상이 됩니다. `<tbody>`에 `id`를 주고 그 안만 갈아끼우는 게 표준 패턴입니다.
+day04에서 배운 `<tbody>`가 JS day11 DOM 조작 의 대상이 됩니다. `<tbody>`에 `id`를 주고 그 안만 갈아끼우는 게 표준 패턴입니다.
 
 ### 3-4. 테이블 스타일링
 
@@ -240,7 +240,7 @@ tbody tr:nth-of-type(even) { background: #eee; }   /* 줄무늬 */
 tbody tr:hover { background: gray; }
 ```
 
-[[CSS day15 테이블과 배경]] 에서 본격적으로 다룹니다.
+CSS day15 테이블과 배경 에서 본격적으로 다룹니다.
 
 ## 실습 파일
 
@@ -250,4 +250,4 @@ tbody tr:hover { background: gray; }
 
 ## 관련 노트
 
-[[HTML MOC]] · [[HTML day02 문서 구조와 미디어]] · [[HTML day15 테이블 마크업]] · [[JS day04 조건문]] · [[JS day11 DOM 조작]] · [[CSS day15 테이블과 배경]]
+[[HTML MOC]] · HTML day02 문서 구조와 미디어 · HTML day15 테이블 마크업 · JS day04 조건문 · JS day11 DOM 조작 · CSS day15 테이블과 배경

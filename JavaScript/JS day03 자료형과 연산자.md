@@ -26,7 +26,7 @@ typeof 자료   // 해당 자료의 타입 반환
 | undefined | | 값이 **할당되지 않은** 상태 (시스템이 준 것) |
 | null | | 값이 **존재하지 않음**을 개발자가 명시 |
 | 배열 | `[ ]` | `typeof`는 `"object"`가 나옴 |
-| 객체 | `{ }` | → [[JS day07 객체]] |
+| 객체 | `{ }` | → JS day07 객체 |
 | 함수 | `function(){}` | `typeof`는 `"function"` |
 
 ### 1-2. 문자열
@@ -75,7 +75,7 @@ let arr = [자료, 자료, 자료];
 | `arr.includes(값)` | 존재 여부 `true`/`false` |
 | `arr.length` | 총 개수 |
 
-Java 배열과의 결정적 차이는 **가변 길이**와 **타입 자유**입니다. → [[Java day04 제어문과 배열]]
+Java 배열과의 결정적 차이는 **가변 길이**와 **타입 자유**입니다. → Java day04 제어문과 배열
 
 ### 1-4. 형변환
 
@@ -151,7 +151,7 @@ const name2 = input ?? "익명";   // null, undefined만 걸러냄
 
 `input`이 `0`일 때 `||`는 기본값으로 넘어가지만 `??`는 `0`을 유지합니다. **숫자를 다룰 땐 `??`** 를 쓰세요.
 
-[[JS day14 게시판 CRUD]] 에서 `localStorage.getItem()`이 `null`을 반환하므로 `??`가 딱 맞습니다.
+JS day14 게시판 CRUD 에서 `localStorage.getItem()`이 `null`을 반환하므로 `??`가 딱 맞습니다.
 
 ### 2-4. 부동소수점 — day03/memo의 질문
 
@@ -167,7 +167,7 @@ Number((0.1 + 0.2).toFixed(2));       // 0.3
 (0.1 * 100 + 0.2 * 100) / 100;        // 0.3  ← 정수로 올려서 계산
 ```
 
-**금액은 원 단위 정수로 다루는 게 가장 안전합니다.** Java의 `BigDecimal`, SQL의 `DECIMAL`과 같은 맥락입니다. → [[Java day01 자바 구조와 자료형]]
+**금액은 원 단위 정수로 다루는 게 가장 안전합니다.** Java의 `BigDecimal`, SQL의 `DECIMAL`과 같은 맥락입니다. → Java day01 자바 구조와 자료형
 
 ### 2-5. `let a = [10]`과 `let b = [10]`은 같은가
 
@@ -186,7 +186,7 @@ console.log(a);   // [10, 20] ← a와 c는 같은 배열
 - **원시 타입** (number, string, boolean) — 값 자체를 복사
 - **참조 타입** (object, array, function) — 주소를 복사
 
-[[Java day05 클래스와 인스턴스]] 의 `Book[] archive = library;`와 정확히 같은 구조입니다. Python도 마찬가지입니다. → Python 폴더의 얕은 복사 문제
+Java day05 클래스와 인스턴스 의 `Book[] archive = library;`와 정확히 같은 구조입니다. Python도 마찬가지입니다. → Python 폴더의 얕은 복사 문제
 
 **복사 3단계**
 ```javascript
@@ -247,7 +247,7 @@ const copy = [...arr];
 const [first, ...rest] = [1, 2, 3];   // first=1, rest=[2,3]
 ```
 
-[[JS day14 게시판 CRUD]] 의 `const object = { title, content, pwd };`가 축약 문법의 예입니다.
+JS day14 게시판 CRUD 의 `const object = { title, content, pwd };`가 축약 문법의 예입니다.
 
 ### 3-3. 옵셔널 체이닝
 
@@ -265,4 +265,4 @@ const len = arr?.length ?? 0;
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day02 변수와 입출력]] · [[JS day04 조건문]] · [[Java day02 타입 변환]] · [[Java day04 제어문과 배열]]
+[[JavaScript MOC]] · [[JS day02 변수와 입출력]] · [[JS day04 조건문]] · Java day02 타입 변환 · Java day04 제어문과 배열

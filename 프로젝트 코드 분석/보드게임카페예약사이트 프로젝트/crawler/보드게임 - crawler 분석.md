@@ -62,4 +62,4 @@ ON DUPLICATE KEY UPDATE game_name_kr = VALUES(game_name_kr), ...
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 보드게임과 리뷰]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[routes 분석 - 보드게임과 리뷰]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

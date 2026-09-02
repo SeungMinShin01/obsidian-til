@@ -12,7 +12,7 @@ tags: [학습, css]
 
 ## 1. 배운 내용
 
-JS 반복문을 배우던 날([[JS day05 반복문]])에 CSS 파일을 처음 분리해 만든 실습입니다.
+JS 반복문을 배우던 날(JS day05 반복문)에 CSS 파일을 처음 분리해 만든 실습입니다.
 
 ### 1-1. CSS 파일 분리
 
@@ -22,7 +22,7 @@ JS 반복문을 배우던 날([[JS day05 반복문]])에 CSS 파일을 처음 �
 </head>
 ```
 
-[[HTML day02 문서 구조와 미디어]] 에서 `style="..."` 인라인으로 쓰던 것을 외부 파일로 옮기는 첫 단계입니다.
+HTML day02 문서 구조와 미디어 에서 `style="..."` 인라인으로 쓰던 것을 외부 파일로 옮기는 첫 단계입니다.
 
 **세 가지 적용 방법의 우선순위**
 
@@ -39,8 +39,8 @@ JS 반복문을 배우던 날([[JS day05 반복문]])에 CSS 파일을 처음 �
 `SKULOGO.png`, `example.png`를 배치하고 스타일을 입히는 과제입니다. 이 단계에서 자연스럽게 만나는 문제들:
 
 - 이미지 크기 조절 (`width`, `height`)
-- 이미지가 찌그러지는 문제 → [[CSS day15 테이블과 배경]] 의 `object-fit`
-- 요소를 가운데 두기 → `margin: 0 auto` 또는 [[CSS day08 flexbox]]
+- 이미지가 찌그러지는 문제 → CSS day15 테이블과 배경 의 `object-fit`
+- 요소를 가운데 두기 → `margin: 0 auto` 또는 CSS day08 flexbox
 - 텍스트와 이미지를 나란히 → `display: inline-block` 또는 flex
 
 ## 2. 추가로 알면 좋은 활용법
@@ -145,9 +145,9 @@ css/
 | 배울 것 | 노트 |
 | --- | --- |
 | 선택자와 우선순위 | [[CSS day06 선택자와 기본 속성]] |
-| 레이아웃의 핵심 | [[CSS day08 flexbox]] |
-| 요소 겹치기 | [[CSS day14 position과 가상요소]] |
-| 이미지 다루기 | [[CSS day15 테이블과 배경]] |
+| 레이아웃의 핵심 | CSS day08 flexbox |
+| 요소 겹치기 | CSS day14 position과 가상요소 |
+| 이미지 다루기 | CSS day15 테이블과 배경 |
 
 ## 실습 파일
 
@@ -156,4 +156,4 @@ css/
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day06 선택자와 기본 속성]] · [[JS day05 반복문]] · [[HTML day02 문서 구조와 미디어]]
+[[CSS MOC]] · [[CSS day06 선택자와 기본 속성]] · JS day05 반복문 · HTML day02 문서 구조와 미디어

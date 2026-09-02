@@ -55,8 +55,8 @@ public class BaseDao {
 ```
 
 - `Class.forName(...)` → `DriverManager.getConnection(...)` 은 [[Java day12 예외 처리와 JDBC]] exam2에서 배운 그 두 단계다. 그 코드를 DAO마다 반복하지 않고 **부모 한 곳**에 모았다
-- `conn` 을 `protected` 로 둔 이유가 핵심이다. `private` 이면 자식 DAO가 물려받아도 쓸 수 없다. 상속관계에서는 패키지가 달라도 접근되도록 `protected` 로 열어, 자식이 부모의 연결 객체(`conn`)를 그대로 이어서 쓰게 한다 — [[Java day08 접근제한자와 static]] 의 접근제한자가 상속 설계에서 왜 필요한지가 여기서 드러난다
-- **생성자에서 `connect()` 를 부른다.** 자식 DAO가 만들어질 때 `super()` 로 부모 생성자가 먼저 돌아가므로, DAO 인스턴스가 생기는 순간 DB 연결까지 끝나 있다. [[Java day10 상속과 다형성]] 의 "자식 생성 → 부모 생성자 선실행"이 연동 자동화로 쓰인 셈이다
+- `conn` 을 `protected` 로 둔 이유가 핵심이다. `private` 이면 자식 DAO가 물려받아도 쓸 수 없다. 상속관계에서는 패키지가 달라도 접근되도록 `protected` 로 열어, 자식이 부모의 연결 객체(`conn`)를 그대로 이어서 쓰게 한다 — Java day08 접근제한자와 static 의 접근제한자가 상속 설계에서 왜 필요한지가 여기서 드러난다
+- **생성자에서 `connect()` 를 부른다.** 자식 DAO가 만들어질 때 `super()` 로 부모 생성자가 먼저 돌아가므로, DAO 인스턴스가 생기는 순간 DB 연결까지 끝나 있다. Java day10 상속과 다형성 의 "자식 생성 → 부모 생성자 선실행"이 연동 자동화로 쓰인 셈이다
 
 ### 1-3. 규격(인터페이스)에서 공통 구현(부모 클래스)으로
 
@@ -116,8 +116,8 @@ public class BoardDto {
 ```
 
 - DTO의 멤버변수(`no`·`content`·`writer`)는 **DB 표의 컬럼을 그대로 옮긴 것**이다. CRUD로 주고받을 한 줄(레코드)을 자바 객체 하나로 표현한다
-- "자바는 저장소가 아니다"는 말이 DTO의 역할을 정확히 짚는다. 값을 오래 보관하는 곳은 DB이고, DTO는 그 한 줄을 **DB ↔ 자바 사이에서 실어 나르는 그릇**일 뿐이다 — [[Java day08 접근제한자와 static]] 에서 만든 DTO 개념이 DB와 짝지어지는 지점
-- `no` 는 [[SQL day02 테이블과 제약조건]] 의 `AUTO_INCREMENT` 로 DB가 매기므로, 저장할 때는 `content`·`writer` 만 채워 보내는 경우가 많다
+- "자바는 저장소가 아니다"는 말이 DTO의 역할을 정확히 짚는다. 값을 오래 보관하는 곳은 DB이고, DTO는 그 한 줄을 **DB ↔ 자바 사이에서 실어 나르는 그릇**일 뿐이다 — Java day08 접근제한자와 static 에서 만든 DTO 개념이 DB와 짝지어지는 지점
+- `no` 는 SQL day02 테이블과 제약조건 의 `AUTO_INCREMENT` 로 DB가 매기므로, 저장할 때는 `content`·`writer` 만 채워 보내는 경우가 많다
 
 ### 1-6. 등록(Create) 흐름을 실제로 잇기 — 배선 위에 첫 CRUD 얹기
 
@@ -201,7 +201,7 @@ public ArrayList<BoardDto> findAll() {
 
 - 등록·수정·삭제는 `executeUpdate()`(바뀐 레코드 수 int 반환)를 쓰지만, **조회만 `executeQuery()`** 로 결과 표(`ResultSet`)를 받는다 — [[Java day12 예외 처리와 JDBC]] 에서 정리한 두 실행 메소드의 구분이 여기서 갈린다
 - `ResultSet` 은 결과 표를 가리키는 커서다. `rs.next()` 가 다음 행으로 내려가며 더 없으면 false를 돌려주므로, `while(rs.next())` 한 줄로 전체 레코드를 훑는다. 각 행의 컬럼을 `rs.getInt`·`rs.getString` 으로 꺼내 `BoardDto` 하나로 옮기고, 그 DTO를 리스트에 쌓아 View까지 올려보낸다 — 1-5에서 정리한 "DTO는 DB 한 줄을 실어 나르는 그릇"이 조회에서 실제로 채워지는 지점이다
-- View는 받은 리스트를 `for (BoardDto dto : result)` 로 돌며 출력만 한다. [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 ArrayList를 훑던 자리가, 여기서는 DB에서 막 꺼내온 리스트로 바뀌었을 뿐 흐름은 같다
+- View는 받은 리스트를 `for (BoardDto dto : result)` 로 돌며 출력만 한다. Java day09 MVC 종합예제 의 콘솔 게시판이 ArrayList를 훑던 자리가, 여기서는 DB에서 막 꺼내온 리스트로 바뀌었을 뿐 흐름은 같다
 
 **② 개별수정(Update) — where 절로 대상 한 줄 지정**
 
@@ -213,7 +213,7 @@ int result = ps.executeUpdate();
 return result == 1;                        // 바뀐 레코드 수로 성공 판정
 ```
 
-- 수정·삭제의 핵심은 **`where no = ?` 로 대상 한 줄을 지정**하는 것이다. where를 빠뜨리면 표 전체가 바뀌므로, 기본키(no)로 정확히 한 행만 겨냥한다 — [[SQL day03 DML과 조인]] 에서 배운 DML의 주의점이 코드로 이어진다
+- 수정·삭제의 핵심은 **`where no = ?` 로 대상 한 줄을 지정**하는 것이다. where를 빠뜨리면 표 전체가 바뀌므로, 기본키(no)로 정확히 한 행만 겨냥한다 — SQL day03 DML과 조인 에서 배운 DML의 주의점이 코드로 이어진다
 - View의 update()는 수정할 번호와 내용을 받아 `new BoardDto(번호, 내용, null)` 로 묶어 넘긴다. writer는 이번 수정 대상이 아니라 `null` 로 둔다 — DTO의 필드 중 이번에 쓸 것만 채워 보내는 예다
 
 **③ 개별삭제(Delete) — dto 없이 식별자 하나만**
@@ -228,7 +228,7 @@ public boolean delete(int no) {
 ```
 
 - 삭제는 어느 행을 지울지(no)만 있으면 되므로 DTO로 묶지 않고 `int no` 를 그대로 넘긴다. Controller·Dao의 매개변수도 `int no` 로, **필요한 만큼만 데이터를 흘려보내는** 형태다. 반대로 등록·수정은 값이 여러 개라 DTO로 묶는다 — 넘길 데이터의 개수가 DTO를 쓸지 말지를 가른다
-- 이렇게 등록·조회·수정·삭제가 모두 View(입출력) → Controller(전달) → Dao(SQL) → DB 로 이어져, [[Java day09 MVC 종합예제]] 의 메모리 콘솔 게시판이 값이 프로그램을 꺼도 남는 **DB 게시판**으로 완성됐다
+- 이렇게 등록·조회·수정·삭제가 모두 View(입출력) → Controller(전달) → Dao(SQL) → DB 로 이어져, Java day09 MVC 종합예제 의 메모리 콘솔 게시판이 값이 프로그램을 꺼도 남는 **DB 게시판**으로 완성됐다
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -277,7 +277,7 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ### 3-1. CRUD 그다음 — 반복 배관 코드 걷어내기
 
-등록·조회·수정·삭제가 모두 이어지면서(1-6·1-7) [[Java day09 MVC 종합예제]] 의 콘솔 게시판이 실제 DB 게시판으로 완성됐다. 다만 DAO 메소드마다 `prepareStatement → set → execute → try/catch` 가 거의 같은 모양으로 되풀이된다. 다음 단계는 이 반복을 줄이는 쪽이다 — 공통 실행 부분을 [[Java day10 상속과 다형성]] 처럼 `BaseDao` 로 한 번 더 끌어올리거나, Spring `JdbcTemplate`·JPA 같은 상위 도구로 넘어가면 SQL만 남기고 나머지 배관 코드를 걷어낼 수 있다(3-3).
+등록·조회·수정·삭제가 모두 이어지면서(1-6·1-7) Java day09 MVC 종합예제 의 콘솔 게시판이 실제 DB 게시판으로 완성됐다. 다만 DAO 메소드마다 `prepareStatement → set → execute → try/catch` 가 거의 같은 모양으로 되풀이된다. 다음 단계는 이 반복을 줄이는 쪽이다 — 공통 실행 부분을 Java day10 상속과 다형성 처럼 `BaseDao` 로 한 번 더 끌어올리거나, Spring `JdbcTemplate`·JPA 같은 상위 도구로 넘어가면 SQL만 남기고 나머지 배관 코드를 걷어낼 수 있다(3-3).
 
 ### 3-2. 연결 닫기와 커넥션 풀
 
@@ -300,4 +300,4 @@ ps.setString(2, writer);    // 두 번째 ?
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day09 MVC 종합예제]] · [[Java day08 접근제한자와 static]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[KDT_2026 학습 지도]]
+[[Java MOC]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day12 예외 처리와 JDBC]] · [[Java day11 종합예제 인터페이스 DAO]] · [[Java day11 인터페이스]] · Java day10 상속과 다형성 · Java day09 MVC 종합예제 · Java day08 접근제한자와 static · SQL day02 테이블과 제약조건 · SQL day03 DML과 조인 · [[KDT_2026 학습 지도]]

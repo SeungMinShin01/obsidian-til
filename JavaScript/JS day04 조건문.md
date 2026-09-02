@@ -105,7 +105,7 @@ function 처리(user) {
 }
 ```
 
-**들여쓰기가 3단을 넘어가면 조기 반환을 검토**하세요. [[Java day08 접근제한자와 static]] 의 `setName`에서 쓴 `return;`과 같은 기법입니다.
+**들여쓰기가 3단을 넘어가면 조기 반환을 검토**하세요. Java day08 접근제한자와 static 의 `setName`에서 쓴 `return;`과 같은 기법입니다.
 
 ### 2-2. switch로 바꾸면 좋은 경우
 
@@ -125,7 +125,7 @@ switch (ch) {
 }
 ```
 
-**주의**: JS의 `switch`는 `===`로 비교합니다. `"1"`과 `1`은 다릅니다. [[JS day14 게시판 CRUD]] 의 쿼리스트링 문제와 연결됩니다.
+**주의**: JS의 `switch`는 `===`로 비교합니다. `"1"`과 `1`은 다릅니다. JS day14 게시판 CRUD 의 쿼리스트링 문제와 연결됩니다.
 
 `case`를 나열해 묶을 수도 있습니다.
 ```javascript
@@ -137,7 +137,7 @@ switch (grade) {
 }
 ```
 
-Java의 switch도 문법이 같습니다. → [[Java day04 제어문과 배열]]
+Java의 switch도 문법이 같습니다. → Java day04 제어문과 배열
 
 ### 2-3. 객체를 이용한 분기 (switch 대체)
 
@@ -152,7 +152,7 @@ const 등급메시지 = {
 console.log(등급메시지[grade] ?? "재시험입니다.");
 ```
 
-`if`가 10개 넘어가면 이 방식을 검토해보세요. → [[JS day07 객체]]
+`if`가 10개 넘어가면 이 방식을 검토해보세요. → JS day07 객체
 
 ### 2-4. 논리 연산자의 단축 평가
 
@@ -168,7 +168,7 @@ user?.name;                    // 옵셔널 체이닝 (더 명확)
 if (user.name && user) { }     // user가 null이면 TypeError
 ```
 
-Java의 `&&`도 동일하게 단축 평가합니다. → [[Java day03 연산자]]
+Java의 `&&`도 동일하게 단축 평가합니다. → Java day03 연산자
 
 ### 2-5. 조건을 변수로 빼기
 
@@ -198,9 +198,9 @@ const error = validate(title, content, pwd);
 if (error) { alert(error); return; }
 ```
 
-에러 메시지를 반환값으로 돌려주면 **검증 로직과 화면 처리가 분리**됩니다. [[JS day14 게시판 CRUD]] 의 `write.js`에 넣으면 좋습니다.
+에러 메시지를 반환값으로 돌려주면 **검증 로직과 화면 처리가 분리**됩니다. JS day14 게시판 CRUD 의 `write.js`에 넣으면 좋습니다.
 
-Java의 setter 유효성 검사와 같은 목적입니다. → [[Java day08 접근제한자와 static]]
+Java의 setter 유효성 검사와 같은 목적입니다. → Java day08 접근제한자와 static
 
 ### 3-2. `if`를 아예 없애는 방법들
 
@@ -217,7 +217,7 @@ const 성인 = users.filter(u => u.age >= 19);   // for + if 대체
 
 ### 3-3. HTML 폼과의 연결
 
-day04에서 HTML `<input>` 타입도 배우셨습니다([[HTML day04 폼과 테이블]]). 브라우저 기본 검증을 쓰면 JS 조건문이 줄어듭니다.
+day04에서 HTML `<input>` 타입도 배우셨습니다(HTML day04 폼과 테이블). 브라우저 기본 검증을 쓰면 JS 조건문이 줄어듭니다.
 
 ```html
 <input type="text" required minlength="2" />
@@ -235,4 +235,4 @@ day04에서 HTML `<input>` 타입도 배우셨습니다([[HTML day04 폼과 테�
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day03 자료형과 연산자]] · [[JS day05 반복문]] · [[HTML day04 폼과 테이블]] · [[Java day04 제어문과 배열]]
+[[JavaScript MOC]] · [[JS day03 자료형과 연산자]] · [[JS day05 반복문]] · HTML day04 폼과 테이블 · Java day04 제어문과 배열

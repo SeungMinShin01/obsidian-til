@@ -51,16 +51,16 @@ day14 게시판 CRUD ←─ day13 웹스토리지 ←─ day12 CRUD ←─ day11
 
 ## 함께 쓰는 언어
 
-- [[HTML MOC]] — JS가 조작할 대상
-- [[CSS MOC]] — `classList`, `style`로 JS가 바꾸는 것
+- HTML MOC — JS가 조작할 대상
+- CSS MOC — `classList`, `style`로 JS가 바꾸는 것
 
 ## Java와의 대응
 
 | JS 개념 | Java 대응 |
 | --- | --- |
-| 동적 타입 | [[Java day01 자바 구조와 자료형]] 정적 타입 |
-| 가변 배열 | [[Java day04 제어문과 배열]] 고정 배열 / [[Java day09 ArrayList]] |
-| 객체 리터럴 | [[Java day05 클래스와 인스턴스]] 클래스·인스턴스 |
-| 오버로딩 없음 | [[Java day07 메소드와 미니프로젝트]] 메소드 오버로딩 |
-| 클로저 | [[Java day08 접근제한자와 static]] private + getter |
-| localStorage 게시판 | [[Java day06 생성자와 콘솔 게시판]] 배열 게시판 |
+| 동적 타입 | Java day01 자바 구조와 자료형 정적 타입 |
+| 가변 배열 | Java day04 제어문과 배열 고정 배열 / Java day09 ArrayList |
+| 객체 리터럴 | Java day05 클래스와 인스턴스 클래스·인스턴스 |
+| 오버로딩 없음 | Java day07 메소드와 미니프로젝트 메소드 오버로딩 |
+| 클로저 | Java day08 접근제한자와 static private + getter |
+| localStorage 게시판 | Java day06 생성자와 콘솔 게시판 배열 게시판 |

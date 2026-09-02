@@ -88,7 +88,7 @@ bird1.show();            // 동물의 메소드
 참새 sparrow2 = (참새) animal2;      // 강제 타입 변환 / 다운캐스팅 (내려가기)
 ```
 
-기본 타입의 형변환과 구조가 같다. → [[Java day02 타입 변환]]
+기본 타입의 형변환과 구조가 같다. → Java day02 타입 변환
 
 ```java
 int a = 3;              // 자료 3, 타입 int
@@ -142,7 +142,7 @@ class E extends C { }
 | `new D()` | 4 | D → B → A → Object |
 | `new E()` | 4 | E → C → A → Object |
 
-`toString()`을 오버라이딩할 수 있었던 것도 `Object`에서 물려받았기 때문이다. → [[Java day05 클래스와 인스턴스]]
+`toString()`을 오버라이딩할 수 있었던 것도 `Object`에서 물려받았기 때문이다. → Java day05 클래스와 인스턴스
 
 ### 1-6. instanceof — 변환 전에 확인하기
 
@@ -235,7 +235,7 @@ System.out.println(obj2.value3);   // 30 — 하위 타입이라 접근 가능
 | 메소드 (오버라이딩) | **실제 객체** | 런타임 |
 | 멤버변수 | **변수의 타입** | 컴파일 타임 |
 
-이 차이가 [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] 의 출력 문제와 정확히 같은 이야기다.
+이 차이가 Java 오버로딩 오버라이딩과 인터페이스(이관) 의 출력 문제와 정확히 같은 이야기다.
 
 ### 1-9. 실습 — 타이어 교체
 
@@ -350,7 +350,7 @@ class 하위 extends 상위 {
 2. **접근 범위를 좁힐 수 없다** — `protected` → `public`은 되지만 `protected` → `private`은 안 된다
 3. **`final` 메소드는 재정의할 수 없다**
 
-접근 범위 규칙은 [[Java day08 접근제한자와 static]] 과 이어진다. 인터페이스 구현 시 `public`을 붙여야 하는 이유도 같다.
+접근 범위 규칙은 Java day08 접근제한자와 static 과 이어진다. 인터페이스 구현 시 `public`을 붙여야 하는 이유도 같다.
 
 ### 2-3. `@Override`를 꼭 붙이기
 
@@ -456,7 +456,7 @@ class HankookTire implements Tire {
 }
 ```
 
-→ [[Java 오버로딩 오버라이딩과 인터페이스(이관)]]
+→ Java 오버로딩 오버라이딩과 인터페이스(이관)
 
 ### 3-3. 다형성이 실제로 쓰이는 자리
 
@@ -536,7 +536,7 @@ System.out.println(obj.name);   // 상위
 obj.method();                   // 하위 메소드 출력
 ```
 
-같은 변수인데 필드는 부모 것이, 메소드는 자식 것이 나옵니다. **필드는 선언한 타입(컴파일 시점)으로, 메소드는 실제 객체(실행 시점)로** 결정되기 때문입니다. 오버라이딩은 메소드에만 적용된다고 기억해 두는 편이 안전하고, 그래서 필드는 `private` + getter로 다루는 습관이 필요합니다. → [[Java day08 접근제한자와 static]]
+같은 변수인데 필드는 부모 것이, 메소드는 자식 것이 나옵니다. **필드는 선언한 타입(컴파일 시점)으로, 메소드는 실제 객체(실행 시점)로** 결정되기 때문입니다. 오버라이딩은 메소드에만 적용된다고 기억해 두는 편이 안전하고, 그래서 필드는 `private` + getter로 다루는 습관이 필요합니다. → Java day08 접근제한자와 static
 
 **10번 — instanceof는 조상 전체에 true**
 
@@ -560,4 +560,4 @@ laptop instanceof Device      // true
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · [[Java day05 클래스와 인스턴스]] · [[Java day08 접근제한자와 static]] · [[Java day02 타입 변환]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]]
+[[Java MOC]] · [[Java day09 ArrayList]] · [[Java day09 MVC 종합예제]] · Java day05 클래스와 인스턴스 · Java day08 접근제한자와 static · Java day02 타입 변환 · Java 오버로딩 오버라이딩과 인터페이스(이관)

@@ -19,4 +19,4 @@ RPA(Robotic Process Automation) 관련 정리본이 모이는 폴더입니다. �
 
 ## 관련 노트
 
-[[Vault 홈]] · [[옵시디언-노션-VSCode 운영 규칙]]
+[[Vault 홈]] · 옵시디언-노션-VSCode 운영 규칙

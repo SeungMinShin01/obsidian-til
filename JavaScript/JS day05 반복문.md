@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # JS day05 — 반복문
 
 > 실습 파일: `day05/exam/exam1.js`, `exam2.js`, `Note/day/day05`, `day05/parcatice/practice4.js`
-> 허브: [[JavaScript MOC]] · 이전: [[JS day04 조건문]] · 다음: [[JS day07 객체]]
+> 허브: [[JavaScript MOC]] · 이전: [[JS day04 조건문]] · 다음: JS day07 객체
 
 ## 1. 배운 내용
 
@@ -124,7 +124,7 @@ arr.forEach((item, i) => { });                     // 인덱스도 같이
 for (const i in arr) { arr[i]; }                   // 비권장 (키를 문자열로 반환)
 ```
 
-**`for...in`은 배열에 쓰지 마세요.** 인덱스가 문자열(`"0"`, `"1"`)로 나오고, 배열에 추가된 프로퍼티까지 순회합니다. `for...in`은 객체 전용입니다. → [[JS day07 객체]]
+**`for...in`은 배열에 쓰지 마세요.** 인덱스가 문자열(`"0"`, `"1"`)로 나오고, 배열에 추가된 프로퍼티까지 순회합니다. `for...in`은 객체 전용입니다. → JS day07 객체
 
 ### 2-2. 반복문을 대체하는 배열 메소드
 
@@ -141,7 +141,7 @@ Array.from({ length: 5 }, (_, i) => i + 1).forEach(n => console.log(n));
 Array.from({ length: 9 }, (_, i) => `2 * ${i+1} = ${2*(i+1)}`).join("\n");
 ```
 
-Java의 Stream API와 같은 개념입니다. → [[Java day09 ArrayList]]
+Java의 Stream API와 같은 개념입니다. → Java day09 ArrayList
 
 ### 2-3. `break`가 미치는 범위
 
@@ -156,7 +156,7 @@ for (let i = 0; i < 9; i++) {
 }
 ```
 
-Java도 문법이 같습니다. → [[Java day04 제어문과 배열]]
+Java도 문법이 같습니다. → Java day04 제어문과 배열
 
 ### 2-4. 무한루프 방지
 
@@ -196,7 +196,7 @@ Array.from("abc");                          // ["a","b","c"]
 | 단일 for | O(n) | 1만 |
 | 이중 for | O(n²) | 1억 |
 
-[[JS 과제 LevelUP과 게시판]] 의 `Message_Board`가 버블 정렬(O(n²))을 쓴 이유는 배열 사용 금지 제약 때문이었습니다. 배열이 있으면 `sort()`(O(n log n)) 한 줄입니다.
+JS 과제 LevelUP과 게시판 의 `Message_Board`가 버블 정렬(O(n²))을 쓴 이유는 배열 사용 금지 제약 때문이었습니다. 배열이 있으면 `sort()`(O(n log n)) 한 줄입니다.
 
 ### 3-4. 비동기 반복
 
@@ -218,4 +218,4 @@ await Promise.all(urls.map(url => fetch(url)));   // 동시 실행 (빠름)
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day04 조건문]] · [[JS day07 객체]] · [[CSS day05 첫 스타일링]] · [[Java day04 제어문과 배열]]
+[[JavaScript MOC]] · [[JS day04 조건문]] · JS day07 객체 · CSS day05 첫 스타일링 · Java day04 제어문과 배열

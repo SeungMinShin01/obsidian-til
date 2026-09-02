@@ -247,7 +247,7 @@ public ArrayList<BoardDto> findAll() {
 | `return boardList` | `SELECT * FROM board` |
 | `ArrayList` | MySQL 테이블 |
 
-**DAO만 바꾸면 View와 Controller는 그대로입니다.** 이게 계층을 나누는 가장 큰 실익입니다. → [[SQL day03 DML과 조인]]
+**DAO만 바꾸면 View와 Controller는 그대로입니다.** 이게 계층을 나누는 가장 큰 실익입니다. → SQL day03 DML과 조인
 
 `ArrayList<BoardDto>` — 제네릭에 내가 만든 클래스를 넣는 형태입니다. → [[Java day09 ArrayList]]
 
@@ -255,7 +255,7 @@ public ArrayList<BoardDto> findAll() {
 
 ### 2-1. day06 게시판과 비교
 
-[[Java day06 생성자와 콘솔 게시판]] 의 `OverallController`와 같은 기능인데 구조가 완전히 다릅니다.
+Java day06 생성자와 콘솔 게시판 의 `OverallController`와 같은 기능인데 구조가 완전히 다릅니다.
 
 | | day06 OverallController | day09 종합예제 |
 | --- | --- | --- |
@@ -339,7 +339,7 @@ public boolean save(BoardDto boardDto) {
 | DTO setter | 객체 자체의 불변 조건 |
 | DB 제약조건 | 최후의 방어선 (`NOT NULL`, `UNIQUE`) |
 
-여러 겹으로 두는 게 정석입니다. → [[SQL day02 테이블과 제약조건]]
+여러 겹으로 두는 게 정석입니다. → SQL day02 테이블과 제약조건
 
 ### 2-5. 무한 루프에 종료 메뉴
 
@@ -394,7 +394,7 @@ public class MySqlBoardDAO implements BoardRepository { ... }
 private BoardRepository bd = new MySqlBoardDAO();   // 이 한 줄만 교체
 ```
 
-→ [[Java 오버로딩 오버라이딩과 인터페이스(이관)]]
+→ Java 오버로딩 오버라이딩과 인터페이스(이관)
 
 ### 3-2. JDBC 연결
 
@@ -427,7 +427,7 @@ public ArrayList<BoardDto> findAll() {
 
 `ResultSet` 한 행이 `BoardDto` 한 개가 됩니다. **DTO가 테이블 한 행의 자바 표현**이라는 게 여기서 눈으로 보입니다.
 
-`PreparedStatement`는 SQL 인젝션 방어에 필수입니다. → [[SQL day03 DML과 조인]]
+`PreparedStatement`는 SQL 인젝션 방어에 필수입니다. → SQL day03 DML과 조인
 
 ### 3-3. Spring Boot로 가면
 
@@ -447,7 +447,7 @@ public ArrayList<BoardDto> findAll() {
 
 ### 3-4. 프론트엔드 게시판과 나란히
 
-| | JS ([[JS day14 게시판 CRUD]]) | Java (이 노트) |
+| | JS (JS day14 게시판 CRUD) | Java (이 노트) |
 | --- | --- | --- |
 | 화면 | HTML 5개 | `BoardView` 콘솔 |
 | 로직 | 각 `.js` 파일 | `BoardController` |
@@ -482,7 +482,7 @@ public int isPnumber(WaitingDto waitingDto) {
 }
 ```
 
-전화번호처럼 데이터가 원래 갖고 있는 식별값을 **자연키**, 시스템이 붙이는 연번을 **대리키**라고 합니다. "없으면 -1" 관례는 [[Java day06 생성자와 콘솔 게시판]] 의 빈 칸 표시, JS의 `indexOf`와 같은 발상입니다.
+전화번호처럼 데이터가 원래 갖고 있는 식별값을 **자연키**, 시스템이 붙이는 연번을 **대리키**라고 합니다. "없으면 -1" 관례는 Java day06 생성자와 콘솔 게시판 의 빈 칸 표시, JS의 `indexOf`와 같은 발상입니다.
 
 수정·삭제가 이 메소드를 공유합니다.
 
@@ -501,7 +501,7 @@ public WaitingDto(String pNumber, int hCount) { ... }  // 등록용 — 전부 �
 public WaitingDto(String pNumber) { ... }              // 삭제용 — 전화번호만 필요
 ```
 
-삭제할 때는 인원수가 필요 없으니 전화번호만 받는 생성자를 따로 뒀습니다. [[Java day07 메소드와 미니프로젝트]] 에서 배운 오버로딩이 "용도에 맞는 최소 입력"이라는 목적으로 쓰인 예입니다.
+삭제할 때는 인원수가 필요 없으니 전화번호만 받는 생성자를 따로 뒀습니다. Java day07 메소드와 미니프로젝트 에서 배운 오버로딩이 "용도에 맞는 최소 입력"이라는 목적으로 쓰인 예입니다.
 
 ### 4-3. Board와 나란히 보기
 
@@ -525,4 +525,4 @@ public WaitingDto(String pNumber) { ... }              // 삭제용 — 전화�
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day09 ArrayList]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day07 메소드와 미니프로젝트]] · [[Java 오버로딩 오버라이딩과 인터페이스(이관)]] · [[JS day14 게시판 CRUD]] · [[SQL day03 DML과 조인]]
+[[Java MOC]] · [[Java day09 ArrayList]] · [[Java day08 접근제한자와 static]] · Java day06 생성자와 콘솔 게시판 · Java day07 메소드와 미니프로젝트 · Java 오버로딩 오버라이딩과 인터페이스(이관) · JS day14 게시판 CRUD · SQL day03 DML과 조인

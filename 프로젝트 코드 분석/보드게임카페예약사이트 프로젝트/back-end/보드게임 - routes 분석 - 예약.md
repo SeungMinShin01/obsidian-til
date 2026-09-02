@@ -103,8 +103,8 @@ WHERE r.user_id = ? AND r.is_deleted = 0
 
 `rooms`와 **JOIN**해서 방 이름까지 붙이고, `is_deleted = 0`으로 **소프트 삭제**된 예약을 걸렀다. 날짜 포맷을 `DATE_FORMAT`으로 DB에서 맞춰 내려보낸 것도 프론트 부담을 줄였다.
 
-> **피드백** — 방향은 맞다. 남은 문제는 `user_id`를 URL 파라미터로 받는다는 것. 로그인한 사용자가 누구인지 서버가 모르기 때문에 `/api/myreservations/다른아이디`를 호출하면 남의 예약이 보인다. 인증 토큰에서 사용자를 꺼내는 구조였다면 URL에 `user_id`가 등장할 일 자체가 없다. → [[routes 분석 - 인증과 유저]]
+> **피드백** — 방향은 맞다. 남은 문제는 `user_id`를 URL 파라미터로 받는다는 것. 로그인한 사용자가 누구인지 서버가 모르기 때문에 `/api/myreservations/다른아이디`를 호출하면 남의 예약이 보인다. 인증 토큰에서 사용자를 꺼내는 구조였다면 URL에 `user_id`가 등장할 일 자체가 없다. → [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]]
 
 ## 관련 노트
 
-[[보드게임카페예약사이트 프로젝트 MOC]] · [[components 분석 - Reservation과 결제]] · [[hooks 분석]] · [[전문용어 정리]]
+[[보드게임카페예약사이트 프로젝트 MOC]] · [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]] · [[보드게임 - hooks 분석|hooks 분석]] · [[보드게임 - 전문용어 정리|전문용어 정리]]

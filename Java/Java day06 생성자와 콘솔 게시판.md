@@ -114,7 +114,7 @@ for (;;) {                          // 무한 메뉴 루프
 
 `break`가 반드시 필요합니다. 없으면 뒤의 모든 칸에 같은 글이 들어갑니다.
 
-**같은 발상의 다른 구현**: [[JS 과제 LevelUP과 게시판]] 의 `Message_Board`에서 `index = -1`을 빈 칸으로 쓴 것과 완전히 같습니다. 언어가 달라도 문제 해결 구조는 같습니다.
+**같은 발상의 다른 구현**: JS 과제 LevelUP과 게시판 의 `Message_Board`에서 `index = -1`을 빈 칸으로 쓴 것과 완전히 같습니다. 언어가 달라도 문제 해결 구조는 같습니다.
 
 `Post` 클래스가 day05에서 배운 설계 클래스, `OverallController`가 실행 클래스입니다. `Post`에 기본 생성자와 정의 생성자를 둘 다 둔 것도 day06 내용 그대로입니다.
 
@@ -161,7 +161,7 @@ Member m1 = new Member();
 System.out.printf("%s %b \n", m1.id, m1.isLogin);   // null false
 ```
 
-`boolean`의 기본값이 `false`라는 것도 함께 확인됩니다. → [[Java day01 자바 구조와 자료형]]
+`boolean`의 기본값이 `false`라는 것도 함께 확인됩니다. → Java day01 자바 구조와 자료형
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -205,7 +205,7 @@ Post(String content, String writer) {
 }
 ```
 
-**잘못된 상태의 객체가 아예 만들어지지 않게** 막는 게 핵심입니다. 나중에 검사하는 것보다 훨씬 강력합니다. → [[Java day08 접근제한자와 static]] 의 setter 검증과 같은 맥락입니다.
+**잘못된 상태의 객체가 아예 만들어지지 않게** 막는 게 핵심입니다. 나중에 검사하는 것보다 훨씬 강력합니다. → Java day08 접근제한자와 static 의 setter 검증과 같은 맥락입니다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -226,7 +226,7 @@ for (Post post : posts) {
 }
 ```
 
-100칸 제한도, `null` 검사도, "글쓰기 실패" 분기도 전부 없어집니다. **자료구조를 바꾸면 로직이 사라진다** — 이게 컬렉션을 배우는 이유입니다. → [[Java day09 ArrayList]]
+100칸 제한도, `null` 검사도, "글쓰기 실패" 분기도 전부 없어집니다. **자료구조를 바꾸면 로직이 사라진다** — 이게 컬렉션을 배우는 이유입니다. → Java day09 ArrayList
 
 ### 3-2. 게시판을 CRUD로 완성하기
 
@@ -242,7 +242,7 @@ posts[index] = null;   // 배열이면 null로
 posts.remove(index);   // ArrayList면
 ```
 
-프론트 버전은 [[JS day14 게시판 CRUD]] 에서 완성됩니다. 두 코드를 나란히 놓고 보면 CRUD의 본질이 보입니다.
+프론트 버전은 JS day14 게시판 CRUD 에서 완성됩니다. 두 코드를 나란히 놓고 보면 CRUD의 본질이 보입니다.
 
 ### 3-3. Post에 필드 추가하기
 
@@ -266,7 +266,7 @@ Post(String content, String writer) {
 }
 ```
 
-이게 [[SQL day02 테이블과 제약조건]] 의 `AUTO_INCREMENT`를 자바로 흉내낸 것이고, [[JS day14 게시판 CRUD]] 의 `마지막.no + 1`과 같은 목적입니다.
+이게 SQL day02 테이블과 제약조건 의 `AUTO_INCREMENT`를 자바로 흉내낸 것이고, JS day14 게시판 CRUD 의 `마지막.no + 1`과 같은 목적입니다.
 
 ## 실습 파일
 
@@ -276,4 +276,4 @@ Post(String content, String writer) {
 
 ## 관련 노트
 
-[[Java MOC]] · [[Java day05 클래스와 인스턴스]] · [[Java day07 메소드와 미니프로젝트]] · [[Java day09 ArrayList]] · [[JS day14 게시판 CRUD]]
+[[Java MOC]] · [[Java day05 클래스와 인스턴스]] · [[Java day07 메소드와 미니프로젝트]] · Java day09 ArrayList · JS day14 게시판 CRUD

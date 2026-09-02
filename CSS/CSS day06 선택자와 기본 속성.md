@@ -8,7 +8,7 @@ tags: [학습, css]
 # CSS day06 — 선택자와 기본 속성
 
 > 실습 파일: `day06/exam/exam1.css`, `day06/practice/practice1~3.css`, `day08/exam/CSS.txt`, `Note/CSSNote`
-> 허브: [[CSS MOC]] · 이전: [[CSS day05 첫 스타일링]] · 다음: [[CSS day08 flexbox]]
+> 허브: [[CSS MOC]] · 이전: [[CSS day05 첫 스타일링]] · 다음: CSS day08 flexbox
 
 ## 1. 배운 내용
 
@@ -102,7 +102,7 @@ background-color: beige;
 | `block` | O (한 줄 전체) | 가능 | 전부 | `<div>` `<h1>` |
 | `inline-block` | X | **가능** | 전부 | `<img>` `<input>` |
 | `none` | 표시 안 함 | - | - | - |
-| `flex` | 하위 요소 배치 제어 | - | - | → [[CSS day08 flexbox]] |
+| `flex` | 하위 요소 배치 제어 | - | - | → CSS day08 flexbox |
 
 `inline`은 `width`/`height`가 안 먹고 위아래 `margin`도 무시됩니다. **이게 `inline-block`이 존재하는 이유**입니다.
 
@@ -190,7 +190,7 @@ h1 { font-size: 2rem; }      /* 32px, 사용자 설정에 따라 커짐 */
 }
 ```
 
-색상을 한 곳에서 관리할 수 있어 다크모드 전환도 쉬워집니다. [[CSS day09 카페 키오스크]], [[CSS day10 카메라 강의 사이트]] 처럼 색을 반복해 쓴 파일에서 효과가 큽니다.
+색상을 한 곳에서 관리할 수 있어 다크모드 전환도 쉬워집니다. CSS day09 카페 키오스크, CSS day10 카메라 강의 사이트 처럼 색을 반복해 쓴 파일에서 효과가 큽니다.
 
 ### 2-6. 선택자 몇 가지 더
 
@@ -205,7 +205,7 @@ p ~ span { }                  /* 일반 형제 (뒤의 모든) */
 a:hover { }                   /* 상태 */
 ```
 
-`nth-child`, `nth-of-type`, `[colspan]` 은 day15에서 실제로 씁니다. → [[CSS day15 테이블과 배경]]
+`nth-child`, `nth-of-type`, `[colspan]` 은 day15에서 실제로 씁니다. → CSS day15 테이블과 배경
 
 ### 2-7. 웹폰트 적용
 
@@ -267,7 +267,7 @@ width, height, margin, padding, border, background, display, position
 }
 ```
 
-`<meta name="viewport">`가 있어야 동작합니다. → [[HTML day02 문서 구조와 미디어]]
+`<meta name="viewport">`가 있어야 동작합니다. → HTML day02 문서 구조와 미디어
 
 ## 실습 파일
 
@@ -279,4 +279,4 @@ width, height, margin, padding, border, background, display, position
 
 ## 관련 노트
 
-[[CSS MOC]] · [[CSS day05 첫 스타일링]] · [[CSS day08 flexbox]] · [[JS day11 DOM 조작]] · [[HTML day02 문서 구조와 미디어]]
+[[CSS MOC]] · [[CSS day05 첫 스타일링]] · CSS day08 flexbox · JS day11 DOM 조작 · HTML day02 문서 구조와 미디어

@@ -21,13 +21,13 @@ tags: [허브]
 
 | 이 프로젝트의 노트 | 닿는 이론 (학습 지도 경유) |
 | --- | --- |
-| [[routes 분석 - 예약]] | SQL 조건·트랜잭션·N+1 → CS 이론 MOC |
+| [[보드게임 - routes 분석 - 예약|routes 분석 - 예약]] | SQL 조건·트랜잭션·N+1 → CS 이론 MOC |
 | [[routes 분석 - 보드게임과 리뷰]] | 화이트리스트·UNIQUE·페이징 → CS 이론 MOC |
-| [[routes 분석 - 인증과 유저]] · [[routes 분석 - 고객지원과 관리자]] | 해싱·JWT·미들웨어 → CS 이론 MOC · Java MOC(캡슐화) |
-| [[controllers와 models 분석]] | MVC·Repository·인터페이스 → Java MOC |
-| [[crawler 분석]] | dict 병합·멱등 → Python 인덱스 · CS 이론 MOC |
-| [[hooks 분석]] · [[components 분석 - Reservation과 결제]] | 클로저·객체·스토리지 → JavaScript MOC |
-| [[App과 공통 레이아웃 분석]] · [[data와 styles 분석]] | position·flexbox·폼 마크업 → CSS MOC · HTML MOC |
+| [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]] · [[보드게임 - routes 분석 - 고객지원과 관리자|routes 분석 - 고객지원과 관리자]] | 해싱·JWT·미들웨어 → CS 이론 MOC · Java MOC(캡슐화) |
+| [[보드게임 - controllers와 models 분석|controllers와 models 분석]] | MVC·Repository·인터페이스 → Java MOC |
+| [[보드게임 - crawler 분석|crawler 분석]] | dict 병합·멱등 → Python 인덱스 · CS 이론 MOC |
+| [[보드게임 - hooks 분석|hooks 분석]] · [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]] | 클로저·객체·스토리지 → JavaScript MOC |
+| [[보드게임 - App과 공통 레이아웃 분석|App과 공통 레이아웃 분석]] · [[보드게임 - data와 styles 분석|data와 styles 분석]] | position·flexbox·폼 마크업 → CSS MOC · HTML MOC |
 | `학습 관점/` 시리즈 | 위 주제들의 공부 순서·연습 과제 |
 
 | 항목 | 내용 |
@@ -39,36 +39,36 @@ tags: [허브]
 
 ## 읽는 순서
 
-각 노트는 「분석 → 피드백」 순서로 썼다. 분석 절에 나오는 **굵은 전문용어**는 [[전문용어 정리]]에 짧은 설명을 모아뒀고, 나중에 학습 관점 노트와 이어진다.
+각 노트는 「분석 → 피드백」 순서로 썼다. 분석 절에 나오는 **굵은 전문용어**는 [[보드게임 - 전문용어 정리|전문용어 정리]]에 짧은 설명을 모아뒀고, 나중에 학습 관점 노트와 이어진다.
 
 ### back-end
 
 | 노트 | 다루는 파일 |
 | --- | --- |
-| [[server와 config 분석]] | `server.js` · `config/db.js` |
-| [[routes 분석 - 인증과 유저]] | `authRoutes.js` · `usersRoutes.js` |
-| [[routes 분석 - 예약]] | `reservations.js` · `availabilityRoutes.js` · `myreservations.js` |
+| [[보드게임 - server와 config 분석|server와 config 분석]] | `server.js` · `config/db.js` |
+| [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]] | `authRoutes.js` · `usersRoutes.js` |
+| [[보드게임 - routes 분석 - 예약|routes 분석 - 예약]] | `reservations.js` · `availabilityRoutes.js` · `myreservations.js` |
 | [[routes 분석 - 보드게임과 리뷰]] | `boardgames.js` · `gamelikesRoutes.js` · `reviewRoutes.js` |
-| [[routes 분석 - 고객지원과 관리자]] | `inquiryRoutes.js` · `noticeRoutes.js` · `adminRoutes.js` |
-| [[controllers와 models 분석]] | `controllers/` 6개 · `models/` 2개 |
+| [[보드게임 - routes 분석 - 고객지원과 관리자|routes 분석 - 고객지원과 관리자]] | `inquiryRoutes.js` · `noticeRoutes.js` · `adminRoutes.js` |
+| [[보드게임 - controllers와 models 분석|controllers와 models 분석]] | `controllers/` 6개 · `models/` 2개 |
 
 ### crawler
 
 | 노트 | 다루는 파일 |
 | --- | --- |
-| [[crawler 분석]] | `redbutton.py` · `processCrawledData.js` |
+| [[보드게임 - crawler 분석|crawler 분석]] | `redbutton.py` · `processCrawledData.js` |
 
 ### front-end
 
 | 노트 | 다루는 파일 |
 | --- | --- |
-| [[hooks 분석]] | `hooks/` 8개 |
-| [[App과 공통 레이아웃 분석]] | `App.js` · `NavBar.js` · `styles/GlobalStyle.js` |
-| [[components 분석 - BoardGame과 Rule]] | `BoardGame/` 3개 · `Rule/` 2개 · `pages/rulepages.js` |
-| [[components 분석 - Reservation과 결제]] | `Reservation/` 3개 · `pages/successpage.js` · `pages/FailPage.js` |
-| [[components 분석 - MainPage와 고객지원]] | `MainPage/` 6개 · `CustomerSupoort/CustomerSupport.js` |
-| [[components 분석 - Login과 Admin]] | `Login_Register/` 2개 · `Admin/` 7개 |
-| [[data와 styles 분석]] | `data/` 4개 · `public/data/rules.json` |
+| [[보드게임 - hooks 분석|hooks 분석]] | `hooks/` 8개 |
+| [[보드게임 - App과 공통 레이아웃 분석|App과 공통 레이아웃 분석]] | `App.js` · `NavBar.js` · `styles/GlobalStyle.js` |
+| [[보드게임 - components 분석 - BoardGame과 Rule|components 분석 - BoardGame과 Rule]] | `BoardGame/` 3개 · `Rule/` 2개 · `pages/rulepages.js` |
+| [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]] | `Reservation/` 3개 · `pages/successpage.js` · `pages/FailPage.js` |
+| [[보드게임 - components 분석 - MainPage와 고객지원|components 분석 - MainPage와 고객지원]] | `MainPage/` 6개 · `CustomerSupoort/CustomerSupport.js` |
+| [[보드게임 - components 분석 - Login과 Admin|components 분석 - Login과 Admin]] | `Login_Register/` 2개 · `Admin/` 7개 |
+| [[보드게임 - data와 styles 분석|data와 styles 분석]] | `data/` 4개 · `public/data/rules.json` |
 
 ## 기획 — README가 설계도였다
 
@@ -121,12 +121,12 @@ tags: [허브]
 
 각 노트에서 반복해서 마주친 문제라 먼저 적어둔다.
 
-1. **인증이 없는 것과 같다** — 비밀번호 평문 저장, `localStorage` 값 하나로 관리자 판정, 서버 측 인증 미들웨어 없음. → [[routes 분석 - 인증과 유저]]
-2. **결제와 예약이 검증 없이 이어진다** — 결제 성공 URL만 믿고 예약을 넣는다. 승인(confirm) 단계가 없다. → [[components 분석 - Reservation과 결제]]
-3. **계층이 반만 나뉘었다** — `models/`를 만들다 말았고, 라우트 8개는 직접 쿼리, 3개는 컨트롤러 위임으로 섞여 있다. → [[controllers와 models 분석]]
+1. **인증이 없는 것과 같다** — 비밀번호 평문 저장, `localStorage` 값 하나로 관리자 판정, 서버 측 인증 미들웨어 없음. → [[보드게임 - routes 분석 - 인증과 유저|routes 분석 - 인증과 유저]]
+2. **결제와 예약이 검증 없이 이어진다** — 결제 성공 URL만 믿고 예약을 넣는다. 승인(confirm) 단계가 없다. → [[보드게임 - components 분석 - Reservation과 결제|components 분석 - Reservation과 결제]]
+3. **계층이 반만 나뉘었다** — `models/`를 만들다 말았고, 라우트 8개는 직접 쿼리, 3개는 컨트롤러 위임으로 섞여 있다. → [[보드게임 - controllers와 models 분석|controllers와 models 분석]]
 
 ## 관련 노트
 
-[[프로젝트 코드 분석 안내]] · [[전문용어 정리]] · [[Vault 홈]]
+[[프로젝트 코드 분석 안내]] · [[보드게임 - 전문용어 정리|전문용어 정리]] · [[Vault 홈]]
 
 학습 관점 정리 → [[보드게임카페예약사이트 프로젝트에서 배울 것]]

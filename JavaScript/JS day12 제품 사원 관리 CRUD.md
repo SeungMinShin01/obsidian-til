@@ -57,7 +57,7 @@ tags: [학습, javascript]
 - **테이블당 식별자(PRIMARY KEY) 1개 이상 권장**
 - **상하관계를 파악해서 식별자를 하위 요소에 저장** (FOREIGN KEY, 교집합)
 
-이건 [[SQL day02 테이블과 제약조건]] 의 정규화·PK·FK와 **완전히 같은 이야기**입니다. DB를 배우기 전에 JS에서 먼저 필요성을 체감한 셈입니다.
+이건 SQL day02 테이블과 제약조건 의 정규화·PK·FK와 **완전히 같은 이야기**입니다. DB를 배우기 전에 JS에서 먼저 필요성을 체감한 셈입니다.
 
 **③ JS로 표현**
 > 표 = 배열 / 객체 = 행 / 열 = 속성
@@ -76,7 +76,7 @@ let productList = [
 ];
 ```
 
-`ccode`가 두 배열을 잇는 연결고리입니다. → [[JS day07 객체]]
+`ccode`가 두 배열을 잇는 연결고리입니다. → JS day07 객체
 
 ### 1-3. 기능 설계 — CRUD 4함수
 
@@ -137,7 +137,7 @@ function productPrint() {
 SELECT c.cname, p.pname, p.pprice
 FROM productList p JOIN categoryList c ON p.ccode = c.ccode;
 ```
-→ [[SQL day03 DML과 조인]]
+→ SQL day03 DML과 조인
 
 `html` 문자열을 다 만든 뒤 **마지막에 한 번만** `innerHTML`에 대입한 것도 잘한 부분입니다. 반복문 안에서 `innerHTML +=`를 하면 매번 전체를 다시 그립니다.
 
@@ -216,7 +216,7 @@ let vacationList = [
 부서(dcode) ──1:N──▶ 사원(ecode, dcode) ──1:N──▶ 휴가(vcode, ecode)
 ```
 
-`lastDepartmentCode`, `lastEmployeeCode` 변수가 **AUTO_INCREMENT를 손으로 구현**한 것입니다. 새 항목을 추가할 때 `++lastEmployeeCode`로 번호를 발급합니다. → [[SQL day02 테이블과 제약조건]]
+`lastDepartmentCode`, `lastEmployeeCode` 변수가 **AUTO_INCREMENT를 손으로 구현**한 것입니다. 새 항목을 추가할 때 `++lastEmployeeCode`로 번호를 발급합니다. → SQL day02 테이블과 제약조건
 
 ```javascript
 departmentPrint();
@@ -243,7 +243,7 @@ function findCategoryName(ccode) {
 }
 ```
 
-`find`가 이중 반복문을 대체합니다. → [[JS day03 자료형과 연산자]]
+`find`가 이중 반복문을 대체합니다. → JS day03 자료형과 연산자
 
 ```javascript
 const html = productList.map(p => `
@@ -272,7 +272,7 @@ const categoryMap = new Map(categoryList.map(c => [c.ccode, c.cname]));
 categoryMap.get(product.ccode);   // O(1)
 ```
 
-DB가 인덱스를 쓰는 이유와 같습니다. → [[SQL day03 DML과 조인]]
+DB가 인덱스를 쓰는 이유와 같습니다. → SQL day03 DML과 조인
 
 ### 2-3. 등록 함수 구현하기
 
@@ -328,7 +328,7 @@ let newPname = prompt("수정할 제품명", p.pname);
 if (newPname === null) return;          // 취소를 누르면 null
 ```
 
-`prompt`는 취소 시 `null`을 반환하므로 검사가 필요합니다. → [[JS day02 변수와 입출력]]
+`prompt`는 취소 시 `null`을 반환하므로 검사가 필요합니다. → JS day02 변수와 입출력
 
 또 `prompt`로 받은 값은 **항상 문자열**이라 가격은 `Number()` 변환이 필요합니다.
 ```javascript
@@ -347,7 +347,7 @@ function categoryDelete(ccode) {
 }
 ```
 
-이게 DB의 `ON DELETE RESTRICT`를 JS로 구현한 것입니다. 부서를 지울 때 사원이 남아 있는 `practice9`에도 그대로 필요합니다. → [[SQL day02 테이블과 제약조건]]
+이게 DB의 `ON DELETE RESTRICT`를 JS로 구현한 것입니다. 부서를 지울 때 사원이 남아 있는 `practice9`에도 그대로 필요합니다. → SQL day02 테이블과 제약조건
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -425,7 +425,7 @@ async function productPrint() {
 
 ### 3-5. 백엔드 버전과 나란히 보기
 
-같은 설계를 자바로 옮기면 [[Java day07 메소드와 미니프로젝트]] 의 `miniProject`가 됩니다.
+같은 설계를 자바로 옮기면 Java day07 메소드와 미니프로젝트 의 `miniProject`가 됩니다.
 
 | | JS (day12) | Java (day07) |
 | --- | --- | --- |
@@ -445,4 +445,4 @@ async function productPrint() {
 
 ## 관련 노트
 
-[[JavaScript MOC]] · [[JS day11 DOM 조작]] · [[JS day13 웹 스토리지와 인터벌]] · [[JS day07 객체]] · [[SQL day02 테이블과 제약조건]] · [[SQL day03 DML과 조인]] · [[Java day07 메소드와 미니프로젝트]]
+[[JavaScript MOC]] · [[JS day11 DOM 조작]] · [[JS day13 웹 스토리지와 인터벌]] · JS day07 객체 · SQL day02 테이블과 제약조건 · SQL day03 DML과 조인 · Java day07 메소드와 미니프로젝트
