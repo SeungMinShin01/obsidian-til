@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java Spring day03 — 애노테이션과 리플렉션
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day03/exam/exam1.java`, `exam2.java`, `exam3.java`, `RestController1.java`, `RestController2.java`, `AppStart.java`, `springweb/build.gradle`
-> 허브: [[Java MOC]] · 이전: [[Spring day02 스프링 부트 실행과 계층 이식]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day02 스프링 부트 실행과 계층 이식]] · 다음: [[Spring day04 REST 컨트롤러 CRUD 골격]]
 
 [[Spring day02 스프링 부트 실행과 계층 이식]] 까지는 `@SpringBootApplication`·`@RestController`·`@GetMapping` 같은 애노테이션을 **가져다 쓰는** 쪽이었다. 붙이면 동작한다는 것까지는 확인했지만, 그 표시 하나가 어떻게 실제 동작으로 이어지는지는 열어 보지 않았다.
 
@@ -1590,4 +1590,4 @@ Jackson이 값을 꺼낼 때 쓰는 것이 getter이므로, JSON 키를 바꾸�
 
 ## 관련 노트
 
-[[Java MOC]] · [[Spring day02 스프링 부트 실행과 계층 이식]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day14 게시판 CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Java MOC]] · [[Spring day04 REST 컨트롤러 CRUD 골격]] · [[Spring day02 스프링 부트 실행과 계층 이식]] · [[Spring day01 서블릿과 HTTP 메소드]] · [[Spring Boot 프로젝트 생성(분석)]] · [[Java day13 Object 클래스와 리플렉션]] · [[Java day15 Map과 HashMap]] · [[Java day14 제네릭]] · [[Java day12 예외 처리와 JDBC]] · [[Java day16 스레드 동기화]] · [[Java day12 종합예제 JDBC DAO]] · [[Java day11 인터페이스]] · [[Java day10 상속과 다형성]] · [[Java day08 접근제한자와 static]] · [[Java day06 생성자와 콘솔 게시판]] · [[Java day05 클래스와 인스턴스]] · [[Java day02 타입 변환]] · [[Java day01 자바 구조와 자료형]] · [[JS day14 게시판 CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
