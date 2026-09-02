@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day04/Exam, springweb/src/main/java/day04/sample.sql, springweb/build.gradle
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day04/Exam, springweb/src/main/java/day04/practice2, springweb/src/main/java/day04/sample.sql, springweb/build.gradle
 작성일: 2026-09-02
 tags: [학습, java]
 ---
 
 # Spring day04 — JPA 엔티티와 리포지토리
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java`, `ExamEntity.java`, `ExamRepository.java`, `ExamService.java`, `ExamController.java`, `day04/sample.sql`, `springweb/build.gradle`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java`, `ExamEntity.java`, `ExamRepository.java`, `ExamService.java`, `ExamController.java`, `day04/practice2/TestEntity.java`, `day04/sample.sql`, `springweb/build.gradle`
 > 허브: [[Spring MOC]] · 이전: [[Spring day04 REST 컨트롤러 CRUD 골격]]
 
 [[Spring day04 REST 컨트롤러 CRUD 골격]] 에서 되풀이를 줄이는 두 방향을 적어 뒀다. 공통을 위로 올리는 쪽(`BaseDao`)과 아예 코드를 쓰지 않고 규약으로 대신하는 쪽(JPA)이다. 이번 실습은 **뒤쪽 갈래를 실제로 밟아 보는 자리**다.
@@ -30,6 +30,7 @@ tags: [학습, java]
 | `final` + `@RequiredArgsConstructor` | 필요한 것을 만들지 않고 받기 (1-10) |
 | `ExamController` | 엔티티를 그대로 주고받는 네 갈래 (1-11) |
 | `build.gradle` 의 스타터 한 줄 | 이 전부를 켜는 선언 (1-12) |
+| `board` 표와 `practice2` 패키지 | 표를 하나 더 두고 같은 벌을 다시 짜 보기 (1-14) |
 
 ## 1. 배운 내용
 
@@ -527,6 +528,96 @@ CRUD 네 갈래가 층을 타고 내려가는 모양을 한 번에 놓고 보면
 
 수정만 리포지토리 호출과 나가는 SQL이 어긋난다. **`update` 를 부르는 자리가 없는데 `update` 가 나간다** — 적은 코드와 도는 동작이 처음으로 갈라지는 지점이다. 다른 셋은 코드에서 SQL을 읽어 낼 수 있는데 수정만 그렇지 않아서, 3-1의 영속성 컨텍스트를 알고 나서야 코드가 온전히 읽힌다.
 
+### 1-14. 표를 하나 더 두고 같은 벌을 다시 짜 보기 — board
+
+한 벌을 끝까지 따라간 뒤, 같은 순서를 표만 바꿔 다시 밟아 보는 자리가 이어진다. `sample.sql` 에 표가 하나 더 붙는다.
+
+```sql
+create Table board(
+    bno INT PRIMARY KEY AUTO_INCREMENT,
+    content VARCHAR(255),
+    writer VARCHAR(50)
+)
+
+Insert INTO board(content , writer) VALUES ("안녕하세요" , "유재석");
+Insert INTO board(content , writer) VALUES ("안녕하세요2" , "강호동");
+```
+
+`exam` 은 컬럼이 둘이었는데 `board` 는 셋이다. 늘어난 것은 컬럼 하나뿐이고, 열쇠 자리(`bno INT PRIMARY KEY AUTO_INCREMENT`)의 모양은 그대로다. **DB 하나 안에 표가 여럿이면 엔티티도 표마다 하나씩** 둔다는 배치가 여기서 처음 눈에 보인다.
+
+#### 이름이 갈릴 때 @Table이 하는 일
+
+새 엔티티는 이렇게 된다.
+
+```java
+@Entity
+@Data
+@Table(name = "board")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class TestEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer bno;
+    private String content;
+    private String writer;
+}
+```
+
+1-2에서 `@Table(name=…)` 을 생략하면 클래스 이름이 표 이름이 된다고 정리했는데, `ExamEntity` ↔ `exam` 은 이름이 거의 같아서 그 표시가 있어도 없어도 티가 안 났다. 여기서는 클래스가 `TestEntity` 이고 표가 `board` 라 **이름이 완전히 갈린다.** `@Table(name = "board")` 을 빼면 하이버네이트는 `test_entity` 라는 표를 찾다가 없다고 하게 된다. 자동 매핑에 기대지 않고 표 이름을 적어 두는 편이 안전한 이유가 이 자리에서 분명해진다.
+
+나머지는 `exam` 때와 한 글자도 다르지 않다.
+
+| 표시 | 하는 일 | `exam` 과 견줘 |
+| --- | --- | --- |
+| `@Entity` | DB와 짝지어 관리한다고 선언 | 같음 |
+| `@Table(name=…)` | 붙일 표 이름 지목 | 이름이 갈려서 필수가 됨 |
+| `@Id` | 열쇠 필드 지정 | 필드 이름만 `eno`→`bno` |
+| `@GeneratedValue(IDENTITY)` | 번호 채우기를 DB에 맡김 | 같음 (`AUTO_INCREMENT` 짝) |
+| 롬복 넷 | 값 그릇 통로 열기 | 같음 |
+
+**표가 바뀌어도 붙는 표시 한 벌은 그대로다.** 도메인이 달라도 같은 코드는 프레임워크가 가져가고 다른 코드만 남는다던 1-13의 정리가, 두 번째 표를 짜 보면 실제로 무엇이 남는지로 확인된다 — 이번에 새로 적은 것은 표 이름과 필드 셋뿐이다.
+
+#### 컬럼 길이는 자바 쪽에 없다
+
+`content VARCHAR(255)` 와 `writer VARCHAR(50)` 은 길이가 다른데 자바에서는 둘 다 그냥 `String` 이다. 길이 제한이 DB에만 있고 엔티티에는 안 보이는 상태라, 50자를 넘는 값을 넣으면 자바 쪽은 통과하고 DB에서 걸린다. 길이를 코드에도 남기려면 `@Column(length = 50)` 을 붙인다 — 2-10에서 정리한 `@Column` 이 실제로 필요해지는 첫 자리다.
+
+`bno` 가 `int` 가 아니라 `Integer` 인 것도 1-4·2-4와 같은 이유다. 저장 전에는 번호가 없어서 `null` 이고, 저장 뒤 DB가 채운 번호가 들어온다. `int` 로 두면 그 "없음"을 0으로 적게 되고, `save` 가 `insert` 인지 `update` 인지 가르는 기준이 흐려진다.
+
+#### 자리를 먼저 만들어 두고 채우기
+
+`practice2` 패키지에는 다섯 파일이 들어간다.
+
+```
+practice2/
+├── AppStart.java        진입점 (@SpringBootApplication)
+├── TestEntity.java      표와 짝지을 클래스   ← 채워진 상태
+├── TestRepository.java  DB 조작              ← 자리만
+├── TestService.java     규칙을 담을 자리      ← 자리만
+└── TestController.java  주소와 방식          ← 자리만
+```
+
+한 벌이 몇 개의 파일로 이루어지는지를 1-13에서 정리해 뒀고, 그 목록대로 **빈 파일을 먼저 만들어 둔 뒤 아래층부터 채워 올라가는 순서**다. 엔티티(표와 짝짓기)가 먼저고, 그다음이 리포지토리, 서비스, 컨트롤러 순이 된다. 아래층이 정해져야 위층이 무엇을 부를지 적을 수 있어서 이 방향이 자연스럽다.
+
+자리만 잡아 둔 단계에서 짚어 둘 것이 하나 있다. **리포지토리는 클래스가 아니라 인터페이스여야 한다.** `JpaRepository` 를 `extends` 해서 구현을 물려받는 구조(1-6)라, 몸통을 적는 `class` 로 두면 스프링이 구현 객체를 만들어 줄 수 없다. 골격 단계에서 `class` 로 잡아 뒀다면 채우기 전에 `interface` 로 바꿔야 한다.
+
+```java
+// 자리만 잡은 단계
+public class TestRepository { }
+
+// 채울 때
+public interface TestRepository extends JpaRepository<TestEntity, Integer> { }
+```
+
+제네릭 두 자리에는 조작할 엔티티(`TestEntity`)와 그 PK 타입(`Integer`)이 들어간다. PK 타입은 `@Id` 필드 타입과 같아야 하니 `bno` 가 `Integer` 이면 여기도 `Integer` 다.
+
+서비스와 컨트롤러도 채워질 모양은 `Exam` 쪽과 같다. `@Service` + `final` 리포지토리 + `@RequiredArgsConstructor`, `@RestController` + `final` 서비스 + `@RequiredArgsConstructor`, 그리고 CRUD 네 갈래가 층을 타고 내려가는 표(1-13)가 그대로 반복된다.
+
+#### 진입점이 여럿일 때
+
+`practice2/AppStart.java` 로 `@SpringBootApplication` 이 또 하나 늘었다. 실습 폴더마다 진입점을 두어 스캔 범위를 나누는 배치가 계속 반복되는 것인데, 한 프로젝트에 진입점이 여럿이면 **실행할 때 어느 것을 띄울지 골라야 한다.** 컴포넌트 스캔은 진입점이 있는 패키지 아래만 훑으니, `day04.practice2.AppStart` 를 띄우면 `day04.Exam` 의 빈들은 등록되지 않는다. 실습마다 독립된 앱을 하나씩 띄우는 셈이다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 메소드 이름으로 쿼리 만들기
@@ -815,12 +906,14 @@ List<ExamEntity> search(@Param("kw") String kw);
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/java/day04/sample.sql` (옮겨 담을 표를 먼저 만들어 두기 — `DROP DATABASE if EXISTS` 로 다시 만들기, 컬럼 둘짜리 `exam` 표와 `PRIMARY KEY AUTO_INCREMENT` 가 엔티티의 `@Id`·`@GeneratedValue(IDENTITY)` 와 짝을 이루는 자리, 번호를 적지 않고 `INSERT` 하면 DB가 다음 번호를 채우는 성질, `spring.datasource.url` 이 가리키는 DB 이름과 여기서 만든 이름이 같아야 붙는 점)
+- `2026B_Spring/springweb/src/main/java/day04/sample.sql` (옮겨 담을 표를 먼저 만들어 두기 — `DROP DATABASE if EXISTS` 로 다시 만들기, 컬럼 둘짜리 `exam` 표와 `PRIMARY KEY AUTO_INCREMENT` 가 엔티티의 `@Id`·`@GeneratedValue(IDENTITY)` 와 짝을 이루는 자리, 번호를 적지 않고 `INSERT` 하면 DB가 다음 번호를 채우는 성질, `spring.datasource.url` 이 가리키는 DB 이름과 여기서 만든 이름이 같아야 붙는 점, 컬럼 셋짜리 `board` 표가 뒤에 붙으면서 DB 하나에 표가 여럿이면 엔티티도 표마다 하나씩 두게 되는 배치가 드러나는 자리 — 열쇠 자리(`PRIMARY KEY AUTO_INCREMENT`)의 모양은 표가 바뀌어도 그대로인 점, `VARCHAR(255)` 와 `VARCHAR(50)` 처럼 길이가 갈려도 자바에서는 둘 다 `String` 이라 길이 제한이 DB에만 남는 점과 `@Column(length=…)` 으로 코드에도 남기는 갈래)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamEntity.java` (표 하나를 자바 클래스에 짝지어 두기 — `@Entity` 로 DB와 짝지어 관리한다고 선언하기·`@Table(name=…)` 으로 표 이름 지목하기와 생략했을 때 클래스 이름이 표 이름이 되는 규칙, 필드 이름과 컬럼 이름이 짝을 이루어 컬럼→필드→JSON 키→화면으로 이름 하나가 관통하는 자리, DTO와 엔티티가 서 있는 자리의 갈림(오가는 값의 모양 vs DB의 표, 그냥 객체 vs 상태가 추적되는 객체), `@Id` 로 열쇠를 지정하고 엔티티는 PK를 반드시 하나 이상 갖는다는 규칙과 그 이유(객체가 표의 어느 줄인지 늘 알아야 한다), `@GeneratedValue` 로 번호 만들기를 맡기기와 `GenerationType` 네 갈래(`IDENTITY`·`SEQUENCE`·`TABLE`·`AUTO`)·MySQL의 `AUTO_INCREMENT` 와 `IDENTITY` 가 짝인 이유·저장 전 `null` 과 저장 후 채워진 번호를 갈라 보려면 `Integer` 여야 하는 자리, 엔티티에 붙은 롬복 표시 넷과 각각이 여는 통로·JPA 규격이 매개변수 없는 생성자를 요구하는 이유(빈 객체를 먼저 만든 뒤 값을 채운다)와 `@Builder`·`@AllArgsConstructor` 를 붙일 때 기본 생성자를 함께 두는 관용, `@Data` 를 엔티티에 붙일 때 딸려 오는 `@EqualsAndHashCode`·`@ToString`·`@Setter` 가 걸리는 지점과 PK만 보게 두거나 통로를 메소드로 만드는 갈래)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamRepository.java` (구현을 적지 않고 규약만 남기기 — 몸통이 빈 인터페이스가 `extends JpaRepository` 한 줄로 메소드를 물려받는 구조·제네릭 두 자리가 조작할 엔티티와 그 PK 타입을 적는 곳이며 PK 타입이 엔티티의 `@Id` 필드 타입과 맞아야 하는 점, 스프링이 시작할 때 인터페이스를 찾아 구현 객체를 만들어 빈으로 등록하는 자리와 "표시를 읽어 동작을 만드는" 구조가 인터페이스 자체를 읽는 쪽으로 간 정리, 물려받는 메소드들(`findAll`·`findById`·`save`·`deleteById`·`count`·`existsById`)과 대응하는 SQL·CRUD 네 갈래가 이름만 바뀌어 그대로 있는 점, `@Repository` 를 붙이지 않아도 Spring Data가 등록하지만 읽는 사람에게 계층이 드러나는 값어치, 직접 JDBC와 견줬을 때 연결·SQL 문자열·값 바인딩·결과 훑기·자원 닫기가 전부 사라지는 자리와 그 대신 무슨 SQL이 나가는지 코드에 안 보이는 뒷면, 메소드 이름으로 쿼리 만들기 — 이름을 단어로 쪼개 읽는 규칙(`findByEname`·`Containing`·`GreaterThan`·`OrderBy`)과 필드 이름이 어긋나면 뜰 때 걸리는 점·조건이 늘면 `@Query` 로 넘어가는 기준)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamService.java` (컨트롤러와 DB 사이에 계층 하나 두기 — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `findAll` 처럼 넘기기만 하는 자리와 `save` 처럼 리포지토리가 돌려준 값을 보고 판정하는 자리의 갈림·양쪽 어디에 둬도 어색한 코드를 담는 것이 Service의 값어치, `save` 가 영속된 엔티티를 돌려주므로 DB가 채운 번호를 그 자리에서 확인할 수 있는 자리, `final` + `@RequiredArgsConstructor` 로 리포지토리를 주입받기와 컴파일 시점 코드 생성과 실행 시점 주입이 맞물리는 구조·`getInstance()` 로 꺼내 오던 방식과의 갈림(만드는 주체·박히는 이름·테스트에서 다른 구현을 넣을 수 있는 값어치)·각 계층이 자기 바로 아래만 아는 배치, `save` 가 `insert` 인지 `update` 인지 PK가 비어 있는가로 갈리는 기준과 `int` 였다면 0이 "3번을 고쳐라"와 같은 갈래로 읽히는 문제, 여러 단계를 한 묶음으로 묶는 `@Transactional` 이 Service에 붙는 이유와 `readOnly`·프록시로 도는 구조와 자기 호출 제약, 삭제·수정이 붙어 네 갈래가 한 벌로 차는 자리 — `deleteById` 만 돌려주는 값이 없어 성공 여부를 `existsById` 로 따로 확인해야 하는 점, `findById` 가 `Optional<엔티티>` 를 돌려주는 이유(목록은 빈 목록으로 "없음"을 말할 수 있지만 하나를 찾는 일은 `null` 뿐이었다는 자리)와 `isPresent`·`get`·`orElse`·`orElseThrow`·`ifPresent` 의 갈림·확인 없이 `get()` 을 부르면 `null` 검사를 빠뜨린 것과 같아지는 점, 수정이 `save` 호출 없이 setter 하나로 끝나는 구조 — 조회해 온 엔티티가 영속 상태가 되어 트랜잭션이 끝날 때 바뀐 필드만 `update` 로 나가는 더티 체킹·이것이 트랜잭션 안에서만 성립한다는 조건, 조회 후 setter와 `save` 를 다시 부르는 두 갈래의 갈림(나가는 SQL·안 보낸 필드가 원래 값으로 남는가 `null` 로 덮이는가·부분 수정에 어느 쪽이 자연스러운가))
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamController.java` (엔티티를 그대로 주고받는 네 갈래 — 주소 하나에 `GET`·`POST`·`DELETE`·`PUT` 넷이 붙어 "주소는 자원을 가리키고 방식이 무엇을 할지 말한다"가 온전한 모양이 되는 자리, 받는 방법이 `@RequestParam`(주소 뒤 쿼리 문자열, 값 하나)과 `@RequestBody`(요청 본문 JSON, 객체 한 벌)로 갈리는 기준과 `@RequestParam(name=…)` 으로 이름을 적어 두는 편이 안전한 이유, 번호를 주소에 실어 `@PathVariable` 로 받는 갈래와 REST 관점에서의 값어치, `PUT`(통째로 바꾸기)과 `PATCH`(일부만 고치기)의 갈림과 조회 후 setter 방식의 실제 동작이 `PATCH` 쪽에 가까운 점, 주소는 같고 방식으로 갈리는 배치의 반복·오가는 타입이 DTO가 아니라 엔티티라는 점, `@RequestBody` 로 받은 JSON에 PK 키가 없으면 `null` 이 되고 DB가 번호를 채워 돌아오는 왕복, `List<ExamEntity>` 가 그대로 JSON 배열이 되고 `@Data` 의 getter가 JSON 키를 정하는 자리·표의 모양이 곧 응답의 모양이 되는 점과 내보내면 안 되는 값까지 나갈 여지, 엔티티를 그대로 내보내지 않는 갈래 — 표를 고치면 API 응답이 같이 바뀌는 문제·요청용과 응답용을 갈라 두기·`@JsonIgnore` 로 응답에서 필드 빼기, `boolean` 대신 저장된 엔티티와 상태 코드를 돌려줘 등록 직후 번호를 화면에 넘기기, 목록이 커질 때 `Page`·`Pageable`·`Sort` 로 쪽을 나누기와 `Page` 가 전체 개수·쪽수까지 들고 있는 점)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java` (실습 폴더마다 진입점을 두어 컴포넌트 스캔 범위를 나누는 구조의 반복 — 이 패키지 아래의 컨트롤러·서비스·리포지토리만 등록되는 자리)
+- `2026B_Spring/springweb/src/main/java/day04/practice2/TestEntity.java` (표를 하나 더 두고 같은 벌을 다시 짜 보기 — 클래스 이름(`TestEntity`)과 표 이름(`board`)이 완전히 갈리면서 `@Table(name=…)` 이 있고 없고가 처음으로 티가 나는 자리·생략하면 `test_entity` 를 찾게 되므로 자동 매핑에 기대지 않고 표 이름을 적어 두는 편이 안전한 이유, 표가 바뀌어도 붙는 표시 한 벌(`@Entity`·`@Table`·`@Id`·`@GeneratedValue(IDENTITY)`·롬복 넷)은 그대로이고 새로 적는 것은 표 이름과 필드뿐이라는 확인 — "같은 코드는 프레임워크가 가져가고 다른 코드만 남는다"의 실측, `bno` 가 `int` 가 아니라 `Integer` 인 이유의 반복(저장 전 `null`·저장 후 채워진 번호·`save` 의 `insert`/`update` 판정))
+- `2026B_Spring/springweb/src/main/java/day04/practice2/TestRepository.java`, `TestService.java`, `TestController.java`, `AppStart.java` (자리를 먼저 만들어 두고 아래층부터 채워 올라가는 순서 — 한 벌이 몇 개의 파일인지 정리해 둔 목록대로 빈 파일을 먼저 두는 배치와 엔티티→리포지토리→서비스→컨트롤러 방향이 자연스러운 이유, 리포지토리는 `class` 가 아니라 `interface` 여야 `JpaRepository` 를 `extends` 해 구현을 물려받을 수 있다는 점과 제네릭 두 자리에 들어가는 엔티티·PK 타입, 한 프로젝트에 `@SpringBootApplication` 이 여럿일 때 실행할 진입점을 골라야 하는 자리와 컴포넌트 스캔이 그 패키지 아래만 훑어 실습마다 독립된 앱이 되는 구조)
 - `2026B_Spring/springweb/build.gradle` (스타터 한 줄로 JPA를 켜기 — `spring-boot-starter-data-jpa` 가 데려오는 것들(JPA 규격·하이버네이트 구현체·Spring Data JPA·커넥션 풀과 트랜잭션)과 의존성을 넣는 일이 곧 기능을 켜는 일이 되는 자동 설정 구조의 재확인, 엔티티를 찾아 표와 맞추고 리포지토리 인터페이스의 구현을 만드는 일이 함께 켜지는 자리, MySQL 드라이버가 여전히 `runtimeOnly` 인 이유 — JPA를 얹어도 맨 아래층은 JDBC라는 점, `spring.jpa.show-sql`·`format_sql` 로 나가는 SQL을 로그로 옮겨 보기와 `spring.jpa.hibernate.ddl-auto` 다섯 값의 갈림·`create` 계열이 뜰 때 표를 지우는 점과 표는 SQL로 만들고 `validate` 로 두는 배치)
 
 ## 관련 노트
