@@ -8,7 +8,7 @@ tags: [학습, java]
 # Java Spring day04 — REST 컨트롤러 CRUD 골격
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day04/practice/AppStart.java`, `TestController.java`, `TestDto.java`, `src/main/resources/application.properties`, `springweb/build.gradle`
-> 허브: [[Spring MOC]] · 이전: [[Spring day03 애노테이션과 리플렉션]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day03 애노테이션과 리플렉션]] · 다음: [[Spring day04 JPA 엔티티와 리포지토리]]
 
 [[Spring day03 애노테이션과 리플렉션]] 은 표시 하나하나를 뜯어보는 쪽이었다. 애노테이션을 만들고, 리플렉션으로 읽고, 그 위에 매핑과 값 받는 통로를 얹는 데까지 갔다. 표시별로는 다 봤지만 **한 컨트롤러 안에 CRUD 네 갈래를 나란히 놓아 본 적은 없다.**
 
@@ -776,4 +776,4 @@ DataSource 빈이 이미 있나?         →  없다
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day03 애노테이션과 리플렉션]] · Spring day02 스프링 부트 실행과 계층 이식 · Spring day01 서블릿과 HTTP 메소드 · Spring Boot 프로젝트 생성(분석) · Java MOC · Java day11 인터페이스 · Java day12 종합예제 JDBC DAO · Java day15 Map과 HashMap · JS day14 게시판 CRUD · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day03 애노테이션과 리플렉션]] · [[Spring day04 JPA 엔티티와 리포지토리]] · Spring day02 스프링 부트 실행과 계층 이식 · Spring day01 서블릿과 HTTP 메소드 · Spring Boot 프로젝트 생성(분석) · Java MOC · Java day11 인터페이스 · Java day12 종합예제 JDBC DAO · Java day15 Map과 HashMap · JS day14 게시판 CRUD · [[개념 - CRUD]] · [[개념 - 싱글톤]] · [[KDT_2026 학습 지도]]
