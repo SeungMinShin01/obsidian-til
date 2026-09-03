@@ -31,6 +31,7 @@ tags: [학습, java]
 | `ExamController` | 엔티티를 그대로 주고받는 네 갈래 (1-11) |
 | `build.gradle` 의 스타터 한 줄 | 이 전부를 켜는 선언 (1-12) |
 | `board` 표와 `practice2` 패키지 | 표를 하나 더 두고 같은 벌을 다시 짜 보기 (1-14) |
+| `practice2` 의 리포지토리·서비스·컨트롤러 | 자리를 아래층부터 채워 올리기 — 개별 조회·`@Transactional`·클래스 레벨 주소 (1-14) |
 
 ## 1. 배운 내용
 
@@ -614,6 +615,187 @@ public interface TestRepository extends JpaRepository<TestEntity, Integer> { }
 
 서비스와 컨트롤러도 채워질 모양은 `Exam` 쪽과 같다. `@Service` + `final` 리포지토리 + `@RequiredArgsConstructor`, `@RestController` + `final` 서비스 + `@RequiredArgsConstructor`, 그리고 CRUD 네 갈래가 층을 타고 내려가는 표(1-13)가 그대로 반복된다.
 
+#### 아래층부터 채워 올라가기
+
+자리만 잡아 뒀던 세 파일이 실제로 채워졌다. 리포지토리부터다.
+
+```java
+@Repository
+public interface TestRepository
+        extends JpaRepository<TestEntity, Integer> {
+}
+```
+
+`ExamRepository` 와 글자가 다른 곳이 제네릭 두 자리뿐이다. `class` 로 잡아 뒀던 것을 `interface` 로 바꾸고, 조작할 엔티티(`TestEntity`)와 그 PK 타입(`Integer`)을 적으면 끝난다. 예상해 둔 모양 그대로라 여기서 새로 배울 것은 없고, **두 번째 도메인에서는 리포지토리 층이 사실상 이름만 갈아 끼우는 자리**가 된다는 것이 확인되는 정도다.
+
+#### 갈래가 하나 더 붙는다 — 개별 조회
+
+서비스는 `Exam` 쪽과 달리 다섯 갈래다.
+
+```java
+// [3] 개별 조회
+public Optional<TestEntity> testDetail(int bno) {
+    return testRepository.findById(bno);
+}
+```
+
+`Exam` 쪽에서 `findById` 는 수정 안에서만 쓰였다. 여기서는 **조회 갈래로 따로 나온다.**
+
+| 갈래 | 리포지토리 호출 | 돌려주는 것 |
+| --- | --- | --- |
+| 전체 조회 | `findAll()` | `List<TestEntity>` |
+| 개별 조회 | `findById(bno)` | `Optional<TestEntity>` |
+| 저장 | `save(entity)` | 영속된 엔티티 |
+| 삭제 | `deleteById(no)` | 없음 |
+| 수정 | `findById` + setter | (더티 체킹) |
+
+눈에 띄는 것은 **서비스가 `Optional` 을 벗기지 않고 그대로 넘긴다**는 점이다. 1-9-1에서 `isPresent()` 로 열어 보는 모양을 봤는데, 여기서는 상자째 위층으로 올린다. 두 갈래가 있는 셈이다.
+
+| | 서비스가 벗겨서 준다 | 상자째 넘긴다 |
+| --- | --- | --- |
+| 없을 때 판정하는 자리 | 서비스 | 컨트롤러 (또는 더 위) |
+| 서비스 반환 타입 | `TestEntity` 또는 `null` | `Optional<TestEntity>` |
+| 없음을 표현하는 방법 | `orElseThrow`·기본값 | 빈 상자를 그대로 |
+
+작은 실습에서는 상자째 넘기는 쪽이 코드가 짧다. 다만 "없을 때 무엇으로 응답할 것인가"라는 판단이 서비스가 아니라 컨트롤러로 밀려 나는 배치라, 규칙을 담는 자리가 서비스라던 1-9의 정리와는 방향이 조금 다르다. 응답 코드를 404로 갈라 주기 시작하면 그 판정을 어디에 둘지 다시 정하게 되는 자리다.
+
+#### 예고해 둔 표시가 실제로 붙는다 — @Transactional
+
+수정 메소드 위에 표시가 하나 늘었다.
+
+```java
+@Transactional
+public boolean update(TestEntity testEntity) {
+    Optional<TestEntity> optional = testRepository.findById(testEntity.getBno());
+    if (optional.isPresent()) {
+        TestEntity saveEntity = optional.get();
+        saveEntity.setContent(testEntity.getContent());
+        return true;
+    }
+    return false;
+}
+```
+
+`Exam` 쪽 `update` 에는 없던 것이다. 1-9-2에서 **더티 체킹은 트랜잭션이 살아 있는 동안에만 성립한다**고 적어 뒀고 2-7에서 관용으로 정리해 뒀는데, 두 도메인을 나란히 놓고 보면 이 표시 한 줄이 무엇을 켜는지가 눈에 보인다.
+
+```
+표시가 없으면   findById 로 꺼낸 뒤 트랜잭션이 곧 끝난다  →  setter 를 불러도 나갈 곳이 없다
+표시가 있으면   메소드 전체가 한 묶음이 된다              →  끝날 때 바뀐 필드만 update 로 나간다
+```
+
+`setContent` 만 부르고 `writer` 는 건드리지 않았다. 더티 체킹은 **처음 읽은 값과 견줘 달라진 필드만** 골라 내보내므로, 안 보낸 필드는 원래 값이 남는다(1-9-2의 표 그대로다).
+
+가져온 자리가 `jakarta.transaction.Transactional` 인 것도 짚어 둘 만하다. 이름이 같은 표시가 두 곳에 있다.
+
+| 가져오는 자리 | 나온 곳 | 쓸 수 있는 속성 |
+| --- | --- | --- |
+| `jakarta.transaction.Transactional` | 자바 EE(자카르타) 규격 | `rollbackOn`·전파 정도 |
+| `org.springframework.transaction.annotation.Transactional` | 스프링 | `readOnly`·`propagation`·`isolation`·`timeout` 등 |
+
+스프링은 둘 다 알아듣는다. 다만 2-7에서 적어 둔 `readOnly = true` 같은 속성은 스프링 쪽에만 있어서, **속성을 쓰기 시작하면 스프링 것으로 맞춰야 한다.** 자동 완성으로 먼저 뜨는 쪽을 고르다 보면 갈리는 자리라, 어느 것을 가져왔는지 확인해 두는 편이 낫다.
+
+#### 주소의 공통 부분을 클래스로 올리기
+
+컨트롤러에서 달라진 것이 주소를 적는 방식이다.
+
+```java
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/test2")
+public class TestController {
+
+    @PostMapping("")            // POST   /test2
+    @GetMapping("")             // GET    /test2
+    @GetMapping("/detail")      // GET    /test2/detail
+    @DeleteMapping("")          // DELETE /test2
+    @PutMapping("")             // PUT    /test2
+}
+```
+
+`Exam` 쪽은 메소드마다 `/day04/exam` 을 네 번 적었다. 여기서는 **공통 앞머리를 클래스에 한 번 적고 메소드에는 나머지만** 적는다.
+
+```
+클래스 @RequestMapping("/test2")  +  메소드 @GetMapping("/detail")   →  /test2/detail
+클래스 @RequestMapping("/test2")  +  메소드 @GetMapping("")          →  /test2
+```
+
+괄호를 비운 `""` 가 클래스 주소를 그대로 쓴다는 뜻이 된다. 주소를 바꿀 일이 생기면 클래스 위 한 줄만 고치면 되고, 컨트롤러가 여럿일 때 주소가 겹칠 여지도 줄어든다.
+
+#### GET이 둘로 갈릴 때
+
+방식이 같은 매핑이 둘 있다. 주소 하나에 방식 넷을 붙이던 배치(1-11)에서 한 칸 더 나간 모양이다.
+
+| 방식 | 주소 | 하는 일 | 받는 방법 |
+| --- | --- | --- | --- |
+| `POST` | `/test2` | 새로 만들기 | `@RequestBody` |
+| `GET` | `/test2` | 목록 읽기 | (없음) |
+| `GET` | `/test2/detail?bno=1` | 하나 읽기 | `@RequestParam` |
+| `DELETE` | `/test2?bno=3` | 지우기 | `@RequestParam` |
+| `PUT` | `/test2` | 고치기 | `@RequestBody` |
+
+주소와 방식이 함께 한 자리를 만들기 때문에, **방식이 같으면 주소로 갈라야 한다.** 둘 다 `GET /test2` 였다면 서버가 뜰 때 걸린다.
+
+목록과 상세를 가르는 방법은 몇 가지가 있다.
+
+| 방법 | 주소 모양 |
+| --- | --- |
+| 경로를 하나 더 두기 | `/test2/detail?bno=1` |
+| 번호를 주소에 싣기 | `/test2/1` (`@PathVariable`) |
+| 같은 주소에 조건만 붙이기 | `/test2?bno=1` |
+
+자원을 주소로 가리키는 REST 관점에서는 두 번째가 곧다. 다만 어느 쪽을 고르든 **한 프로젝트 안에서 같은 방식으로 두는 것**이 먼저다.
+
+받는 표시를 적는 모양도 두 갈래가 같이 나온다.
+
+```java
+public Optional<TestEntity> testDetail(@RequestParam int bno)            { … }
+public boolean delete(@RequestParam(name = "bno") int no)                { … }
+```
+
+주소에 실리는 이름과 매개변수 이름이 같으면 이름을 생략해도 되고, 갈리면 `name` 으로 지목해야 한다. 1-11에서 적어 둔 대로 **매개변수 이름이 컴파일 결과에 남지 않을 수 있어**, 이름을 적어 두는 쪽이 환경을 덜 탄다.
+
+#### Optional을 그대로 응답으로 내보내면
+
+개별 조회는 컨트롤러도 `Optional` 을 그대로 돌려준다.
+
+```java
+@GetMapping("/detail")
+public Optional<TestEntity> testDetail(@RequestParam int bno) {
+    return testService.testDetail(bno);
+}
+```
+
+응답 JSON이 어떻게 나가는지가 이 자리의 요점이다. 잭슨은 `Optional` 을 상자로 보지 않고 **안에 든 값을 꺼내 직렬화**하므로, 있으면 객체가 그대로 나가고 없으면 본문이 비게 된다.
+
+```
+있을 때   200  {"bno":1,"content":"안녕하세요","writer":"유재석"}
+없을 때   200  (본문 없음)
+```
+
+둘 다 200이라는 것이 걸리는 지점이다. **"없다"가 상태 코드에 드러나지 않아** 화면 쪽에서 본문이 비었는지를 따로 봐야 한다. 없을 때를 404로 갈라 주려면 컨트롤러에서 열어 보고 응답을 만드는 쪽이 분명하다.
+
+```java
+return testService.testDetail(bno)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+```
+
+1-9-1에서 `Optional` 이 "없음을 타입으로 옮긴다"고 정리했는데, **HTTP 경계를 넘을 때는 그 타입이 사라진다**는 것이 여기서 드러난다. 상자는 자바 안에서만 유효하고, 밖으로 나가는 순간 없음을 말할 수단은 상태 코드와 본문뿐이다.
+
+#### 두 벌을 나란히 놓고 보면
+
+`Exam` 과 `board` 두 벌을 견줘 보면 무엇이 도메인마다 다시 적히는 코드인지가 정리된다.
+
+| 자리 | `Exam` | `practice2` | 갈림 |
+| --- | --- | --- | --- |
+| 엔티티 | `@Table` 생략해도 됨 | 이름이 갈려 `@Table` 필수 | 표 이름·필드 |
+| 리포지토리 | 인터페이스 한 줄 | 인터페이스 한 줄 | 제네릭 두 자리 |
+| 서비스 | 네 갈래 | 다섯 갈래(개별 조회 추가) | 담을 규칙 |
+| 컨트롤러 | 메소드마다 전체 주소 | 클래스에 공통 주소 | 주소 설계 |
+| 수정 | 표시 없음 | `@Transactional` | 더티 체킹이 도는가 |
+
+아래층으로 갈수록 갈림이 줄고 위층으로 갈수록 는다. **리포지토리는 거의 복사에 가깝고, 컨트롤러는 매번 정할 것이 있다.** 프레임워크가 가져간 것과 남은 것의 경계가 두 번째 도메인에서 이 모양으로 보인다.
+
 #### 진입점이 여럿일 때
 
 `practice2/AppStart.java` 로 `@SpringBootApplication` 이 또 하나 늘었다. 실습 폴더마다 진입점을 두어 스캔 범위를 나누는 배치가 계속 반복되는 것인데, 한 프로젝트에 진입점이 여럿이면 **실행할 때 어느 것을 띄울지 골라야 한다.** 컴포넌트 스캔은 진입점이 있는 패키지 아래만 훑으니, `day04.practice2.AppStart` 를 띄우면 `day04.Exam` 의 빈들은 등록되지 않는다. 실습마다 독립된 앱을 하나씩 띄우는 셈이다.
@@ -893,6 +1075,8 @@ List<ExamEntity> search(@Param("kw") String kw);
 - `spring.jpa.hibernate.ddl-auto` 다섯 값과 운영에서 `validate` 를 쓰는 이유
 - `show-sql`·`format_sql`·`p6spy` — 나가는 SQL 확인하기
 - `@Transactional` 과 프록시·전파 속성·`readOnly`·자기 호출 제약
+- `jakarta.transaction.Transactional` 과 스프링 `@Transactional` 의 갈림 — 속성이 갈리는 지점
+- 잭슨의 `Optional` 직렬화와 `Jdk8Module`·응답에서 없음을 표현하는 방법(404·빈 본문·래퍼 객체)
 - 연관관계 매핑 넷과 연관관계의 주인·`mappedBy`·`@JoinColumn`
 - 지연 로딩과 즉시 로딩·`LazyInitializationException`
 - N+1 문제와 `fetch join`·`@EntityGraph`·`default_batch_fetch_size`
@@ -913,7 +1097,10 @@ List<ExamEntity> search(@Param("kw") String kw);
 - `2026B_Spring/springweb/src/main/java/day04/Exam/ExamController.java` (엔티티를 그대로 주고받는 네 갈래 — 주소 하나에 `GET`·`POST`·`DELETE`·`PUT` 넷이 붙어 "주소는 자원을 가리키고 방식이 무엇을 할지 말한다"가 온전한 모양이 되는 자리, 받는 방법이 `@RequestParam`(주소 뒤 쿼리 문자열, 값 하나)과 `@RequestBody`(요청 본문 JSON, 객체 한 벌)로 갈리는 기준과 `@RequestParam(name=…)` 으로 이름을 적어 두는 편이 안전한 이유, 번호를 주소에 실어 `@PathVariable` 로 받는 갈래와 REST 관점에서의 값어치, `PUT`(통째로 바꾸기)과 `PATCH`(일부만 고치기)의 갈림과 조회 후 setter 방식의 실제 동작이 `PATCH` 쪽에 가까운 점, 주소는 같고 방식으로 갈리는 배치의 반복·오가는 타입이 DTO가 아니라 엔티티라는 점, `@RequestBody` 로 받은 JSON에 PK 키가 없으면 `null` 이 되고 DB가 번호를 채워 돌아오는 왕복, `List<ExamEntity>` 가 그대로 JSON 배열이 되고 `@Data` 의 getter가 JSON 키를 정하는 자리·표의 모양이 곧 응답의 모양이 되는 점과 내보내면 안 되는 값까지 나갈 여지, 엔티티를 그대로 내보내지 않는 갈래 — 표를 고치면 API 응답이 같이 바뀌는 문제·요청용과 응답용을 갈라 두기·`@JsonIgnore` 로 응답에서 필드 빼기, `boolean` 대신 저장된 엔티티와 상태 코드를 돌려줘 등록 직후 번호를 화면에 넘기기, 목록이 커질 때 `Page`·`Pageable`·`Sort` 로 쪽을 나누기와 `Page` 가 전체 개수·쪽수까지 들고 있는 점)
 - `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java` (실습 폴더마다 진입점을 두어 컴포넌트 스캔 범위를 나누는 구조의 반복 — 이 패키지 아래의 컨트롤러·서비스·리포지토리만 등록되는 자리)
 - `2026B_Spring/springweb/src/main/java/day04/practice2/TestEntity.java` (표를 하나 더 두고 같은 벌을 다시 짜 보기 — 클래스 이름(`TestEntity`)과 표 이름(`board`)이 완전히 갈리면서 `@Table(name=…)` 이 있고 없고가 처음으로 티가 나는 자리·생략하면 `test_entity` 를 찾게 되므로 자동 매핑에 기대지 않고 표 이름을 적어 두는 편이 안전한 이유, 표가 바뀌어도 붙는 표시 한 벌(`@Entity`·`@Table`·`@Id`·`@GeneratedValue(IDENTITY)`·롬복 넷)은 그대로이고 새로 적는 것은 표 이름과 필드뿐이라는 확인 — "같은 코드는 프레임워크가 가져가고 다른 코드만 남는다"의 실측, `bno` 가 `int` 가 아니라 `Integer` 인 이유의 반복(저장 전 `null`·저장 후 채워진 번호·`save` 의 `insert`/`update` 판정))
-- `2026B_Spring/springweb/src/main/java/day04/practice2/TestRepository.java`, `TestService.java`, `TestController.java`, `AppStart.java` (자리를 먼저 만들어 두고 아래층부터 채워 올라가는 순서 — 한 벌이 몇 개의 파일인지 정리해 둔 목록대로 빈 파일을 먼저 두는 배치와 엔티티→리포지토리→서비스→컨트롤러 방향이 자연스러운 이유, 리포지토리는 `class` 가 아니라 `interface` 여야 `JpaRepository` 를 `extends` 해 구현을 물려받을 수 있다는 점과 제네릭 두 자리에 들어가는 엔티티·PK 타입, 한 프로젝트에 `@SpringBootApplication` 이 여럿일 때 실행할 진입점을 골라야 하는 자리와 컴포넌트 스캔이 그 패키지 아래만 훑어 실습마다 독립된 앱이 되는 구조)
+- `2026B_Spring/springweb/src/main/java/day04/practice2/TestRepository.java` (자리를 먼저 만들어 두고 아래층부터 채워 올라가는 순서 — 한 벌이 몇 개의 파일인지 정리해 둔 목록대로 빈 파일을 먼저 두는 배치와 엔티티→리포지토리→서비스→컨트롤러 방향이 자연스러운 이유, 리포지토리는 `class` 가 아니라 `interface` 여야 `JpaRepository` 를 `extends` 해 구현을 물려받을 수 있다는 점과 제네릭 두 자리에 들어가는 엔티티·PK 타입, 채우고 나면 `ExamRepository` 와 갈리는 곳이 제네릭 두 자리뿐이라 두 번째 도메인에서는 리포지토리 층이 이름만 갈아 끼우는 자리가 되는 점)
+- `2026B_Spring/springweb/src/main/java/day04/practice2/TestService.java` (갈래가 하나 더 붙은 서비스 — `findById` 가 수정 안에서만 쓰이던 자리에서 나와 개별 조회 갈래로 독립하는 점과 다섯 갈래가 리포지토리를 부르는 모양의 표, 서비스가 `Optional` 을 벗기지 않고 상자째 위층으로 넘기는 갈래와 벗겨서 주는 갈래의 갈림(없을 때를 판정하는 자리가 서비스인가 컨트롤러인가·규칙을 담는 자리가 서비스라던 정리와 방향이 갈리는 지점), 수정에 `@Transactional` 이 실제로 붙는 자리 — 표시가 없던 `Exam` 쪽과 나란히 놓으면 이 한 줄이 무엇을 켜는지가 드러나는 점(메소드 전체가 한 묶음이 되어야 끝날 때 바뀐 필드만 `update` 로 나간다)과 `setContent` 만 부르고 `writer` 는 원래 값이 남는 더티 체킹의 실측, `jakarta.transaction.Transactional` 과 `org.springframework.transaction.annotation.Transactional` 이 이름은 같고 자리가 갈리는 점·스프링은 둘 다 알아듣지만 `readOnly` 같은 속성은 스프링 쪽에만 있어 속성을 쓰기 시작하면 맞춰야 하는 자리)
+- `2026B_Spring/springweb/src/main/java/day04/practice2/TestController.java` (주소의 공통 부분을 클래스로 올리기 — 메소드마다 전체 주소를 적던 `Exam` 쪽과 달리 `@RequestMapping("/test2")` 로 앞머리를 한 번 적고 메소드에는 나머지만 적는 배치·괄호를 비운 `""` 가 클래스 주소를 그대로 쓴다는 뜻이 되는 점·주소를 한 자리에서 바꾸는 값어치, 방식이 같은 `GET` 이 둘로 갈릴 때 주소로 갈라야 하는 이유(주소와 방식이 함께 한 자리를 만든다)와 목록·상세를 가르는 세 갈래(경로 하나 더 두기·번호를 주소에 싣기·같은 주소에 조건만 붙이기)·한 프로젝트 안의 일관성이 먼저라는 점, `@RequestParam` 의 이름을 생략할 수 있는 조건과 지목해야 하는 조건이 한 클래스에 나란히 나오는 자리, `Optional` 을 그대로 응답으로 내보낼 때의 JSON 모양 — 잭슨이 상자를 벗겨 안의 값을 직렬화하므로 있으면 객체가 없으면 빈 본문이 나가고 둘 다 200이라 "없다"가 상태 코드에 안 드러나는 점·`map`·`orElse` 로 `ResponseEntity` 를 만들어 404로 갈라 주는 갈래·`Optional` 이 없음을 타입으로 옮기지만 HTTP 경계를 넘으면 그 타입이 사라진다는 정리, 두 벌을 나란히 놓았을 때 아래층으로 갈수록 갈림이 줄고 위층으로 갈수록 느는 구조 — 리포지토리는 거의 복사이고 컨트롤러는 매번 정할 것이 남는 경계)
+- `2026B_Spring/springweb/src/main/java/day04/practice2/AppStart.java` (한 프로젝트에 `@SpringBootApplication` 이 여럿일 때 실행할 진입점을 골라야 하는 자리와 컴포넌트 스캔이 그 패키지 아래만 훑어 실습마다 독립된 앱이 되는 구조)
 - `2026B_Spring/springweb/build.gradle` (스타터 한 줄로 JPA를 켜기 — `spring-boot-starter-data-jpa` 가 데려오는 것들(JPA 규격·하이버네이트 구현체·Spring Data JPA·커넥션 풀과 트랜잭션)과 의존성을 넣는 일이 곧 기능을 켜는 일이 되는 자동 설정 구조의 재확인, 엔티티를 찾아 표와 맞추고 리포지토리 인터페이스의 구현을 만드는 일이 함께 켜지는 자리, MySQL 드라이버가 여전히 `runtimeOnly` 인 이유 — JPA를 얹어도 맨 아래층은 JDBC라는 점, `spring.jpa.show-sql`·`format_sql` 로 나가는 SQL을 로그로 옮겨 보기와 `spring.jpa.hibernate.ddl-auto` 다섯 값의 갈림·`create` 계열이 뜰 때 표를 지우는 점과 표는 SQL로 만들고 `validate` 로 두는 배치)
 
 ## 관련 노트
