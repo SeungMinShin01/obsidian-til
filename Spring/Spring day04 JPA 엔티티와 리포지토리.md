@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day04 — JPA 엔티티와 리포지토리
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day04/Exam/AppStart.java`, `ExamEntity.java`, `ExamRepository.java`, `ExamService.java`, `ExamController.java`, `day04/practice2/TestEntity.java`, `day04/sample.sql`, `springweb/build.gradle`
-> 허브: [[Spring MOC]] · 이전: [[Spring day04 REST 컨트롤러 CRUD 골격]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day04 REST 컨트롤러 CRUD 골격]] · 다음: [[Spring day05 엔티티 제약과 감사 필드]]
 
 [[Spring day04 REST 컨트롤러 CRUD 골격]] 에서 되풀이를 줄이는 두 방향을 적어 뒀다. 공통을 위로 올리는 쪽(`BaseDao`)과 아예 코드를 쓰지 않고 규약으로 대신하는 쪽(JPA)이다. 이번 실습은 **뒤쪽 갈래를 실제로 밟아 보는 자리**다.
 
@@ -1105,4 +1105,4 @@ List<ExamEntity> search(@Param("kw") String kw);
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day04 REST 컨트롤러 CRUD 골격]] · [[Repository Pattern]] · [[개념 - CRUD]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day04 REST 컨트롤러 CRUD 골격]] · [[Spring day05 엔티티 제약과 감사 필드]] · [[Repository Pattern]] · [[개념 - CRUD]] · [[KDT_2026 학습 지도]]
