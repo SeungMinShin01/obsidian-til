@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day05 — DTO 변환과 초기 데이터 적재
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestDto.java`, `TestEntity.java`, `springweb/src/main/resources/sql/0903.sql`, `springweb/src/main/resources/application.properties`
-> 허브: [[Spring MOC]] · 이전: [[Spring day05 엔티티 제약과 감사 필드]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day05 엔티티 제약과 감사 필드]] · 다음: [[Spring day05 조회 흐름에 DTO 얹기]]
 
 [[Spring day05 엔티티 제약과 감사 필드]] 에서 엔티티가 표의 설계도가 되고, 공통 필드가 위로 올라갔다. 표 모양은 이걸로 정해졌다. 남은 것은 **그 표를 다루는 객체가 계층 밖으로 나갈 때 무엇으로 바뀌는가**다.
 
@@ -655,4 +655,4 @@ Controller (밖)        →  entity.getItems()  →  세션이 닫혀 못 읽는
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day05 엔티티 제약과 감사 필드]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day05 엔티티 제약과 감사 필드]] · [[Spring day05 조회 흐름에 DTO 얹기]] · [[KDT_2026 학습 지도]]
