@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day05 — 조회 흐름에 DTO 얹기
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestController.java`, `TestService.java`, `TestRepository.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day05 DTO 변환과 초기 데이터 적재]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day05 DTO 변환과 초기 데이터 적재]] · 다음: [[Spring day05 등록·수정 흐름과 변경 감지]]
 
 [[Spring day05 DTO 변환과 초기 데이터 적재]] 에서 `toEntity()` 와 `from()` 두 방향의 변환 메소드를 만들어 뒀다. 만들어 두기만 하고 부르는 자리는 없었다. **이번은 그 메소드가 실제로 불리는 자리를 세 계층에 배치하는 실습이다.**
 
@@ -193,6 +193,8 @@ public boolean save(TestDto testDto) {
 이어서 채울 자리는 `testRepository.save(testEntity)` 다. [[Spring day04 JPA 엔티티와 리포지토리]] 에 적어 둔 대로 `save` 는 영속된 엔티티를 돌려주므로, DB가 채운 번호를 그 자리에서 확인할 수 있다. `toEntity()` 가 `no` 를 안 옮기는 덕분에 PK가 비어 있고, 그래서 `insert` 로 갈린다.
 
 돌려주는 타입을 `boolean` 으로 둘지 저장된 DTO로 둘지는 갈림이 있다(2-4).
+
+비워 둔 자리를 채우고 수정 갈래까지 붙이는 것은 [[Spring day05 등록·수정 흐름과 변경 감지]] 에서 이어 간다.
 
 ### 1-6. 세 계층을 한 줄로 놓고 보기
 
@@ -415,4 +417,4 @@ class TestControllerTest {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day05 DTO 변환과 초기 데이터 적재]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day05 DTO 변환과 초기 데이터 적재]] · [[Spring day05 등록·수정 흐름과 변경 감지]] · [[KDT_2026 학습 지도]]
