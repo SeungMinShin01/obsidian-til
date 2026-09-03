@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day05 — 엔티티 제약과 감사 필드
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestEntity.java`, `BaseTime.java`, `AppStart.java`, `day04/practice2/AppStart.java`, `springweb/src/main/resources/application.properties`
-> 허브: [[Spring MOC]] · 이전: [[Spring day04 JPA 엔티티와 리포지토리]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day04 JPA 엔티티와 리포지토리]] · 다음: [[Spring day05 DTO 변환과 초기 데이터 적재]]
 
 [[Spring day04 JPA 엔티티와 리포지토리]] 에서는 표를 SQL로 먼저 만들어 두고 엔티티를 거기에 맞췄다. 이번은 방향이 뒤집힌다. **엔티티가 표의 설계도가 되고, 표는 서버가 뜰 때 그 설계도대로 만들어진다.**
 
@@ -514,4 +514,4 @@ private Long version;
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day04 JPA 엔티티와 리포지토리]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day04 JPA 엔티티와 리포지토리]] · [[Spring day05 DTO 변환과 초기 데이터 적재]] · [[KDT_2026 학습 지도]]
