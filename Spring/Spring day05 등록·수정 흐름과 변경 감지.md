@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day05 — 등록·수정 흐름과 변경 감지
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestService.java`, `TestController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day05 조회 흐름에 DTO 얹기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day05 조회 흐름에 DTO 얹기]] · 다음: [[Spring day06 연관관계 매핑과 외래키]]
 
 [[Spring day05 조회 흐름에 DTO 얹기]] 에서 전체조회 한 갈래를 요청부터 응답까지 이었다. 저장 쪽은 `toEntity()` 를 부르는 자리까지만 잡아 두고 리포지토리 호출은 비워 뒀다. **이번은 그 자리를 채우고 수정 갈래까지 붙이는 실습이다.**
 
@@ -477,4 +477,4 @@ public boolean delete(Integer no) {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day05 조회 흐름에 DTO 얹기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day05 조회 흐름에 DTO 얹기]] · [[Spring day06 연관관계 매핑과 외래키]] · [[KDT_2026 학습 지도]]
