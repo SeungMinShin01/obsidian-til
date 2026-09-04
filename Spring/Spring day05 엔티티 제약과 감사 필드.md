@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day05, springweb/src/main/java/day04/practice2/AppStart.java, springweb/src/main/resources/application.properties
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day05, springweb/src/main/java/day05/practice, springweb/src/main/java/day04/practice2/AppStart.java, springweb/src/main/resources/application.properties, springweb/src/main/resources/sql/practice3.sql
 작성일: 2026-09-03
 tags: [학습, java]
 ---
 
 # Spring day05 — 엔티티 제약과 감사 필드
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestEntity.java`, `BaseTime.java`, `AppStart.java`, `day04/practice2/AppStart.java`, `springweb/src/main/resources/application.properties`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day05/TestEntity.java`, `BaseTime.java`, `AppStart.java`, `day05/practice/MovieEntity.java`, `day05/practice/BaseTime.java`, `day05/practice/AppStart.java`, `day04/practice2/AppStart.java`, `springweb/src/main/resources/application.properties`, `springweb/src/main/resources/sql/practice3.sql`
 > 허브: [[Spring MOC]] · 이전: [[Spring day04 JPA 엔티티와 리포지토리]] · 다음: [[Spring day05 DTO 변환과 초기 데이터 적재]]
 
 [[Spring day04 JPA 엔티티와 리포지토리]] 에서는 표를 SQL로 먼저 만들어 두고 엔티티를 거기에 맞췄다. 이번은 방향이 뒤집힌다. **엔티티가 표의 설계도가 되고, 표는 서버가 뜰 때 그 설계도대로 만들어진다.**
@@ -29,6 +29,8 @@ day05   엔티티가 표의 모양을 적는다    →  뜰 때 표가 만들어
 | `@EntityListeners(AuditingEntityListener.class)` | 값을 채워 줄 구현체 붙이기 (1-6) |
 | `@CreatedDate`·`@LastModifiedDate` | 어느 필드에 무엇을 채울지 표시하기 (1-7) |
 | `AppStart` 의 `@EnableJpaAuditing` | 이 전부를 켜는 한 줄 (1-8) |
+| `day05/practice` 의 `MovieEntity` | 같은 구조를 새 도메인에 옮겨 보기 (1-10) |
+| `sql/practice3.sql` 과 `sql.init` 설정 | 실습마다 DB와 시드를 갈라 두기 (1-11) |
 
 ## 1. 배운 내용
 
@@ -286,7 +288,111 @@ public class AppStart {
 
 `Local` 이 붙은 이름이 말하는 것은 **시간대 정보를 들고 있지 않다**는 뜻이다. "2026-09-03 14:30"만 있고 그것이 어느 지역의 14시 30분인지는 값에 없다. 서버가 한 곳에 있으면 문제가 안 되는데, 지역이 갈리는 사용자를 다루기 시작하면 걸리는 자리다(2-6).
 
-### 1-10. 정리 — 이번에 늘어난 두 축
+### 1-10. 같은 구조를 새 도메인에 옮겨 보기
+
+앞의 것들을 한 번 더, 이번에는 제품이 아니라 영화로 짜 본다. 실습 묶음이 `day05.practice` 라는 패키지로 따로 갈리고, 그 안에 **진입점·공통 클래스·엔티티 세 벌이 새로 놓인다.**
+
+```
+day05/                    TestEntity · BaseTime · AppStart
+day05/practice/           MovieEntity · BaseTime · AppStart      ← 같은 세 자리를 다시
+```
+
+같은 이름의 클래스가 두 벌이 되는데, **패키지가 다르면 서로 다른 클래스**라 부딪히지 않는다. 진입점을 실습마다 따로 두는 배치도 그대로 이어진다 — 1-8에서 정리한 대로 `@EnableJpaAuditing` 은 애플리케이션 하나 단위라, 실습 묶음마다 진입점이 갈려 있으면 **그 묶음의 진입점에 붙어 있어야** 감사가 돈다.
+
+엔티티는 이렇게 된다.
+
+```java
+@Entity
+@Table
+@Getter @Setter @ToString
+@AllArgsConstructor @NoArgsConstructor
+public class MovieEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer movieId;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(length = 100)
+    private String director;
+
+    private LocalDate releasedate;
+    private Double raiting;
+}
+```
+
+필드마다 어떤 판단이 들어갔는지를 늘어놓으면 이렇다.
+
+| 필드 | 적은 것 | 근거 |
+| --- | --- | --- |
+| `movieId` | `@Id` + `IDENTITY` | 키는 DB의 자동 증가에 맡긴다 |
+| `title` | `nullable = false` | 제목 없는 영화는 두지 않는다 |
+| `director` | `length = 100` | `varchar(255)` 를 100으로 줄인다 |
+| `releasedate` | 표시 없음 | 제약이 필요 없으면 안 적는다 |
+| 평점 | `Double` | 소수점이 붙는 값 |
+
+**표시를 안 붙인 필드가 있다는 것이 오히려 요점이다.** `@Column` 은 제약을 적을 때만 붙이는 것이고, 붙이지 않으면 1-2 표의 기본값(`nullable = true`·`length = 255`·컬럼 이름은 필드 이름)이 그대로 걸린다. 제약이 없는 자리에까지 빈 `@Column` 을 붙일 이유는 없다.
+
+`@Table` 을 이름 없이 붙인 것도 갈래가 하나다. 이름을 적지 않으면 **클래스 이름이 그대로 표 이름의 근거**가 되고, 2-8의 카멜→스네이크 변환이 여기에도 걸린다.
+
+```
+클래스 MovieEntity   →  표 movie_entity
+필드  releasedate    →  컬럼 releasedate      (붙여 쓴 이름은 나눌 자리가 없다)
+필드  movieId        →  컬럼 movie_id
+```
+
+표 이름을 다른 것으로 두고 싶으면 `@Table(name = "movie")` 처럼 적어야 한다. **자바 쪽 이름과 표 쪽 이름이 갈리기 시작하는 자리**라, 시드 SQL을 함께 쓸 때는 이 이름이 실제로 무엇으로 만들어졌는지를 `show-sql` 로 확인해 두는 편이 안전하다(1-1).
+
+날짜 타입을 `LocalDate` 로 고른 것은 1-9의 표를 실제로 쓴 자리다. 감사 필드는 "언제 저장했는가"라 시각까지 필요해서 `LocalDateTime` 이었는데, **개봉일은 날짜만 있으면 되므로 `LocalDate`** 다. 담을 것에 맞춰 세 타입 중 하나를 고르는 것이지 큰 쪽을 늘 쓰는 것이 아니다.
+
+### 1-11. 실습마다 DB와 시드를 갈라 두기
+
+설정 파일이 이 실습에 맞춰 함께 움직인다. 바뀐 자리가 둘이다.
+
+```properties
+spring.datasource.url = jdbc:mysql://localhost:3306/practice3
+spring.sql.init.data-locations=classpath:/sql/practice3.sql
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+spring.sql.init.encoding=UTF-8
+```
+
+**연동할 DB와 넣을 시드가 짝을 이뤄 갈린다.** `ddl-auto` 가 `create-drop` 이라 뜰 때마다 표가 새로 만들어지므로(1-1), 시드도 뜰 때마다 다시 들어가야 눈으로 볼 데이터가 생긴다.
+
+여기서 순서가 중요해진다.
+
+```
+서버 뜸
+ → 하이버네이트가 엔티티를 보고 create table          (ddl-auto)
+ → 그 다음에 data-locations 의 SQL 이 돈다             (defer-…=true)
+```
+
+`defer-datasource-initialization=true` 가 하는 일이 **이 순서를 뒤로 미루는 것**이다. 이 값이 없으면 시드 SQL이 표가 만들어지기 전에 돌아서 넣을 표를 못 찾는다. `ddl-auto` 로 표를 만들면서 시드도 함께 쓰는 배치라면 이 한 줄이 늘 따라붙는다.
+
+| 설정 | 하는 일 |
+| --- | --- |
+| `data-locations` | 넣을 SQL 파일의 자리 (`classpath:` = `resources/`) |
+| `mode=always` | 내장 DB가 아니어도 시드를 돌린다 |
+| `defer-datasource-initialization` | 표가 만들어진 뒤로 시드를 미룬다 |
+| `encoding=UTF-8` | 한글이 든 SQL 파일을 읽을 때 |
+
+`mode` 의 기본값이 `embedded` 라 **H2 같은 내장 DB에서만 돌고 MySQL에서는 그냥 넘어간다.** MySQL을 붙여 두고 시드가 안 들어가면 이 값을 먼저 본다.
+
+시드 SQL 자체는 `insert` 를 줄지어 두는 단순한 모양이다.
+
+```sql
+insert into movie(title, director, releasedate, rating, created_date, updated_date)
+    values('영화제목1', '감독1', '2026-09-04', 10, now(), now());
+```
+
+두 가지를 함께 짚어 둘 만하다. 하나는 **시드 SQL의 컬럼 이름이 실제로 만들어진 표와 맞아야 한다**는 것이다. 표를 엔티티가 만드는 배치에서는 컬럼 이름의 근거가 자바 필드 이름과 네이밍 전략이라, 시드를 손으로 적을 때 그 규칙을 따라가야 한다. 앞의 카멜→스네이크 이야기가 여기서 실제 값어치를 갖는다.
+
+다른 하나는 문자열을 감싸는 따옴표다. MySQL은 큰따옴표도 문자열로 받아 주지만 **표준 SQL에서 문자열은 홑따옴표**이고, 큰따옴표는 식별자(컬럼·표 이름)를 감싸는 자리다. DB 설정에 따라 큰따옴표가 식별자로 읽히기도 하므로, 시드 SQL은 홑따옴표로 적어 두는 편이 안전하다.
+
+감사 필드도 한 번 더 짚인다. `BaseTime` 을 같은 패키지에 다시 두더라도, **공통 클래스를 만드는 것과 그 필드를 물려받는 것은 별개의 단계**다. 1-5에서 정리한 대로 `extends BaseTime` 한 줄이 걸려야 `create_date`·`update_date` 컬럼이 그 표에 생긴다. 시드 SQL에 시각 컬럼이 들어 있다면 표에도 그 컬럼이 있어야 하므로, 상속이 걸렸는지와 만들어진 `create table` 문을 함께 보는 것이 확인 순서다.
+
+### 1-12. 정리 — 이번에 늘어난 두 축
 
 day04까지의 엔티티와 견주면 늘어난 것이 두 갈래다.
 
@@ -511,6 +617,9 @@ private Long version;
 - `2026B_Spring/springweb/src/main/java/day05/TestEntity.java` (컬럼의 제약을 자바 쪽에 적기 — `@Column` 여섯 속성(`name`·`nullable`·`length`·`unique`·`columnDefinition`·`insertable`/`updatable`)이 각각 `create table` 문의 어느 자리로 가는지와 앞의 넷은 표를 만들 때·뒤의 둘은 JPA가 SQL을 만들 때 쓰인다는 갈림, `length` 가 `String` 에만 걸리고 숫자 타입에는 무시되는 점과 DB에만 남던 길이 제한을 코드로 끌어오는 자리, 애노테이션이 바로 뒤에 오는 선언 하나에만 붙는다는 규칙과 표시가 여러 개 쌓여도 전부 같은 하나에 붙는 점·붙인 결과를 짐작하지 않고 생성된 DDL로 확인하는 습관, `columnDefinition` 이 컬럼 정의 자리에 들어갈 SQL을 통째로 적는 속성이라 `default`·`comment`·DB 고유 타입처럼 전용 속성이 없는 것을 적을 수 있는 대신 DB를 갈아 끼우면 그 자리만 깨지는 뒷면·다른 속성과 같이 적으면 이쪽이 이기는 점·기본값은 DB가 채우는 것이라 방금 저장한 자바 객체의 필드는 여전히 `null` 인 자리)
 - `2026B_Spring/springweb/src/main/java/day05/BaseTime.java` (되풀이되는 필드를 위로 올리기 — 만든 시각·고친 시각이 어느 표에나 들어가므로 표마다 적지 않고 공통 클래스로 모으는 배치와 `BaseDao` 때와 같은 모양의 문제라는 정리, `@MappedSuperclass` 가 "표가 아니라 물려줄 필드 묶음"이라는 선언인 점과 `@Entity` 를 상속하는 갈래와의 대비(부모가 표를 갖는가·부모로 조회할 수 있는가)·`extends` 를 걸어야 필드가 내려오고 표시는 스스로 아무 일도 하지 않는다는 재확인, `@Getter` 만 두고 `@Setter` 를 두지 않는 이유(사람이 넣는 자리가 아니라 프레임워크가 채우는 자리), `@EntityListeners(AuditingEntityListener.class)` 로 값을 채워 줄 구현체를 붙이기와 JPA의 생명주기 콜백 자리에 리스너가 끼어드는 구조·공통 클래스에 붙여 두면 물려받은 엔티티 전부에 함께 붙는 값어치, `@CreatedDate` 는 처음 한 번·`@LastModifiedDate` 는 저장과 수정마다 채워지는 갈림과 처음 저장 때 둘 다 채워져 두 값을 견주면 수정 여부를 알 수 있는 부수 효과, 감사 표시가 `jakarta.persistence` 가 아니라 `org.springframework.data.annotation` 에서 오는 점과 JPA 규격·하이버네이트·스프링 데이터 세 층이 패키지 이름에 드러나는 자리, `LocalDateTime` 과 `LocalDate`·`LocalTime` 의 갈림·`java.util.Date` 를 대신하는 `java.time` 을 고르는 이유·`Local` 이 시간대를 안 들고 있다는 뜻과 지역이 갈리기 시작하면 걸리는 자리)
 - `2026B_Spring/springweb/src/main/java/day04/practice2/AppStart.java` · `2026B_Spring/springweb/src/main/java/day05/AppStart.java` (감사 기능을 켜는 한 줄 — `@Enable…` 계열이 기능 한 벌에 필요한 빈을 한 번에 등록하는 표시라는 점과 이름이 곧 켜는 기능인 자리, 감사가 도는 데 필요한 세 자리(필드의 표시·엔티티의 리스너·진입점의 활성화)와 하나라도 빠지면 값이 `null` 로 남는 점·시각이 안 채워질 때 이 셋을 위에서부터 훑어 보는 순서, 활성화가 애플리케이션 하나 단위라 실습마다 진입점이 갈려 있으면 감사를 쓰는 쪽에 붙어 있어야 하는 자리와 컴포넌트 스캔 범위 이야기의 반복)
+
+- `2026B_Spring/springweb/src/main/java/day05/practice/MovieEntity.java` · `day05/practice/BaseTime.java` · `day05/practice/AppStart.java` (같은 구조를 새 도메인에 옮겨 보기 — 실습 묶음을 패키지로 갈라 진입점·공통 클래스·엔티티 세 벌을 다시 두는 배치와 패키지가 다르면 같은 이름도 서로 다른 클래스인 점·`@EnableJpaAuditing` 이 애플리케이션 하나 단위라 그 묶음의 진입점에 붙어야 하는 재확인, 필드마다 `@Column` 을 붙일지 말지 고르는 판단(`nullable = false` 로 필수 값·`length` 로 `varchar` 줄이기·제약이 필요 없으면 표시를 안 붙이고 기본값에 맡기기), `@Table` 을 이름 없이 붙였을 때 클래스 이름이 표 이름의 근거가 되는 점과 카멜→스네이크 변환이 표 이름·컬럼 이름 양쪽에 걸리는 자리·표 이름을 따로 두려면 `name` 을 적어야 하는 갈림, 개봉일은 날짜만 필요하므로 `LocalDate` 를 고르는 판단과 담을 것에 맞춰 세 날짜 타입 중 하나를 고르는 기준·소수점이 붙는 값에 `Double` 을 쓰는 자리)
+- `2026B_Spring/springweb/src/main/resources/sql/practice3.sql` · `springweb/src/main/resources/application.properties` (실습마다 DB와 시드를 갈라 두기 — 연동할 DB와 넣을 시드가 짝을 이뤄 바뀌는 배치와 `create-drop` 이라 뜰 때마다 표가 새로 만들어지므로 시드도 매번 다시 들어가야 하는 이유, `defer-datasource-initialization=true` 가 시드 SQL을 표 생성 뒤로 미루는 한 줄이고 없으면 넣을 표를 못 찾는 점, `sql.init.mode` 의 기본값이 `embedded` 라 MySQL에서는 그냥 넘어가므로 시드가 안 들어갈 때 먼저 보는 자리·`data-locations` 의 `classpath:` 가 `resources/` 를 가리키는 점·한글 시드에 필요한 `encoding=UTF-8`, 시드 SQL의 컬럼 이름이 엔티티와 네이밍 전략으로 만들어진 실제 표와 맞아야 하는 점과 문자열은 홑따옴표·큰따옴표는 식별자 자리라는 표준 SQL 쪽 구분)
 
 ## 관련 노트
 
