@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day06 — 연관관계 매핑과 외래키
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day06/BoardEntity.java`, `CategoryEntity.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day05 등록·수정 흐름과 변경 감지]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day05 등록·수정 흐름과 변경 감지]] · 다음: [[Spring day06 양방향 참조와 순환참조]]
 
 day04·day05까지 다룬 엔티티는 전부 **표 하나가 혼자 서 있는** 모양이었다. `test` 한 표, `movie` 한 표, 각자 자기 컬럼만 갖고 서로를 모른다. 실제 DB에서 표는 그렇게 떨어져 있지 않고 외래키로 서로를 가리킨다. **이번은 표 둘 사이의 관계를 자바 코드로 옮기는 실습이다.**
 
@@ -269,4 +269,4 @@ public void addBoard(BoardEntity board) {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day05 등록·수정 흐름과 변경 감지]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day05 등록·수정 흐름과 변경 감지]] · [[Spring day06 양방향 참조와 순환참조]] · [[KDT_2026 학습 지도]]
