@@ -51,9 +51,9 @@ VS Code (읽기 전용) → Claude (분석·작성) → Obsidian Vault (원본)
 - 푸시는 obsidian-git 자동 동기화(30분)가 처리하므로 커밋만 남겨도 된다
 - 원격: `github.com/SeungMinShin01/obsidian-til` (Public — 시크릿·토큰·개인정보 커밋 금지)
 - `.gitignore` 대상: `workspace.json`, `.smart-env/`, `.trash/`, `_규칙/sync-config.json`, `Fast-EQA/`
-- **git 잠금·잔해 처리** (2026-09-01 개정 — bash 삭제가 실제로 동작함을 확인):
-  - 살아있는 잠금(`HEAD.lock`·`index.lock` 등 방금 생긴 것): 몇 초 대기 후 재시도. 계속 남으면 `.stale`로 rename (동시 실행 중인 git 프로세스 보호)
-  - 잔해(`tmp_obj_*`, `__trash_*`, `*.stale`류): rename 금지, **즉시 삭제** (`find .git -name "tmp_obj_*" -delete`). rename을 반복하면 `.stale.stale…`로 오염된다 (2026-09-01 305건 청소 사례)
+- **git 잠금·잔해 처리** (2026-09-01 재개정):
+  - `HEAD.lock` 등 잠금을 만나면 **절대 바로 rename하지 않는다** — obsidian-git 자동 커밋(매 30분)이 잠깐 만드는 정상 파일이다. 30초~1분 대기 후 재시도. rename은 **10분 이상 묵은 잠금**에만 최후수단으로 (즉시 rename이 잔해 122건의 원인이었음)
+  - 잔해(`tmp_obj_*`, `__trash_*`, `*.stale`류)는 rename 금지. **삭제가 되는 세션**은 즉시 삭제(`find .git -name "*.stale*" -delete`), **삭제가 `Operation not permitted`로 막히는 세션**은 잔해를 건드리지 말고 그대로 두고 마스터 세션에 보고만 한다 (마스터가 주기 청소). 잔해는 0바이트 쓰레기라 방치해도 동작엔 무해하다
 
 ### 폴더 구조
 
