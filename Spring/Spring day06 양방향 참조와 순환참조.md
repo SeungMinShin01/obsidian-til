@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day06/exam.java, springweb/src/main/java/day06/BoardEntity.java, springweb/src/main/java/day06/CategoryEntity.java, springweb/src/main/java/day06/ReplyEntity.java, springweb/src/main/java/day06/activity
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day06/exam.java, springweb/src/main/java/day06/BoardEntity.java, springweb/src/main/java/day06/CategoryEntity.java, springweb/src/main/java/day06/ReplyEntity.java, springweb/src/main/java/day06/activity, springweb/src/main/resources/sql/sample.sql, springweb/src/main/resources/sql/practice3.sql, springweb/src/main/resources/application.properties
 작성일: 2026-09-04
 tags: [학습, java]
 ---
 
 # Spring day06 — 양방향 참조와 순환참조
 
-> 실습 파일: `2026B_Spring/springweb/src/main/java/day06/exam.java`, `BoardEntity.java`, `CategoryEntity.java`, `ReplyEntity.java`, `activity/`
+> 실습 파일: `2026B_Spring/springweb/src/main/java/day06/exam.java`, `BoardEntity.java`, `CategoryEntity.java`, `ReplyEntity.java`, `activity/`, `resources/sql/sample.sql`, `resources/sql/practice3.sql`, `resources/application.properties`
 > 허브: [[Spring MOC]] · 이전: [[Spring day06 연관관계 매핑과 외래키]]
 
 앞 노트에서 게시글이 카테고리를 가리키는 단방향까지 만들었다. 게시글에서 카테고리는 타고 갈 수 있지만 카테고리에서 게시글로는 못 간다. **이번은 그 반대 방향을 실제로 열어 보고, 열자마자 따라오는 순환참조를 막는 자리까지 붙이는 실습이다.**
@@ -216,6 +216,118 @@ DB는 참조하는 표에 상대 PK 값을 저장하는 것이 전부다. 조인
 
 **정리하면, 양방향은 JPA에만 있고 DB에는 없다.** 그래서 양방향을 걸어도 표는 하나도 안 바뀌고, 늘어나는 것은 자바 쪽의 편의와 자바 쪽의 문제뿐이다. 실무에서 양방향을 아껴 쓰는 이유도 여기 있다. 필요 없는 자료까지 딸려 오는 통로를 열어 두는 셈이 되기 때문이다.
 
+### 1-7. 관계 표시를 새 도메인에 한 벌 더
+
+게시글-카테고리-댓글로 익힌 것을 실습 패키지에서 다시 짠다. 이번 도메인은 재료와 입출고 기록이다. 재료 하나에 발주·사용 기록이 여러 건 달리므로 앞에서 만든 것과 같은 1:N이다.
+
+```
+product ──1:N──▶ productlog
+menu    ──1:N──▶ recipe
+```
+
+"일" 쪽에는 목록과 세 표시를, "다" 쪽에는 외래키 표시를 둔다.
+
+```java
+@Entity
+@Table(name = "product")
+public class ProductEntity extends BaseTime {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer product_no;
+    private String product_name;
+    private Integer product_price;
+
+    @OneToMany(mappedBy = "productEntity")
+    @ToString.Exclude
+    @Builder.Default
+    private List<ProductLogEntity> productLogList = new ArrayList<>();
+}
+```
+
+```java
+@Entity
+@Table(name = "productlog")
+public class ProductLogEntity extends BaseTime {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer productlog_no;
+    private Integer product_qty;
+    @Column(length = 20)
+    private String product_condition;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    @ToString.Exclude
+    private ProductEntity productEntity;
+}
+```
+
+앞의 실습과 견줘 새로 보이는 자리는 셋이다.
+
+| 자리 | 내용 |
+| --- | --- |
+| `@JoinColumn(name = "product_id")` | 외래키 컬럼 이름을 상대 PK 이름(`product_no`)과 다르게 지어도 된다 |
+| "다" 쪽에도 `@ToString.Exclude` | 한 곳만 끊어도 순환은 멎지만, 기록 한 건을 찍을 때 재료 전체가 딸려 나오는 것도 막고 싶으면 양쪽에 붙인다 |
+| 목록 필드가 없는 껍데기 엔티티 | 관계의 짝을 아직 안 채운 상태로 표만 먼저 잡아 둘 수 있다 |
+
+`mappedBy` 에 적는 문자열은 **상대 엔티티에 실제로 있는 필드 이름**이라, 상대 쪽이 아직 비어 있으면 양쪽이 짝을 이루지 못한다. 문자열이라 컴파일은 지나가고 서버가 뜰 때 걸리므로, 관계는 한쪽만 적어 두고 넘어가지 말고 **양쪽을 함께 채운 뒤 한 번 띄워 보는 편이 안전하다.**
+
+관계를 붙일 자리를 미리 잡아 두되 아직 켜지 않을 때는 주석으로 남겨 둔다.
+
+```java
+// @ManyToOne
+// @JoinColumn(name = "menu_id")
+// private RecipeEntity recipeEntity;
+```
+
+### 1-8. 실습마다 DB와 시드를 갈라 두기
+
+실습 패키지가 늘 때마다 진입점을 새로 두는 것처럼, DB도 실습 단위로 갈라 둔다. SQL 파일 끝에 데이터베이스를 지우고 다시 만드는 세 줄을 붙여 두면 실습을 처음부터 다시 돌리기 쉽다.
+
+```sql
+DROP DATABASE IF EXISTS activity;
+CREATE DATABASE activity;
+USE activity;
+```
+
+설정 쪽은 붙일 DB와 시드 파일을 가리키는 줄만 바꾼다.
+
+```properties
+spring.datasource.url = jdbc:mysql://localhost:3306/activity
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.sql.init.data-locations=classpath:/sql/sample.sql
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+spring.sql.init.encoding=UTF-8
+```
+
+`create-drop` 이라 뜰 때마다 표가 새로 생기고, 시드는 표 생성 뒤로 미뤄져 들어간다. 여기에 이번에 하나가 더 붙는다. **`sql.init.encoding` 은 시드 SQL 파일을 무슨 인코딩으로 읽을지 정하는 줄이다.** 시드에 한글이 섞이면 파일 저장 인코딩과 읽는 인코딩이 어긋나 글자가 깨질 수 있어, 한글 데이터를 넣는 실습에서는 짝으로 따라온다. → [[Spring day05 DTO 변환과 초기 데이터 적재]]
+
+시드 SQL을 적을 때 걸리는 것은 늘 **컬럼 이름**이다.
+
+```sql
+INSERT INTO product (product_name, product_price, create_date, update_date) VALUES
+('햄버거빵', 500, NOW(), NOW()),
+('소고기패티', 1200, NOW(), NOW());
+
+INSERT INTO productLog
+(productLog_no, product_id, product_qty, product_condition,
+ productLog_price, customerLog_day, create_date, update_date)
+VALUES
+(1, 1, 200, '발주', 20000, 1, NOW(), NOW()),
+(2, 2, -100, '사용', 0, 1, NOW(), NOW());
+```
+
+| 값 | 어디서 온 이름인가 |
+| --- | --- |
+| `product_name` | 엔티티 필드 이름 그대로 |
+| `create_date`·`update_date` | 상속받은 `createDate`·`updateDate` 가 네이밍 전략으로 스네이크가 된 결과 |
+| `product_id` | `@JoinColumn(name = …)` 에 적어 둔 이름 |
+
+**필드 이름을 스네이크로 직접 적으면 표 컬럼과 이름이 그대로 같아지고, 카멜로 적으면 네이밍 전략이 스네이크로 바꿔 준다.** 어느 쪽이든 시드는 만들어진 표를 보고 적어야 맞는다. 표를 만든 뒤 `show-sql` 로 나온 `create table` 문의 컬럼 이름을 그대로 옮기는 편이 빠르다.
+
+감사 필드는 상속으로 내려오지만 시드는 SQL로 바로 나가 리스너를 거치지 않으므로 `NOW()` 를 직접 적어 채운다. 외래키 자리(`product_id`)에는 먼저 넣은 재료의 번호가 들어가야 하니, **부모 쪽 `INSERT` 를 자식 쪽보다 먼저 두는 순서**도 같이 지켜야 한다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 관계 필드에는 방향 표시를 하나만 둔다
@@ -343,7 +455,11 @@ boards.forEach(b -> b.getReplyList().size());           // 100번
 - `2026B_Spring/springweb/src/main/java/day06/CategoryEntity.java` (**엔티티에 양방향 얹기** — 순수 자바로 확인한 모양을 그대로 옮겨 `@OneToMany(mappedBy=…)`·`@ToString.Exclude`·`@Builder.Default` 세 표시가 각각 다른 문제를 막는 배치와 없으면 각각 중간 표가 생기고·스택이 넘치고·목록이 `null` 이 되는 갈림, `mappedBy` 괄호에 적는 것이 표 이름이나 컬럼 이름이 아니라 상대 엔티티의 자바 필드 이름이라 필드명을 바꾸면 문자열도 같이 바꿔야 하고 오타가 나도 컴파일은 지나가 서버가 뜰 때 걸리는 점, `@Builder` 가 필드 선언의 초기값을 무시하고 참조형을 `null` 로 채우는 성질과 목록이 `null` 이면 `add` 에서 걸리므로 `@Builder.Default` 가 짝으로 따라오는 자리)
 - `2026B_Spring/springweb/src/main/java/day06/BoardEntity.java` (**한 엔티티가 양쪽 역할을 동시에 맡는 자리** — 카테고리에게는 "다" 쪽이라 `@ManyToOne`+`@JoinColumn` 으로 외래키를 들고 댓글에게는 "일" 쪽이라 `@OneToMany`+목록을 드는 겹침과 표가 몇 개로 늘어도 붙이는 표시 한 벌은 그대로고 새로 적는 것은 상대 엔티티 타입과 이름뿐이라는 확인, 한 필드는 관계 하나를 나타내므로 방향 표시를 하나만 두고 필드 타입이 목록인가 아닌가로 어느 표시가 와야 하는지가 정해지는 기준·필드 타입을 먼저 정하고 표시를 고르면 짝이 어긋나지 않는 순서와 어긋나면 서버가 뜰 때 걸리므로 띄워서 DDL을 확인하는 편이 빠른 점)
 - `2026B_Spring/springweb/src/main/java/day06/ReplyEntity.java` (**관계를 셋으로 늘리기** — 댓글이 게시글에 딸리는 `@ManyToOne`+`@JoinColumn(name="bno")` 이 카테고리-게시글에서 했던 것과 같은 모양인 자리와 `category → board → reply` 로 이어지는 사슬에서 가운데 엔티티만 외래키와 목록을 함께 드는 구조)
-- `2026B_Spring/springweb/src/main/java/day06/activity/BaseTime.java`, `activity/ProductLogEntity.java` (**감사 필드 상속을 관계 실습에도 한 벌 더** — `@MappedSuperclass`+`@EntityListeners(AuditingEntityListener.class)` 공통 클래스를 실습 패키지마다 두고 `extends` 로 물려받는 배치와 상속으로 내려오는 필드는 이 표에 컬럼을 더하는 일이고 관계 필드는 다른 표를 가리키는 일이라 서로 간섭하지 않아 겹쳐 쓸 수 있는 점, `@GeneratedValue(strategy=IDENTITY)`·`@Column(length=…)` 이 관계가 붙은 엔티티에서도 그대로 쓰이는 자리와 감사가 도는 세 조건이 실습 패키지가 갈려도 똑같이 필요한 점)
+- `2026B_Spring/springweb/src/main/java/day06/activity/BaseTime.java`, `activity/AppStart.java` (**감사 필드 상속을 관계 실습에도 한 벌 더** — `@MappedSuperclass`+`@EntityListeners(AuditingEntityListener.class)` 공통 클래스를 실습 패키지마다 두고 `extends` 로 물려받는 배치와 상속으로 내려오는 필드는 이 표에 컬럼을 더하는 일이고 관계 필드는 다른 표를 가리키는 일이라 서로 간섭하지 않아 겹쳐 쓸 수 있는 점, 실습 패키지마다 진입점을 따로 두고 `@SpringBootApplication`+`@EnableJpaAuditing` 을 함께 붙여 스캔 범위와 감사 활성화를 실습 단위로 닫아 두는 배치·감사가 도는 세 조건이 실습 패키지가 갈려도 똑같이 필요한 점)
+- `2026B_Spring/springweb/src/main/java/day06/activity/ProductEntity.java`, `activity/ProductLogEntity.java` (**관계 표시를 새 도메인에 한 벌 더** — 재료 하나에 발주·사용 기록이 여러 건 달리는 1:N을 "일" 쪽 `@OneToMany(mappedBy=…)`+`@ToString.Exclude`+`@Builder.Default` 와 "다" 쪽 `@ManyToOne`+`@JoinColumn` 한 벌로 그대로 옮기는 자리, `@JoinColumn(name="product_id")` 처럼 외래키 컬럼 이름을 상대 PK 이름과 다르게 지어도 되는 점과 "다" 쪽에도 `@ToString.Exclude` 를 붙여 기록 한 건에 재료 전체가 딸려 나오는 것까지 막는 갈래, `@GeneratedValue(strategy=IDENTITY)`·`@Column(length=…)` 이 관계가 붙은 엔티티에서도 그대로 쓰이는 자리, 필드 이름을 스네이크로 직접 적는 갈래와 카멜로 적고 네이밍 전략에 맡기는 갈래의 대비)
+- `2026B_Spring/springweb/src/main/java/day06/activity/MenuEntity.java`, `activity/RecipeEntity.java` (**관계의 짝을 아직 안 채운 상태로 표만 먼저 잡아 두기** — 목록 필드가 없는 껍데기 엔티티를 두고 표 모양부터 확인하는 진행 순서와 `mappedBy` 문자열이 상대 엔티티에 실제로 있는 필드 이름이라 양쪽을 함께 채워야 짝이 성립하는 점·컴파일은 지나가고 서버가 뜰 때 걸리므로 한 번 띄워 확인하는 편이 안전한 자리, 관계를 붙일 자리를 주석으로 미리 남겨 두는 표기)
+- `2026B_Spring/springweb/src/main/resources/application.properties`, `resources/sql/practice3.sql` (**실습마다 DB와 시드를 갈라 두기** — SQL 파일 끝에 `DROP DATABASE IF EXISTS`·`CREATE DATABASE`·`USE` 세 줄을 붙여 실습을 처음부터 다시 돌리기 쉽게 두는 배치와 설정에서 붙일 DB 주소·시드 파일 경로만 바꾸는 자리, `ddl-auto=create-drop`+`defer-datasource-initialization`+`sql.init.mode=always` 조합이 뜰 때마다 표를 새로 만들고 시드를 그 뒤로 미루는 흐름, **`sql.init.encoding` 이 시드 SQL 파일을 무슨 인코딩으로 읽을지 정하는 줄**인 점과 시드에 한글이 섞이면 파일 저장 인코딩과 읽는 인코딩이 어긋나 글자가 깨질 수 있어 짝으로 따라오는 자리)
+- `2026B_Spring/springweb/src/main/resources/sql/sample.sql` (**시드 SQL의 컬럼 이름이 어디서 오는가** — 엔티티 필드 이름 그대로인 것·상속받은 `createDate`·`updateDate` 가 네이밍 전략으로 스네이크가 된 것·`@JoinColumn(name=…)` 에 적어 둔 것 세 갈래와 어느 쪽이든 만들어진 표를 보고 적어야 맞는 점·`show-sql` 로 나온 `create table` 문의 컬럼 이름을 그대로 옮기는 편이 빠른 자리, 감사 필드가 상속으로 내려와도 SQL로 바로 나가는 시드는 리스너를 안 거쳐 `NOW()` 를 직접 적는 점, 외래키 자리에 부모 번호가 들어가야 하므로 부모 쪽 `INSERT` 를 자식 쪽보다 먼저 두는 순서)
 
 ## 관련 노트
 
