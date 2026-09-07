@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-09-03
-tags: [프로젝트노트, 수집기, Python]
+tags: [프로젝트, python]
 ---
 
 # 변경이력 - main.py

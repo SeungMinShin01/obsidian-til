@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-09-03
-tags: [프로젝트노트, 수집기, Actions]
+tags: [프로젝트]
 ---
 
 # 변경이력 - collect.yml

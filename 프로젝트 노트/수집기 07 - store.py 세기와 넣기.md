@@ -1,7 +1,7 @@
 ---
 출처: Claude 대화
 작성일: 2026-08-12
-tags: [프로젝트노트, 수집기, SQLite, Python, 저장]
+tags: [프로젝트, sql, python]
 ---
 
 # 수집기 07 - store.py 세기와 넣기
