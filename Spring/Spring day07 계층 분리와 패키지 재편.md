@@ -144,6 +144,94 @@ Controller  ──▶  Service  ──▶  Repository  ──▶  Entity
 
 이 방식은 층을 다 채우기 전까지는 빌드가 지나가지 않는 구간이 생깁니다. 위층이 부르는 이름이 아래층에 아직 없기 때문입니다. 갈래 하나를 컨트롤러부터 리포지토리까지 세로로 먼저 관통시키고 다음 갈래로 넘어가면 그 구간이 짧아집니다.
 
+비워 둔 그 자리를 실제로 채운 결과가 이어지는 1-8·1-9입니다.
+
+### 1-8. 비어 있던 서비스에 등록 갈래를 채우기
+
+컨트롤러가 먼저 이름만 정해 둔 `courseSave` 의 몸통이 서비스에 들어왔습니다.
+
+```java
+public boolean courseSave(CourseDto courseDto) {
+    CourseEntity courseEntity = courseDto.toEntity();              // 1. dto -> entity
+    CourseEntity savedEntity = courseRepository.save(courseEntity); // 2. 저장
+    if (savedEntity.getCourseId() >= 1)                             // 3. pk가 채워졌는지
+        return true;
+    return false;
+}
+```
+
+세 줄이 하는 일을 나눠 보면 층이 그대로 드러납니다.
+
+| 줄 | 하는 일 | 그 일을 아는 층 |
+| --- | --- | --- |
+| `courseDto.toEntity()` | 웹에서 온 그릇을 표의 그릇으로 바꾼다 | DTO가 스스로 |
+| `courseRepository.save(...)` | 표에 줄을 넣는다 | 리포지토리 |
+| `savedEntity.getCourseId() >= 1` | 결과를 참·거짓 하나로 줄인다 | 서비스 |
+
+성공 판정을 **저장 결과의 PK로** 하는 배치가 요점입니다. `toEntity()` 는 PK를 비워 두고 만들었는데, `save()` 가 돌려주는 객체에는 DB가 채운 번호가 실려 있습니다. 즉 `save()` 에 넣은 객체와 돌려받은 객체를 같은 것으로 보지 않고 **돌려받은 쪽을 봐야 번호를 알 수 있다**는 것이 이 줄의 전제입니다.
+
+번호가 채워졌다는 것은 곧 insert가 나갔다는 뜻이라 성공 신호로 쓸 수 있습니다. 다만 이 판정이 잡아내는 실패의 범위는 좁습니다 (2-6).
+
+### 1-9. 목록 변환과 중첩 DTO 조립
+
+두 번째로 세로로 관통한 갈래가 전체조회입니다. 컨트롤러 쪽에는 `@GetMapping("")` 이 하나 붙고, 반환 타입이 `List<CourseDto>` 로 잡힙니다. 앞머리(`/api/course`)는 등록 갈래와 같고 **HTTP 방식만 갈립니다** — 같은 자원에 대해 주소는 하나로 두고 동사를 방식으로 표현하는 REST의 기본 모양입니다.
+
+| 방식 | 주소 | 하는 일 |
+| --- | --- | --- |
+| `POST` | `/api/course` | 과정 하나 등록 |
+| `GET` | `/api/course` | 과정 전체 조회 |
+
+서비스 쪽 몸통은 이렇습니다.
+
+```java
+public List<CourseDto> courseFindAll() {
+    List<CourseEntity> courseEntities = courseRepository.findAll();
+    List<CourseDto> courseDtos = new ArrayList<>();
+    courseEntities.forEach((courseEntity) -> {
+        CourseDto courseDto = CourseDto.from(courseEntity);
+        courseEntity.getEnrollEntities().forEach((enroll) -> {
+            StudentDto studentDto = StudentDto.from(enroll.getStudentEntity());
+            courseDto.getStudentDtos().add(studentDto);
+        });
+        courseDtos.add(courseDto);
+    });
+    return courseDtos;
+}
+```
+
+**앞 노트에서 "DTO 혼자서는 못 채운다"고 남겨 둔 자리가 여기서 채워집니다.** `CourseDto.from(courseEntity)` 은 과정 표에 있는 값만 채우고 학생 목록은 비운 채로 나옵니다. 그 빈 목록을 서비스가 관계를 타고 들어가 메웁니다.
+
+관계를 몇 칸 타는지가 핵심입니다.
+
+```
+CourseEntity ──getEnrollEntities()──▶ EnrollEntity ──getStudentEntity()──▶ StudentEntity
+   (과정)                                (수강)                              (학생)
+                                                                              │
+                                                                      StudentDto.from()
+                                                                              ▼
+                                                          courseDto.getStudentDtos().add(...)
+```
+
+과정에서 학생까지 **두 칸**입니다. 중간 표(수강)를 반드시 지나야 하는데, 앞서 다대다를 중간 엔티티로 풀어 둔 결과가 코드에 그대로 나타난 자리입니다. 표 설계에서 중간 표를 하나 세우면, 코드에서는 순회가 한 겹 늘어납니다.
+
+바깥·안쪽 두 개의 `forEach` 가 하는 일도 성격이 다릅니다.
+
+| 순회 | 도는 대상 | 만드는 것 |
+| --- | --- | --- |
+| 바깥 | 과정 목록 | 과정 DTO 한 개씩 |
+| 안쪽 | 그 과정의 수강 목록 | 그 과정 DTO 안의 학생 DTO 목록 |
+
+바깥이 결과 리스트의 **줄 수**를 정하고, 안쪽이 각 줄의 **깊이**를 채웁니다.
+
+한 가지 더 눈에 띄는 것은 `courseDto.getStudentDtos().add(...)` 가 곧바로 통한다는 점입니다. `CourseDto` 의 목록 필드가 `= new ArrayList<>()` 로 선언 자리에서 초기화돼 있어 `getStudentDtos()` 가 `null` 이 아닌 빈 리스트를 돌려주기 때문입니다. **컬렉션 필드를 빈 값으로 초기화해 두면 쓰는 쪽에서 `null` 검사가 사라진다**는 관용이 여기서 값을 합니다 (2-8).
+
+정리하면 이 메소드의 모양은 이렇습니다.
+
+```
+findAll() ─▶ 엔티티 목록 ─▶ [ from() 으로 한 겹 변환 ] ─▶ [ 관계 순회로 안쪽 채우기 ] ─▶ DTO 목록
+                            (DTO가 할 수 있는 몫)          (서비스가 해야 하는 몫)
+```
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `@Autowired` 필드 주입과 생성자 주입의 갈림
@@ -206,6 +294,70 @@ public class CourseService {
 
 지금 규모에서는 손으로 다섯 벌을 쓰는 편이 읽기 쉽습니다. 되풀이가 눈에 거슬리기 시작하는 지점을 지나고 나서 골라도 늦지 않습니다.
 
+### 2-6. 저장 결과를 참·거짓 하나로 줄일 때 사라지는 것
+
+PK가 채워졌는지로 성공을 판정하는 방식은 짧지만, `false` 가 나오는 경우가 사실상 없습니다. 저장이 실패하면 `false` 가 돌아오는 것이 아니라 **예외가 던져지기** 때문입니다.
+
+| 상황 | 실제로 일어나는 일 |
+| --- | --- |
+| 정상 저장 | PK가 채워져 `true` |
+| 제약 위반(중복 키·`not null` 등) | `DataIntegrityViolationException` — `if` 까지 못 간다 |
+| 연결 문제 | `DataAccessException` 계열 — 역시 못 간다 |
+
+그래서 `boolean` 반환은 "성공/실패"를 나누는 값이라기보다 **"예외 없이 여기까지 왔다"는 표시**에 가깝습니다. 실패 갈래를 정말 다루려면 판정을 값이 아니라 예외 처리 쪽에 두게 됩니다 — `@RestControllerAdvice` 로 예외를 응답으로 바꾸거나, 저장 전에 조건을 확인해 도메인 예외를 직접 던지는 갈래입니다.
+
+저장된 DTO를 돌려주는 갈래(2-4)와 견주면 이렇게 갈립니다.
+
+| 반환 | 화면 쪽이 알 수 있는 것 |
+| --- | --- |
+| `boolean` | 됐다/안 됐다 |
+| 저장된 DTO | 번호·감사 필드까지 — 방금 만든 것을 바로 그릴 수 있다 |
+
+### 2-7. `forEach` 와 `stream().map()`
+
+목록 변환은 두 표기로 적을 수 있습니다.
+
+```java
+// 1. 리스트를 미리 만들고 채우는 방식
+List<CourseDto> dtos = new ArrayList<>();
+entities.forEach(e -> dtos.add(CourseDto.from(e)));
+
+// 2. 변환 결과를 그대로 모으는 방식
+List<CourseDto> dtos = entities.stream()
+        .map(CourseDto::from)
+        .toList();
+```
+
+| 표기 | 성질 |
+| --- | --- |
+| `forEach` + `add` | 중간에 조건을 넣거나 다른 값을 함께 채우기 쉽다. 담을 리스트를 먼저 선언한다 |
+| `stream().map()` | "무엇을 무엇으로 바꾼다"만 남아 짧다. 변환 도중 곁가지 작업을 넣기 어렵다 |
+
+중첩 조립처럼 **변환 뒤에 손을 더 대야 하는 흐름**은 `forEach` 쪽이 자연스럽고, 단순히 한 겹만 바꾸는 흐름은 `stream` 쪽이 짧습니다. 표기 선택보다 중요한 것은 한 프로젝트 안에서 섞어 쓰지 않는 쪽이 읽기 편하다는 점입니다.
+
+### 2-8. 컬렉션 필드 초기화와 `@Builder.Default`
+
+```java
+private List<StudentDto> studentDtos = new ArrayList<>();
+```
+
+선언 자리 초기화는 `null` 검사를 없애 주지만, `@Builder` 와 함께 두면 한 가지 걸리는 자리가 있습니다. **빌더로 만든 객체는 이 초기값을 쓰지 않고 `null` 로 남습니다.** 빌더가 채우지 않은 필드를 기본값이 아니라 타입의 기본(`null`)으로 두기 때문입니다.
+
+```java
+@Builder.Default
+private List<StudentDto> studentDtos = new ArrayList<>();
+```
+
+`@Builder.Default` 를 붙이면 빌더로 만들 때도 초기값이 적용됩니다. 컬렉션 필드를 가진 DTO를 빌더로 만들어 놓고 바로 `add` 를 부르는 흐름이라면 **어느 경로로 만들어졌는지에 따라 결과가 갈리지 않도록** 짝을 맞춰 두는 편이 안전합니다.
+
+### 2-9. 층을 관통하는 이름을 정하는 기준
+
+컨트롤러가 부를 이름을 먼저 적으면 그 이름이 서비스·리포지토리까지 그대로 내려갑니다(1-7). 그래서 이름 규칙은 한 곳의 취향이 아니라 **세 파일에 동시에 남는 결정**이 됩니다.
+
+- 자바 식별자에는 한글도 쓸 수 있지만, 팀 규약·도구 호환을 생각하면 영문으로 통일해 두는 편이 무난합니다
+- 층마다 이름을 다르게 두면(`courseSave` ↔ `save` ↔ `insert`) 따라 읽을 때 매번 대응을 확인해야 합니다. 한 갈래는 한 이름으로 관통시키는 편이 읽기 쉽습니다
+- 스프링 데이터가 쓰는 어휘(`findAll`·`findById`·`save`)를 위층에서도 그대로 쓰면 이름만 보고 무엇이 나가는지 짐작이 됩니다
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 계층 축과 도메인 축, 패키지를 나누는 두 갈래
@@ -238,7 +390,38 @@ day07/practice/
 
 맞추는 갈래로는 공통 응답 봉투(`{ code, message, data }`)를 두는 방법과, 상태 코드로만 갈라 주고 본문은 데이터만 담는 방법이 있습니다. 전자는 화면 쪽 처리가 하나로 모이고, 후자는 HTTP 규약을 그대로 쓰게 됩니다. `@RestControllerAdvice` + `@ExceptionHandler` 로 예외 응답을 한 자리에 모으는 것은 어느 쪽을 골라도 필요해집니다.
 
-### 3-4. 다음에 볼 키워드
+### 3-4. 중첩 조립이 목록 앞에서 커지는 방향
+
+전체조회의 안쪽 순회(1-9)는 과정 수만큼 반복됩니다. 지연 로딩이 걸려 있으면 `getEnrollEntities()` 를 처음 건드릴 때 수강 조회가 나가고, 그 안에서 `getStudentEntity()` 를 건드릴 때 학생 조회가 또 나갑니다. 과정이 10개이고 과정마다 수강이 5줄이면 쿼리 수가 이렇게 자랍니다.
+
+```
+과정 조회 1
+  + 과정마다 수강 조회 10
+    + 수강마다 학생 조회 50
+```
+
+**관계를 한 겹 더 타면 곱셈이 한 겹 더 붙는다**는 것이 요점입니다. 앞 노트에서 정리한 N+1이 두 단계가 된 모양이고, 푸는 방향도 같습니다 — 조회 시점에 필요한 관계를 함께 읽어 오는 것입니다.
+
+```java
+@Query("select distinct c from CourseEntity c " +
+       "join fetch c.enrollEntities e join fetch e.studentEntity")
+List<CourseEntity> findAllWithStudents();
+```
+
+`distinct` 가 붙는 이유는 조인 결과가 과정 하나를 수강 줄 수만큼 되풀이해 내놓기 때문입니다. 다만 컬렉션을 `join fetch` 하면 페이징이 DB가 아니라 메모리에서 처리되는 제약이 따라오므로, **목록이 커질 화면이라면 조립 방식 자체를 다시 고르게 됩니다** — 과정만 페이징으로 읽고 학생 목록은 별도 조회로 한 번에 모아 붙이는 갈래가 그중 하나입니다.
+
+### 3-5. 조회 전용 흐름을 표시해 두기
+
+전체조회처럼 값을 바꾸지 않는 메소드는 표시로 그 성질을 적어 둘 수 있습니다.
+
+```java
+@Transactional(readOnly = true)
+public List<CourseDto> courseFindAll() { … }
+```
+
+붙여서 얻는 것이 둘입니다. 하나는 변경 감지를 위한 스냅샷을 만들지 않아 목록이 클수록 부담이 줄어드는 것이고, 다른 하나는 **관계를 타고 들어가는 동안 영속성 컨텍스트가 열려 있는 것이 보장**된다는 점입니다. 중첩 조립은 지연 로딩에 기대는 코드라 컨텍스트가 닫힌 뒤에 관계를 건드리면 그 자리에서 걸립니다. 변환을 서비스 안에서 끝내는 배치가 이 사정과 짝입니다.
+
+### 3-6. 다음에 볼 키워드
 
 - `@Transactional` — 붙일 자리, `readOnly`, 자기 호출에 안 먹는 이유
 - `@Valid` · `@NotBlank` · `@Min` — DTO 검사를 본문 앞으로 당기기
@@ -247,16 +430,20 @@ day07/practice/
 - 서비스 인터페이스와 구현 분리 — 나눌 값이 있는 자리와 없는 자리
 - 패키지 바이 피처 · 헥사고날 · 포트와 어댑터
 - `@Query` · 메소드 이름 쿼리 — 리포지토리가 복사에서 벗어나는 지점
+- `join fetch` · `@EntityGraph` · `distinct` — 컬렉션을 함께 읽을 때의 중복과 페이징 제약
+- `@Builder.Default` — 빌더 경로와 생성자 경로에서 기본값이 갈리는 자리
+- `stream().map().collect()` 와 `Collectors.groupingBy` — 목록을 모아 붙이는 표기
+- `OpenSessionInView` 설정과 지연 로딩 예외가 어디서 나는지
 
 ## 실습 파일
 
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/repository/CourseRepository.java` (**리포지토리 층의 최소 형태** — `extends JpaRepository<CourseEntity, Integer>` 한 줄이 몸통 없이 CRUD 메소드를 물려받는 자리, `@Repository` 가 계층을 이름으로 드러내고 DB 예외를 표준 예외로 바꿔 주는 점, 폴더가 갈리며 엔티티를 `import` 하게 되어 의존이 파일 머리에 드러나는 자리)
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/repository/StudentRepository.java` (**제네릭 두 자리만 갈리는 복사** — 도메인이 늘어도 리포지토리 층은 엔티티 타입과 인터페이스 이름만 바뀐다는 실측)
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/repository/EnrollRepository.java` (**중간 엔티티도 자기 리포지토리를 갖는 자리** — 중간 표라고 부모를 통해서만 다루는 것이 아니라 그 자체가 표 하나라 열쇠로 찾고 저장하는 통로가 필요하다는 점, 상태를 바꾸는 갈래가 이 리포지토리를 지나게 되는 자리)
-- `2026B_Spring/springweb/src/main/java/day07/practice/service/CourseService.java` (**서비스 층의 최소 형태** — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `@Autowired` 필드 주입으로 리포지토리를 받아 `new`·`getInstance()` 가 사라지는 자리, 서비스가 컨트롤러를 모르므로 파일만 보고는 HTTP로 불리는지 알 수 없다는 점)
+- `2026B_Spring/springweb/src/main/java/day07/practice/service/CourseService.java` (**서비스 층의 최소 형태이자 두 갈래를 채운 자리** — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `@Autowired` 필드 주입으로 리포지토리를 받아 `new`·`getInstance()` 가 사라지는 자리, 서비스가 컨트롤러를 모르므로 파일만 보고는 HTTP로 불리는지 알 수 없다는 점 / 등록 갈래에서 `toEntity()`→`save()`→`getCourseId() >= 1` 세 줄이 각각 DTO·리포지토리·서비스의 몫으로 갈리고 성공 판정을 **돌려받은** 엔티티의 PK로 한다는 전제, 그 `boolean` 이 잡는 실패 범위가 좁은 이유 / 전체조회 갈래에서 `findAll()` 결과를 `from()` 으로 한 겹 변환한 뒤 과정→수강→학생 **두 칸**을 순회해 `CourseDto` 의 빈 학생 목록을 메우는 조립, 바깥 순회가 줄 수를·안쪽 순회가 깊이를 정하는 대비, `getStudentDtos().add(...)` 가 바로 통하는 근거가 컬렉션 필드의 선언 자리 초기화라는 점)
 - `2026B_Spring/springweb/src/main/java/day07/practice/service/StudentService.java` (**층 골격만 세워 둔 상태** — 몸통이 비어 있어도 빈은 등록되고 주입도 도는 자리와 자리만 잡아 둔 단계라는 뜻)
 - `2026B_Spring/springweb/src/main/java/day07/practice/service/EnrollService.java` (**트랜잭션 경계가 놓일 자리** — 수강신청이 과정 확인·학생 확인·수강 줄 생성 세 단계라 한 묶음이 필요해지고, 컨트롤러는 웹에 붙어 있고 리포지토리는 한 표만 알아 서비스가 묶음의 경계가 되는 사정)
-- `2026B_Spring/springweb/src/main/java/day07/practice/controller/CourseController.java` (**세로로 관통한 갈래 하나** — 클래스 `@RequestMapping` 앞머리와 `@PostMapping("")` 이 이어 붙어 `POST /api/course` 한 자리가 되는 구조, `@RequestBody` 로 DTO를 받아 서비스로 넘기는 세 줄 모양, 위층에서 부를 이름을 먼저 적으면 아래층에 무엇을 만들지가 이름과 매개변수로 정해지는 순서, `boolean` 반환이 남기는 한계)
+- `2026B_Spring/springweb/src/main/java/day07/practice/controller/CourseController.java` (**세로로 관통한 갈래 하나** — 클래스 `@RequestMapping` 앞머리와 `@PostMapping("")` 이 이어 붙어 `POST /api/course` 한 자리가 되는 구조, `@RequestBody` 로 DTO를 받아 서비스로 넘기는 세 줄 모양, 위층에서 부를 이름을 먼저 적으면 아래층에 무엇을 만들지가 이름과 매개변수로 정해지는 순서, `boolean` 반환이 남기는 한계, 뒤이어 `@GetMapping("")` 이 붙으며 같은 주소 `/api/course` 가 **방식으로만 갈리는** 두 자리가 되고 조회 갈래의 반환 타입이 `List<CourseDto>` 로 잡히는 대비)
 - `2026B_Spring/springweb/src/main/java/day07/practice/controller/StudentController.java` (**도메인마다 주소 앞머리를 갈라 두는 배치** — 앞머리가 겹치면 메소드 주소+방식이 충돌할 여지가 생기고 그 충돌은 요청 때가 아니라 서버가 뜰 때 걸린다는 점)
 - `2026B_Spring/springweb/src/main/java/day07/practice/controller/EnrollController.java` (**아직 갈래가 없는 컨트롤러** — 매핑 메소드가 없어도 빈으로 등록되는 자리와 주소 앞머리 표기를 한 프로젝트 안에서 하나로 정해 두는 편이 나은 이유)
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/entity`, `model/dto` (**재편의 결과** — 엔티티·DTO가 `model` 밑으로 들어가며 "데이터를 담고 꺼내는 층"과 "웹 요청을 아는 층"이 폴더로 갈리는 자리, 패키지 선언이 폴더 경로와 같은 값이어야 한다는 규칙)
