@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # Spring day07 — 댓글이 딸린 목록을 화면에 그리기
 
 > 실습 파일: `resources/static/day07/index.html`, `resources/static/day07/index.js`, `resources/static/day07/index.css`, `resources/sql/practice5.sql`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]] · 다음: [[Spring day07 댓글 목록을 품은 DTO 만들기]]
 
 여기까지는 계속 서버 쪽만 쌓아 왔습니다. 관계를 엔티티로 잡고, DTO로 펴고, 계층을 나누고, 번호를 객체로 바꿔 저장하는 자리까지 왔는데 그것을 **실제로 부르는 화면**은 day02 이후로 손대지 않았습니다. 이번에는 게시글과 그에 딸린 댓글을 한 화면에 그리는 피드를 붙입니다.
 
@@ -428,4 +428,4 @@ const text = d.toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' 
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]] · [[Spring day07 댓글 목록을 품은 DTO 만들기]] · [[KDT_2026 학습 지도]]
