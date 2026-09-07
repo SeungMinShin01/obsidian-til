@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day07 — 계층 분리와 패키지 재편
 
 > 실습 파일: `day07/practice/model/repository/CourseRepository.java`, `day07/practice/model/repository/StudentRepository.java`, `day07/practice/model/repository/EnrollRepository.java`, `day07/practice/service/CourseService.java`, `day07/practice/service/StudentService.java`, `day07/practice/service/EnrollService.java`, `day07/practice/controller/CourseController.java`, `day07/practice/controller/StudentController.java`, `day07/practice/controller/EnrollController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 연관 엔티티를 DTO로 펴기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 연관 엔티티를 DTO로 펴기]] · 다음: [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]]
 
 엔티티 세 벌과 DTO 세 벌까지 만들어 둔 상태에서, 그 아래위로 리포지토리·서비스·컨트롤러를 한 층씩 얹은 자리를 정리합니다. 이번에 새로 배운 표시는 거의 없고 대신 **파일을 어디에 두는가**와 **각 층이 무엇을 알아야 하는가**가 주제가 됩니다.
 
@@ -232,6 +232,51 @@ findAll() ─▶ 엔티티 목록 ─▶ [ from() 으로 한 겹 변환 ] ─▶
                             (DTO가 할 수 있는 몫)          (서비스가 해야 하는 몫)
 ```
 
+### 1-10. 삭제 갈래 — 지우기 전에 있는지 보기
+
+세 번째로 관통한 갈래는 학생 쪽입니다. 등록은 과정과 같은 모양이고, 새로 나온 것은 삭제입니다.
+
+```java
+public boolean studentDelete(Integer studentId) {
+    Optional<StudentEntity> optional = studentRepository.findById(studentId);
+    if (optional.isPresent()) {
+        studentRepository.deleteById(studentId);
+        return true;
+    }
+    return false;
+}
+```
+
+두 줄로 나뉜 이유는 **`deleteById` 가 돌려주는 값이 없기 때문**입니다. `save` 는 저장된 엔티티를 돌려줘서 PK로 성공을 판정할 수 있었는데, 삭제는 반환 타입이 `void` 라 그 자리에서는 아무것도 알 수 없습니다.
+
+| 메소드 | 반환 | 성공 판정 |
+| --- | --- | --- |
+| `save` | 저장된 엔티티 | 돌려받은 객체의 PK |
+| `deleteById` | 없음 (`void`) | 별도 확인이 필요하다 |
+
+그래서 지우기 전에 `findById` 로 대상이 있는지 먼저 봅니다. 이 확인은 두 가지를 겸합니다 — 없는 번호로 온 요청에 `false` 를 돌려줄 수 있고, `deleteById` 가 없는 번호를 만났을 때 예외를 던지는 갈래를 피할 수 있습니다.
+
+객체 자체는 쓰지 않고 있는지만 보는 자리라 `existsById` 로도 같은 일을 할 수 있습니다.
+
+```java
+if (!studentRepository.existsById(studentId)) return false;
+studentRepository.deleteById(studentId);
+return true;
+```
+
+`findById` 는 엔티티를 통째로 읽어 오고 `existsById` 는 있는지만 확인합니다. **꺼낸 객체를 쓸 데가 없으면 뒤쪽이 읽어 오는 양이 적습니다.** 어느 쪽이든 확인과 삭제 사이에 두 번 DB에 나가는 것은 같아서, 그 틈을 없애려면 트랜잭션으로 묶게 됩니다.
+
+컨트롤러 쪽은 값 하나만 받으면 되는 모양입니다.
+
+```java
+@DeleteMapping("")
+public boolean studentDelete(@RequestParam(name = "studentId") Integer studentId) {
+    return studentService.studentDelete(studentId);
+}
+```
+
+같은 주소 `/api/student` 에 방식만 갈려 세 자리가 놓였습니다 — `POST` 로 등록하고 `DELETE` 로 지웁니다. 등록은 채울 필드가 여럿이라 `@RequestBody` 로 객체를 받고, 삭제는 대상만 있으면 되므로 `@RequestParam` 으로 값 하나를 받습니다. **무엇을 받는가가 표시를 정한다**는 기준이 한 클래스 안에 나란히 놓인 자리입니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `@Autowired` 필드 주입과 생성자 주입의 갈림
@@ -441,13 +486,13 @@ public List<CourseDto> courseFindAll() { … }
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/repository/StudentRepository.java` (**제네릭 두 자리만 갈리는 복사** — 도메인이 늘어도 리포지토리 층은 엔티티 타입과 인터페이스 이름만 바뀐다는 실측)
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/repository/EnrollRepository.java` (**중간 엔티티도 자기 리포지토리를 갖는 자리** — 중간 표라고 부모를 통해서만 다루는 것이 아니라 그 자체가 표 하나라 열쇠로 찾고 저장하는 통로가 필요하다는 점, 상태를 바꾸는 갈래가 이 리포지토리를 지나게 되는 자리)
 - `2026B_Spring/springweb/src/main/java/day07/practice/service/CourseService.java` (**서비스 층의 최소 형태이자 두 갈래를 채운 자리** — `@Service` 가 `@Component` 와 결과는 같고 이름이 계층을 말해 주는 점, `@Autowired` 필드 주입으로 리포지토리를 받아 `new`·`getInstance()` 가 사라지는 자리, 서비스가 컨트롤러를 모르므로 파일만 보고는 HTTP로 불리는지 알 수 없다는 점 / 등록 갈래에서 `toEntity()`→`save()`→`getCourseId() >= 1` 세 줄이 각각 DTO·리포지토리·서비스의 몫으로 갈리고 성공 판정을 **돌려받은** 엔티티의 PK로 한다는 전제, 그 `boolean` 이 잡는 실패 범위가 좁은 이유 / 전체조회 갈래에서 `findAll()` 결과를 `from()` 으로 한 겹 변환한 뒤 과정→수강→학생 **두 칸**을 순회해 `CourseDto` 의 빈 학생 목록을 메우는 조립, 바깥 순회가 줄 수를·안쪽 순회가 깊이를 정하는 대비, `getStudentDtos().add(...)` 가 바로 통하는 근거가 컬렉션 필드의 선언 자리 초기화라는 점)
-- `2026B_Spring/springweb/src/main/java/day07/practice/service/StudentService.java` (**층 골격만 세워 둔 상태** — 몸통이 비어 있어도 빈은 등록되고 주입도 도는 자리와 자리만 잡아 둔 단계라는 뜻)
+- `2026B_Spring/springweb/src/main/java/day07/practice/service/StudentService.java` (**층 골격만 세워 둔 상태에서 등록·삭제를 채운 자리** — 몸통이 비어 있어도 빈은 등록되고 주입은 도는 점 / 삭제가 두 줄로 나뉘는 이유가 `deleteById` 의 반환이 없어 성공을 그 자리에서 못 보는 데 있다는 정리와 지우기 전 `findById` 확인이 없는 번호 판정과 예외 회피를 겸하는 배치·객체를 안 쓰는 자리라면 `existsById` 로 읽는 양을 줄일 수 있는 갈림·확인과 삭제가 두 번 나가는 틈을 트랜잭션으로 묶는 자리)
 - `2026B_Spring/springweb/src/main/java/day07/practice/service/EnrollService.java` (**트랜잭션 경계가 놓일 자리** — 수강신청이 과정 확인·학생 확인·수강 줄 생성 세 단계라 한 묶음이 필요해지고, 컨트롤러는 웹에 붙어 있고 리포지토리는 한 표만 알아 서비스가 묶음의 경계가 되는 사정)
 - `2026B_Spring/springweb/src/main/java/day07/practice/controller/CourseController.java` (**세로로 관통한 갈래 하나** — 클래스 `@RequestMapping` 앞머리와 `@PostMapping("")` 이 이어 붙어 `POST /api/course` 한 자리가 되는 구조, `@RequestBody` 로 DTO를 받아 서비스로 넘기는 세 줄 모양, 위층에서 부를 이름을 먼저 적으면 아래층에 무엇을 만들지가 이름과 매개변수로 정해지는 순서, `boolean` 반환이 남기는 한계, 뒤이어 `@GetMapping("")` 이 붙으며 같은 주소 `/api/course` 가 **방식으로만 갈리는** 두 자리가 되고 조회 갈래의 반환 타입이 `List<CourseDto>` 로 잡히는 대비)
-- `2026B_Spring/springweb/src/main/java/day07/practice/controller/StudentController.java` (**도메인마다 주소 앞머리를 갈라 두는 배치** — 앞머리가 겹치면 메소드 주소+방식이 충돌할 여지가 생기고 그 충돌은 요청 때가 아니라 서버가 뜰 때 걸린다는 점)
+- `2026B_Spring/springweb/src/main/java/day07/practice/controller/StudentController.java` (**도메인마다 주소 앞머리를 갈라 두는 배치** — 앞머리가 겹치면 메소드 주소+방식이 충돌할 여지가 생기고 그 충돌은 요청 때가 아니라 서버가 뜰 때 걸린다는 점, 같은 주소에 `@PostMapping`·`@DeleteMapping` 이 방식으로만 갈려 놓이는 자리와 등록은 `@RequestBody` 로 객체를·삭제는 `@RequestParam` 으로 값 하나를 받는 갈림의 기준)
 - `2026B_Spring/springweb/src/main/java/day07/practice/controller/EnrollController.java` (**아직 갈래가 없는 컨트롤러** — 매핑 메소드가 없어도 빈으로 등록되는 자리와 주소 앞머리 표기를 한 프로젝트 안에서 하나로 정해 두는 편이 나은 이유)
 - `2026B_Spring/springweb/src/main/java/day07/practice/model/entity`, `model/dto` (**재편의 결과** — 엔티티·DTO가 `model` 밑으로 들어가며 "데이터를 담고 꺼내는 층"과 "웹 요청을 아는 층"이 폴더로 갈리는 자리, 패키지 선언이 폴더 경로와 같은 값이어야 한다는 규칙)
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 연관 엔티티를 DTO로 펴기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 연관 엔티티를 DTO로 펴기]] · [[Spring day07 FK 번호를 엔티티로 바꿔 저장하기]] · [[KDT_2026 학습 지도]]
