@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day07 — 연관 엔티티를 DTO로 펴기
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day07/practice/CourseDto.java`, `day07/practice/StudentDto.java`, `day07/practice/EnrollDto.java`, `day07/practice/EnrollEntity.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 상태를 가진 중간 엔티티]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 상태를 가진 중간 엔티티]] · 다음: [[Spring day07 계층 분리와 패키지 재편]]
 
 앞에서 과정·학생·수강 세 엔티티로 관계를 세워 두었다. 관계를 여는 이야기를 할 때마다 "엔티티를 그대로 내보내지 않고 관계를 평평하게 편 DTO로 푼다"라고 적어 두었는데, 그 대응이 실제 코드로 나온 자리가 여기다.
 
@@ -354,4 +354,4 @@ List<EnrollDto> findAllFlat();
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 상태를 가진 중간 엔티티]] · [[Spring day05 DTO 변환과 초기 데이터 적재]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 상태를 가진 중간 엔티티]] · [[Spring day07 계층 분리와 패키지 재편]] · [[Spring day05 DTO 변환과 초기 데이터 적재]] · [[KDT_2026 학습 지도]]
