@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day07 — FK 번호를 엔티티로 바꿔 저장하기
 
 > 실습 파일: `day07/practice/service/EnrollService.java`, `day07/practice/controller/EnrollController.java`, `day07/practice/model/dto/EnrollDto.java`, `day07/practice/model/entity/EnrollEntity.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 계층 분리와 패키지 재편]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 계층 분리와 패키지 재편]] · 다음: [[Spring day07 댓글이 딸린 목록을 화면에 그리기]]
 
 앞에서 DTO 변환 메소드를 만들면서 **"FK 번호를 엔티티로 바꾸는 일은 서비스 몫"** 이라고 비워 둔 자리가 있었습니다. 수강신청 갈래를 채우면서 그 자리가 실제로 어떻게 메워지는지 정리합니다. 관계를 가진 엔티티를 저장할 때 웹에서 온 번호와 JPA가 요구하는 객체 참조 사이에 생기는 틈이 이번 주제입니다.
 
@@ -398,4 +398,4 @@ Optional<EnrollEntity> findWithNames(@Param("id") Integer id);
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 계층 분리와 패키지 재편]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 계층 분리와 패키지 재편]] · [[Spring day07 댓글이 딸린 목록을 화면에 그리기]] · [[KDT_2026 학습 지도]]
