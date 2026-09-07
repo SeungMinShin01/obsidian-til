@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day07 — 상태를 가진 중간 엔티티
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day07/practice/CourseEntity.java`, `day07/practice/StudentEntity.java`, `day07/practice/EnrollEntity.java`, `day07/practice/BaseTime.java`, `day07/practice/AppStart.java`, `resources/sql/practice4.sql`, `resources/application.properties`
-> 허브: [[Spring MOC]] · 이전: [[Spring day06 중간 엔티티로 푼 다대다]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day06 중간 엔티티로 푼 다대다]] · 다음: [[Spring day07 연관 엔티티를 DTO로 펴기]]
 
 앞에서 메뉴와 재료의 다대다를 레시피 표 하나로 갈라 풀었다. 그때 중간 표에 `recipe_order` 같은 속성 하나가 붙을 수 있다는 것까지는 적어 뒀는데, 그 속성은 어디까지나 "레시피에 딸린 부가 정보"였다. **이번 실습4는 중간 표에 붙은 속성이 그 관계의 본체인 도메인이다.**
 
@@ -266,4 +266,4 @@ Spring day05 등록·수정 흐름과 변경 감지 에서 정리한 더티 체�
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day06 중간 엔티티로 푼 다대다]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day06 중간 엔티티로 푼 다대다]] · [[Spring day07 연관 엔티티를 DTO로 펴기]] · [[KDT_2026 학습 지도]]
