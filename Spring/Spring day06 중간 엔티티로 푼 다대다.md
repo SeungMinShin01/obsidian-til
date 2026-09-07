@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day06 — 중간 엔티티로 푼 다대다
 
 > 실습 파일: `2026B_Spring/springweb/src/main/java/day06/activity/RecipeEntity.java`, `activity/MenuEntity.java`, `activity/ProductEntity.java`, `resources/sql/sample.sql`
-> 허브: [[Spring MOC]] · 이전: [[Spring day06 양방향 참조와 순환참조]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day06 양방향 참조와 순환참조]] · 다음: [[Spring day07 상태를 가진 중간 엔티티]]
 
 앞에서 재료와 입출고 기록을 1:N으로 잇고, 메뉴와 레시피는 목록 필드가 없는 껍데기로 자리만 잡아 뒀다. **이번은 그 껍데기를 채우면서 앞의 1:N으로는 안 되는 관계 하나를 만나는 자리다.**
 
@@ -344,4 +344,4 @@ int cost = menu.getRecipeList().stream()
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day06 양방향 참조와 순환참조]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day06 양방향 참조와 순환참조]] · [[Spring day07 상태를 가진 중간 엔티티]] · [[KDT_2026 학습 지도]]
