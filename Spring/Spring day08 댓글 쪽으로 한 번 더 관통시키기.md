@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 댓글 쪽으로 한 번 더 관통시키기
 
 > 실습 파일: `day08/pratice5_Repeat/model/dto/CommentDto.java`, `service/CommentService.java`, `controller/CommentController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 골격부터 다시 세우는 반복 실습]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 골격부터 다시 세우는 반복 실습]] · 다음: [[Spring day08 새 프로젝트로 옮겨 담는 도메인 층]]
 
 앞 노트에서 게시글 갈래를 DTO → 서비스 → 컨트롤러까지 세로로 한 번 관통시켰습니다. 댓글 쪽은 클래스 자리만 잡아 둔 상태였는데, 이번에 같은 세 층을 댓글 쪽에서 한 번 더 밟았습니다.
 
@@ -271,4 +271,4 @@ return false;
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 골격부터 다시 세우는 반복 실습]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 골격부터 다시 세우는 반복 실습]] · [[Spring day08 새 프로젝트로 옮겨 담는 도메인 층]] · [[KDT_2026 학습 지도]]
