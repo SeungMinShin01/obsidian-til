@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 새 프로젝트로 옮겨 담는 도메인 층
 
 > 실습 파일: `demo/build.gradle`, `demo/settings.gradle`, `demo/src/main/java/com/example/demo/AppStart.java`, `model/entity/BaseTime.java`, `model/entity/BoardEntity.java`, `model/entity/CommentEntity.java`, `model/dto/BoardDto.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]] · 다음: [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]]
 
 앞의 두 노트는 같은 프로젝트(`springweb`) 안에 패키지를 하나 더 파서 게시판을 다시 짜는 실습이었습니다. 이번에는 한 걸음 더 나가서 **프로젝트 자체를 새로 만들고**(`demo`) 그 위에 같은 도메인을 옮겨 담았습니다.
 
@@ -353,4 +353,4 @@ public class BoardDto {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]] · [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]] · [[KDT_2026 학습 지도]]
