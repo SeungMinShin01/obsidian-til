@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day07 — 댓글 목록을 품은 DTO 만들기
 
 > 실습 파일: `day07/practice2/model/entity/BoardEntity.java`, `day07/practice2/model/entity/CommentEntity.java`, `day07/practice2/model/dto/BoardDto.java`, `day07/practice2/model/dto/CommentDto.java`, `day07/practice2/service/BoardService.java`, `day07/practice2/service/CommentService.java`, `day07/practice2/controller/BoardController.java`, `day07/practice2/controller/CommentController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 댓글이 딸린 목록을 화면에 그리기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 댓글이 딸린 목록을 화면에 그리기]] · 다음: [[Spring day08 골격부터 다시 세우는 반복 실습]]
 
 앞에서 화면을 먼저 그려 보면서 **응답이 어떤 모양이어야 하는지**는 이미 정해졌습니다. 게시글이 배열로 오고, 게시글 한 벌 안에 댓글 배열이 또 들어 있는 모양이었습니다. 이번에는 그 모양을 실제로 만들어 내보내는 서버 쪽을 `practice2` 패키지에 한 벌 새로 짭니다.
 
@@ -740,4 +740,4 @@ DB 쪽에도 같은 이야기가 있습니다. 외래키에 `ON DELETE CASCADE` 
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 댓글이 딸린 목록을 화면에 그리기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 댓글이 딸린 목록을 화면에 그리기]] · [[Spring day08 골격부터 다시 세우는 반복 실습]] · [[KDT_2026 학습 지도]]
