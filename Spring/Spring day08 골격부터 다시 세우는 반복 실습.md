@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 골격부터 다시 세우는 반복 실습
 
 > 실습 파일: `day08/pratice5_Repeat/AppStart.java`, `model/entity/BaseTime.java`, `model/entity/BoardEntity.java`, `model/entity/CommentEntity.java`, `model/repository/BoardRepository.java`, `model/repository/CommentRepository.java`, `model/dto/BoardDto.java`, `model/dto/CommentDto.java`, `service/BoardService.java`, `service/CommentService.java`, `controller/BoardController.java`, `controller/CommentController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day07 댓글 목록을 품은 DTO 만들기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day07 댓글 목록을 품은 DTO 만들기]] · 다음: [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]]
 
 앞 실습에서 게시글·댓글 한 벌을 끝까지 만들어 봤습니다. 이번에는 같은 것을 **보지 않고 다시 짜는** 반복 실습을 새 패키지에 시작합니다. 앞 노트들이 "무엇을 왜 그렇게 두는가"를 정리한 것이라면, 이번 실습이 확인하는 것은 다른 물음입니다 — **빈 폴더에서 시작했을 때 어느 순서로 손이 나가는가.**
 
@@ -480,4 +480,4 @@ public void addComment(CommentEntity comment) {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day07 댓글 목록을 품은 DTO 만들기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day07 댓글 목록을 품은 DTO 만들기]] · [[Spring day08 댓글 쪽으로 한 번 더 관통시키기]] · [[KDT_2026 학습 지도]]
