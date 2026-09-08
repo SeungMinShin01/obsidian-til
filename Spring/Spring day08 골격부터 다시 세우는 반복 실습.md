@@ -7,12 +7,12 @@ tags: [학습, java]
 
 # Spring day08 — 골격부터 다시 세우는 반복 실습
 
-> 실습 파일: `day08/pratice5_Repeat/AppStart.java`, `day08/pratice5_Repeat/model/entity/BaseTime.java`, `day08/pratice5_Repeat/model/entity/BoardEntity.java`, `day08/pratice5_Repeat/model/entity/CommentEntity.java`
+> 실습 파일: `day08/pratice5_Repeat/AppStart.java`, `model/entity/BaseTime.java`, `model/entity/BoardEntity.java`, `model/entity/CommentEntity.java`, `model/repository/BoardRepository.java`, `model/repository/CommentRepository.java`, `model/dto/BoardDto.java`, `model/dto/CommentDto.java`, `service/BoardService.java`, `service/CommentService.java`, `controller/BoardController.java`, `controller/CommentController.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day07 댓글 목록을 품은 DTO 만들기]]
 
 앞 실습에서 게시글·댓글 한 벌을 끝까지 만들어 봤습니다. 이번에는 같은 것을 **보지 않고 다시 짜는** 반복 실습을 새 패키지에 시작합니다. 앞 노트들이 "무엇을 왜 그렇게 두는가"를 정리한 것이라면, 이번 실습이 확인하는 것은 다른 물음입니다 — **빈 폴더에서 시작했을 때 어느 순서로 손이 나가는가.**
 
-지금은 계층 폴더를 다 만들어 두고 엔티티 세 파일까지 채운 상태입니다. 그래서 이 노트는 완성된 흐름이 아니라 **골격을 세우는 단계**를 정리합니다. 나머지 층이 채워지면 이 노트에 이어 붙입니다.
+먼저 계층 폴더를 다 만들어 두고 엔티티 세 파일을 채운 뒤, 리포지토리 → DTO → 서비스 → 컨트롤러 순으로 위층까지 올라갔습니다. 그래서 이 노트는 **골격을 세우는 단계(1-1~1-5)**와 **그 위로 층을 채워 올린 단계(1-6~1-9)**를 이어서 정리합니다.
 
 ## 1. 배운 내용
 
@@ -31,7 +31,7 @@ day08/pratice5_Repeat/
 └── service/                    (비어 있음)
 ```
 
-계층 축(`model/entity`·`model/dto`·`model/repository`·`service`·`controller`)은 앞에서 정리한 배치를 그대로 옮겨 왔습니다. 빈 폴더가 남아 있는 것은 빠뜨린 것이 아니라 **자리를 먼저 선언해 둔 것**입니다.
+계층 축(`model/entity`·`model/dto`·`model/repository`·`service`·`controller`)은 앞에서 정리한 배치를 그대로 옮겨 왔습니다. 빈 폴더가 남아 있는 것은 빠뜨린 것이 아니라 **자리를 먼저 선언해 둔 것**입니다. 이 뒤로 리포지토리부터 위로 채워 올린 결과는 1-6 아래에 이어집니다.
 
 | 순서 | 층 | 이 층이 정하는 것 |
 | --- | --- | --- |
@@ -153,6 +153,192 @@ VALUES ('박명수', '1234', '첫 게시글 축하드립니다!', 1, NOW(), NOW(
 
 이 조합 덕분에 **엔티티만 고쳐 서버를 띄우면 표 모양을 바로 확인할 수 있습니다.** 반복 실습에서는 이 점이 꽤 쓸모 있습니다 — 아래층을 다 채우기 전에도 엔티티가 의도한 표를 만드는지 먼저 볼 수 있습니다.
 
+### 1-6. "다" 쪽 필드를 채우고 관계의 짝을 맞추기
+
+골격 단계에서 표시와 상속 자리만 잡아 뒀던 자식 엔티티에 필드를 채웠습니다.
+
+```java
+@Entity
+@Table(name = "comment")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
+public class CommentEntity extends BaseTime {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String author;
+    private String password;
+    private String content;
+
+    @JoinColumn(name = "board_id")
+    @ManyToOne
+    private BoardEntity boardEntity;
+}
+```
+
+시드가 알려 준 대로 PK·값 셋·관계 하나가 들어갔습니다. 여기서 짝이 맞아야 하는 자리는 하나입니다 — **필드 이름 `boardEntity` 가 부모 쪽 `mappedBy = "boardEntity"` 의 값과 같은가.** 둘이 어긋나면 요청을 보내 볼 것도 없이 서버가 뜰 때 걸립니다.
+
+| 표시 | 이 자리에서 하는 일 |
+| --- | --- |
+| `@ManyToOne` | 여러 줄이 한 줄을 바라보는 방향을 선언한다 |
+| `@JoinColumn(name = "board_id")` | 실제 표에 생길 외래키 컬럼 이름을 정한다 |
+| (이름) `boardEntity` | 부모의 `mappedBy` 가 가리키는 자바 필드 |
+
+`@ManyToOne` 은 `@OneToMany` 와 달리 기본 페치가 즉시 로딩입니다. 댓글을 꺼내면 게시글도 함께 따라 나오는 셈이라, 필요할 때만 읽게 하려면 `fetch = FetchType.LAZY` 를 적어 둡니다. 부모 쪽에서는 기본값이라 안 적어도 같았는데, 자식 쪽은 반대라 **적어야 바뀌는 자리**입니다.
+
+### 1-7. 리포지토리 — 두 자리만 갈리는 층
+
+```java
+@Repository
+public interface BoardRepository
+        extends JpaRepository<BoardEntity, Integer> {
+}
+```
+
+```java
+@Repository
+public interface CommentRepository
+        extends JpaRepository<CommentEntity, Integer> {
+}
+```
+
+두 파일에서 갈리는 것은 **인터페이스 이름과 제네릭 첫 자리**뿐입니다. PK 타입이 둘 다 `Integer` 라 둘째 자리도 같습니다. 앞 실습에서 "리포지토리 층은 복사에 가깝다"고 정리했던 것이 반복 실습에서도 그대로였습니다 — 다시 짤 때 가장 빨리 지나가는 층입니다.
+
+기억해 둘 것 세 가지입니다.
+
+- `class` 가 아니라 **`interface`** 여야 합니다. 구현은 스프링이 만들어 등록합니다
+- `@Repository` 는 없어도 동작하지만, 계층을 파일 머리에 적어 두는 값과 DB 예외를 스프링 표준 예외로 바꿔 주는 역할이 있습니다
+- 몸통이 비어 있어도 `findAll`·`findById`·`save`·`delete`·`count`·`existsById` 가 이미 들어와 있습니다
+
+### 1-8. DTO — 목록을 품은 쪽과 번호만 든 쪽
+
+게시글 DTO는 댓글 DTO 목록을 필드로 듭니다.
+
+```java
+@Builder.Default
+private List<CommentDto> comments = new ArrayList<>();
+
+public BoardEntity toEntity() {
+    return BoardEntity.builder()
+            .author(this.author)
+            .password(this.password)
+            .content(this.content)
+            .build();
+}
+
+public static BoardDto from(BoardEntity entity) {
+    return BoardDto.builder()
+            .id(entity.getId())
+            .author(entity.getAuthor())
+            .content(entity.getContent())
+            .createdAt(entity.getCreatedAt())
+            .updatedAt(entity.getUpdatedAt())
+            .build();
+}
+```
+
+두 메소드가 서 있는 자리를 정리하면 이렇습니다.
+
+| 메소드 | 방향 | 담는 것 | 담지 않는 것 |
+| --- | --- | --- | --- |
+| `toEntity()` | 들어오는 쪽 (DTO → 엔티티) | 사용자가 적어 보낸 값 | PK·감사 필드·관계 |
+| `from()` | 나가는 쪽 (엔티티 → DTO) | 한 줄의 값과 번호·시각 | 관계 목록 (비운 채로 둔다) |
+
+`toEntity()` 가 PK와 감사 필드를 안 담는 것은 **그 값들을 정하는 주체가 밖이 아니기 때문**입니다. 번호는 DB가, 시각은 감사 리스너가 채웁니다. 밖에서 보낸 값이 그 자리에 들어올 통로를 아예 안 열어 두는 배치입니다.
+
+`from()` 이 목록을 비워 두는 것도 같은 종류의 선긋기입니다. DTO 하나가 아는 범위는 **엔티티 한 줄**까지고, 여러 엔티티를 모아 조립하는 일은 서비스 몫입니다. 그래서 `@Builder.Default` 로 빈 목록을 깔아 두고, 서비스가 그 목록에 채워 넣습니다.
+
+댓글 DTO는 반대로 부모를 **번호 필드 하나**로만 듭니다. 엔티티는 양방향이지만 DTO는 한쪽만 객체라, 게시글 → 댓글로 내려간 뒤 다시 게시글로 올라올 길이 없습니다. **순환이 성립하지 않는 것이 우연이 아니라 방향을 한쪽으로 고정해 둔 결과**입니다.
+
+### 1-9. 서비스 — 세 갈래를 세로로 관통시키기
+
+```java
+@Service
+public class BoardService {
+    @Autowired
+    private BoardRepository boardRepository;
+
+    public boolean boardSave(BoardDto boardDto) {
+        BoardEntity boardEntity = boardDto.toEntity();
+        BoardEntity savedEntity = boardRepository.save(boardEntity);
+        if (savedEntity.getId() >= 1) return true;
+        return false;
+    }
+}
+```
+
+등록은 세 단계입니다 — **DTO를 엔티티로 바꾸고 · 저장하고 · 돌려받은 것의 번호로 성공을 판정한다.** 판정을 넘긴 객체가 아니라 **돌려받은 객체**로 하는 것이 요점입니다. 저장 전에는 PK가 비어 있고, 번호는 `save` 가 돌려주는 쪽에만 들어 있습니다. 필드 타입을 `Integer` 로 둔 이유도 여기서 다시 드러납니다 — 저장 전 `null` 과 저장 후 번호를 갈라 볼 수 있어야 합니다.
+
+조회는 두 겹 순회입니다.
+
+```java
+boardEntities.forEach((boardEntity) -> {
+    BoardDto boardDto = BoardDto.from(boardEntity);
+    boardEntity.getCommentEntities().forEach((comment) -> {
+        boardDto.getComments().add(CommentDto.from(comment));
+    });
+    boardDtos.add(boardDto);
+});
+```
+
+바깥 순회가 **결과의 줄 수**를, 안쪽 순회가 **각 줄의 깊이**를 정합니다. `from()` 이 비워 둔 목록을 여기서 메우는 것이라, 앞에서 그은 "한 칸 이웃까지는 DTO·여러 엔티티를 모으면 서비스" 경계선이 코드 모양으로 나타납니다. 목록 참조를 꺼내 `add` 하는 표기라 setter가 따로 필요 없다는 점도 그대로입니다.
+
+삭제는 조회 → 대조 → 삭제 세 걸음입니다.
+
+```java
+Optional<BoardEntity> optional = boardRepository.findById(id);
+if (optional.isPresent()) {
+    BoardEntity boardEntity = optional.get();
+    if (boardEntity.getPassword().equals(password)) {
+        boardRepository.delete(boardEntity);
+        return true;
+    }
+}
+return false;
+```
+
+`deleteById` 가 아니라 `findById` 로 꺼내 오는 이유는 **지우기 전에 값을 봐야 하기 때문**입니다. 비밀번호를 대조하려면 그 줄이 손에 있어야 합니다. `Optional` 을 `isPresent` 로 열어 "없음"과 "비밀번호 불일치"를 코드 안에서는 갈라 두지만, 밖으로 나가는 값은 둘 다 `false` 로 뭉칩니다. 이 자리를 상태 코드로 가르는 갈래는 앞 노트에서 정리한 것과 같습니다.
+
+부모를 지우면 `cascade = CascadeType.ALL` 이 실제로 번져 딸린 댓글까지 함께 지워집니다. 골격 단계에서 "부모 없이는 존재할 이유가 없는 자식"이라는 기준으로 골랐던 것이 여기서 동작으로 확인됩니다.
+
+### 1-10. 컨트롤러 — 주소는 하나, 방식으로 가르기
+
+```java
+@RestController
+@RequestMapping("/api/board")
+public class BoardController {
+    @Autowired
+    private BoardService boardService;
+
+    @PostMapping("")
+    public boolean boardSave(@RequestBody BoardDto boardDto) { … }
+
+    @GetMapping("")
+    public List<BoardDto> boardFindAll() { … }
+
+    @DeleteMapping("")
+    public boolean boardDelete(
+            @RequestParam(name = "id") Integer id,
+            @RequestParam(name = "password") String password) { … }
+}
+```
+
+세 메소드가 **주소는 전부 `/api/board` 로 같고 HTTP 방식으로만 갈립니다.** 클래스에 올린 `@RequestMapping` 이 앞머리를 정하고, 메소드 쪽 `("")` 는 앞머리를 그대로 쓴다는 뜻입니다. 주소 체계를 바꿀 일이 생기면 클래스 한 줄만 고치면 됩니다.
+
+값을 받는 표시가 갈리는 기준도 한 클래스 안에 나란히 놓입니다.
+
+| 갈래 | 방식 | 받는 표시 | 받는 것 |
+| --- | --- | --- | --- |
+| 등록 | POST | `@RequestBody` | 객체 한 벌 (본문의 JSON) |
+| 조회 | GET | (없음) | — |
+| 삭제 | DELETE | `@RequestParam` | 값 두 개 (쿼리스트링) |
+
+**무엇을 받는가가 표시를 정합니다.** 필드가 여럿인 한 벌은 본문에 싣고, 값 한둘은 쿼리스트링으로 받습니다. `name = "id"` 처럼 이름을 적어 두는 것은 바깥에서 쓰는 이름과 자바 매개변수 이름을 갈라 둘 수 있게 하려는 것이고, 컴파일 옵션에 따라 매개변수 이름이 `.class` 에 안 남을 수 있어서이기도 합니다.
+
+다만 삭제에 쓰는 비밀번호가 쿼리스트링에 실리면 **주소가 남는 곳마다 값이 함께 남습니다**(브라우저 기록·서버 접근 로그·중간 장비). 실습 범위를 넘어가면 본문으로 옮기거나 인증 수단 자체를 바꾸는 편이 안전합니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 엔티티만 채운 상태에서 표 모양 먼저 확인하기
@@ -197,6 +383,31 @@ public void addComment(CommentEntity comment) {
 
 엔티티를 짜는 단계에서 함께 넣어 두면 서비스가 이 메소드 한 줄만 부르면 됩니다. 짝을 맞추는 책임이 엔티티 안으로 들어가는 배치입니다.
 
+### 2-5. 층을 다 채운 뒤 실제로 갈린 자리
+
+2-2에서 세워 둔 예상 — 아래층일수록 갈림이 줄고 위층일수록 는다 — 을 실제 결과와 맞춰 보면 이렇습니다.
+
+| 층 | 두 번째로 짤 때 걸린 지점 |
+| --- | --- |
+| entity | 자식 쪽 필드 이름과 부모 `mappedBy` 값 맞추기 한 자리 |
+| repository | 없음 — 이름과 제네릭 한 자리만 |
+| dto | 컬렉션 필드의 `@Builder.Default`, `from()` 이 무엇까지 담을지 |
+| service | 순회 깊이, `Optional` 을 여는 자리, 성공 판정을 무엇으로 할지 |
+| controller | 받는 표시 고르기, 주소를 방식으로만 가를지 |
+
+**표시 한 줄은 기억에 안 남고 흐름은 남는다**는 것이 다시 확인됩니다. 그래서 두 번째로 짤 때 참고할 것을 남긴다면, 전체 코드보다 **표시 목록과 그것이 막는 증상**을 적어 둔 쪽이 쓸모가 큽니다.
+
+### 2-6. 서비스 하나가 여러 리포지토리를 드는 자리
+
+댓글 등록처럼 **번호를 객체로 바꿔 넣어야 하는 갈래**는 자기 표의 리포지토리만으로는 안 됩니다. 부모를 `findById` 로 꺼내 자식에 꽂아 줘야 하기 때문에, 댓글 서비스가 게시글 리포지토리도 함께 주입받게 됩니다.
+
+```java
+@Autowired private CommentRepository commentRepository;
+@Autowired private BoardRepository boardRepository;
+```
+
+서비스의 단위가 **"표 하나"가 아니라 "하나의 일"** 이라는 정리가 여기서 나옵니다. 여러 리포지토리를 함께 부르는 묶음의 경계가 곧 트랜잭션 경계가 되고, `@Transactional` 이 이 층에 붙는 이유도 같습니다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 같은 것을 다시 짜 보는 연습이 잡아 주는 것
@@ -235,6 +446,8 @@ public void addComment(CommentEntity comment) {
 - service — 두 겹 순회 조립, 번호를 객체로 바꿔 넣기, 조회 → 대조 → 삭제
 - controller — 같은 주소를 HTTP 방식으로 가르기, `@RequestBody` 와 `@RequestParam` 이 갈리는 자리
 
+네 층을 게시글 쪽으로 한 번 관통시켜 본 결과가 1-7~1-10입니다. 댓글 쪽은 자리만 잡아 둔 상태라, 다음 걸음은 **같은 세 갈래를 댓글 쪽에서 한 번 더** 밟아 보는 것입니다 — 등록에서 번호를 객체로 바꿔 넣기, 삭제에서 조회 → 대조 → 삭제, 그리고 게시글 주소 아래에 댓글 주소를 붙이는 설계까지.
+
 그리고 컬렉션을 건드리는 순간 지연 로딩이 도는 자리 — 게시글 수만큼 댓글 조회가 나가는 1+N — 도 다시 나옵니다. 반복 실습에서는 이번엔 `@BatchSize` 나 `join fetch` 를 얹어 보면서 **쿼리 개수가 실제로 줄어드는지 콘솔로 확인**해 보는 것이 한 걸음 더 나가는 방향입니다. `show-sql` 이 켜져 있으니 세어 보기만 하면 됩니다.
 
 ### 3-4. 다음에 볼 키워드
@@ -243,6 +456,7 @@ public void addComment(CommentEntity comment) {
 - `@MappedSuperclass` 와 `@Inheritance` 세 전략의 갈림
 - `mappedBy` 와 연관관계의 주인 · 주인을 잘못 잡았을 때 생기는 표
 - 연관관계 편의 메소드 · 양쪽 필드 동기화
+- `@ManyToOne` 의 기본 페치가 즉시 로딩인 점과 `@OneToMany` 와 반대로 `LAZY` 를 적어야 바뀌는 자리
 - `create-drop` 과 `validate` 로 엔티티·표 어긋남을 시작 시점에 잡기
 - `@BatchSize` · `default_batch_fetch_size` · `join fetch` 와 `distinct`
 - `show-sql` 로 쿼리 개수 세어 보기 · `p6spy` 로 바인딩 값까지 보기
@@ -253,7 +467,14 @@ public void addComment(CommentEntity comment) {
 - `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/AppStart.java` (**실습 묶음마다 진입점 한 벌** — 패키지가 다르면 이름이 같아도 다른 클래스라 컴포넌트 스캔 범위가 묶음 단위로 잘리는 배치와 진입점이 여럿일 때 그레이들 `mainClass` 로 고르는 자리, `@EnableJpaAuditing` 이 감사가 도는 세 자리 중 하나인 점)
 - `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/entity/BaseTime.java` (**공통 필드를 물려주는 클래스를 실습마다 한 벌씩** — `@MappedSuperclass` 로 자기 표 없이 필드만 내려보내는 선언과 `@EntityListeners(AuditingEntityListener.class)` 로 값을 채울 구현체를 붙이는 자리, `@CreatedDate`·`@LastModifiedDate` 의 갈림, `@Setter` 를 두지 않아 시각을 코드가 아니라 리스너가 채우게 두는 배치, 감사 세 자리 중 하나만 빠져도 오류 없이 `null` 로 남는 점)
 - `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/entity/BoardEntity.java` (**"일" 쪽 세 표시를 손으로 다시 적어 보는 자리** — `mappedBy` 가 상대 엔티티의 자바 필드 이름이라 자식 쪽 필드 이름을 먼저 정하고 옮겨 적는 순서, `@ToString.Exclude` 로 왕복을 한쪽에서 끊기, `@Builder.Default` 로 빌더가 무시하는 초기값을 되살리기, `cascade = ALL` 을 "부모 없이는 존재할 이유가 없는 자식"이라는 기준으로 판단하는 자리, `fetch = LAZY` 가 `@OneToMany` 의 기본값이라 뜻을 적어 두는 표기, PK 필드 이름을 처음부터 화면 쪽 이름(`id`)으로 정해 두면 변환 메소드 두 곳도 안 건드리게 되는 점)
-- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/entity/CommentEntity.java` (**표시 한 벌과 상속 자리를 먼저 잡고 필드를 채우는 순서** — `extends BaseTime` 이 먼저 들어가 있어 뒤에 적을 것이 PK·값 셋·관계 하나로 좁혀지는 자리, 관계 필드 이름이 곧 부모 쪽 `mappedBy` 값이 되는 짝)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/entity/CommentEntity.java` (**표시 한 벌과 상속 자리를 먼저 잡고 필드를 채우는 순서** — `extends BaseTime` 이 먼저 들어가 있어 뒤에 적을 것이 PK·값 셋·관계 하나로 좁혀지는 자리, 관계 필드 이름이 곧 부모 쪽 `mappedBy` 값이 되는 짝, `@ManyToOne` 이 방향을 `@JoinColumn(name = "board_id")` 이 실제 외래키 컬럼 이름을 정하는 갈림, `@ManyToOne` 의 기본 페치가 즉시 로딩이라 `@OneToMany` 와 반대로 `LAZY` 를 적어야 바뀌는 자리)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/repository/BoardRepository.java`, `CommentRepository.java` (**두 자리만 갈리는 층** — 인터페이스 이름과 제네릭 첫 자리만 갈리고 PK 타입이 같아 둘째 자리도 같은 실측, `class` 가 아니라 `interface` 여야 구현을 물려받는 점, `@Repository` 가 계층 표시이자 DB 예외를 표준 예외로 바꾸는 자리, 몸통이 비어 있어도 `findAll`·`findById`·`save`·`delete` 가 이미 들어와 있는 구조)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/dto/BoardDto.java` (**목록을 품은 쪽 DTO** — 댓글 DTO 목록을 필드로 들어 JSON 중첩 배열이 되는 한 줄과 `@Builder.Default` 로 빌더가 무시하는 초기값을 되살리는 짝, `toEntity()` 가 PK·감사 필드·관계를 안 담아 밖에서 값이 들어올 통로를 좁히는 배치, `from()` 이 목록을 비운 채로 두어 "한 칸 이웃까지는 DTO·여러 엔티티를 모으면 서비스"라는 경계선이 그어지는 자리)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/dto/CommentDto.java` (**번호만 든 쪽 DTO** — 엔티티는 양방향인데 DTO는 한쪽만 객체이고 반대쪽은 번호라 되돌아 올라올 길이 없어 순환이 성립하지 않는 대비, 펴는 방향을 "화면이 무엇을 한 번에 보는가"로 한쪽에 고정해 둔 결과라는 정리)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/service/BoardService.java` (**세 갈래를 세로로 관통시키는 자리** — 등록의 세 단계와 성공 판정을 넘긴 객체가 아니라 **돌려받은** 엔티티의 PK로 하는 전제·필드 타입을 `Integer` 로 둔 이유가 저장 전 `null` 과 저장 후 번호를 갈라 보는 데 있는 점, 조회의 두 겹 순회에서 바깥이 줄 수를 안쪽이 깊이를 정하는 대비와 `from()` 이 비워 둔 목록을 서비스가 메우는 배치·목록 참조를 꺼내 `add` 하는 표기라 setter가 필요 없는 점, 삭제의 조회 → 대조 → 삭제 세 걸음과 `deleteById` 가 아니라 `findById` 로 꺼내 오는 이유가 "지우기 전에 값을 봐야 해서"인 점·없음과 비밀번호 불일치가 같은 `false` 로 뭉치는 자리·`cascade = ALL` 이 실제로 번져 딸린 댓글까지 지워지는 확인)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/service/CommentService.java` (**서비스의 단위가 "표 하나"가 아니라 "하나의 일"인 자리** — 번호를 객체로 바꿔 넣는 갈래가 이웃 표의 리포지토리도 함께 주입받게 만드는 사정과 여러 리포지토리를 함께 부르는 묶음의 경계가 곧 트랜잭션 경계가 되는 점)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/controller/BoardController.java` (**주소는 하나, 방식으로 가르는 REST 기본 모양** — 클래스 `@RequestMapping` 앞머리와 메소드 쪽 `("")` 가 이어 붙는 구조와 주소 체계를 한 자리에서 바꾸는 값어치, 등록은 `@RequestBody` 로 객체 한 벌을·삭제는 `@RequestParam` 으로 값 둘을 받아 "무엇을 받는가가 표시를 정한다"가 한 클래스에 나란히 놓이는 자리, `name` 속성으로 바깥 이름과 자바 매개변수 이름을 갈라 두는 표기와 매개변수 이름이 `.class` 에 안 남을 수 있는 점, 값이 쿼리스트링에 실리면 주소가 남는 곳마다 함께 남는 부담)
+- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/controller/CommentController.java` (**주소 앞머리를 먼저 정해 두고 갈래를 채우는 순서** — 댓글 주소를 게시글 주소와 나란히 둘지 그 아래에 붙일지가 관계를 주소에 드러낼지의 갈림인 자리)
 - `2026B_Spring/springweb/src/main/resources/sql/practice5.sql` (**시드가 채울 컬럼을 알려 주는 자리** — 감사 컬럼에 `NOW()` 를 직접 넣는 이유가 SQL로 바로 나가는 INSERT는 JPA 리스너를 안 거치기 때문인 점과 `board_id` 외래키가 자식 표에만 있는 구조)
 - `2026B_Spring/springweb/src/main/resources/application.properties` (**같은 실습을 다시 짤 때는 설정에서 바꿀 것이 없는 자리** — `create-drop`·`defer-datasource-initialization`·`sql.init.mode=always`·`show-sql` 조합 덕분에 엔티티만 고쳐 띄워도 `create table` 문으로 표 모양을 바로 확인할 수 있는 점)
 
