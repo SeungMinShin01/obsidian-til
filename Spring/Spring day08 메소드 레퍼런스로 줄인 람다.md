@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 메소드 레퍼런스로 줄인 람다
 
 > 실습 파일: `day08/exam/exam4.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 컬렉션 순회와 스트림 API]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 컬렉션 순회와 스트림 API]] · 다음: [[Spring day08 쿼리 메소드와 네이티브 쿼리]]
 
 앞 노트에서 스트림 체인을 이어 보며 마지막에 메소드 레퍼런스를 이름만 훑고 지나갔습니다. 이번 실습은 그 표기 하나만 떼어 다시 보는 자리입니다. 이름 네 개짜리 리스트를 놓고 **같은 일을 람다로 한 번, 메소드 레퍼런스로 한 번씩 나란히 적어** 두 줄이 같은 결과를 내는지 눈으로 확인합니다.
 
@@ -397,4 +397,4 @@ names.forEach(System.out::println);
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 컬렉션 순회와 스트림 API]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 컬렉션 순회와 스트림 API]] · [[Spring day08 쿼리 메소드와 네이티브 쿼리]] · [[KDT_2026 학습 지도]]
