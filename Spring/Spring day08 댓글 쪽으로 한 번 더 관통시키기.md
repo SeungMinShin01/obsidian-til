@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/dto/CommentDto.java, service/CommentService.java, controller/CommentController.java
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day07/pratice5_Repeat/model/dto/CommentDto.java, service/CommentService.java, controller/CommentController.java
 작성일: 2026-09-08
 tags: [학습, java]
 ---
 
 # Spring day08 — 댓글 쪽으로 한 번 더 관통시키기
 
-> 실습 파일: `day08/pratice5_Repeat/model/dto/CommentDto.java`, `service/CommentService.java`, `controller/CommentController.java`
+> 실습 파일: `day07/pratice5_Repeat/model/dto/CommentDto.java`, `service/CommentService.java`, `controller/CommentController.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day08 골격부터 다시 세우는 반복 실습]] · 다음: [[Spring day08 새 프로젝트로 옮겨 담는 도메인 층]]
 
 앞 노트에서 게시글 갈래를 DTO → 서비스 → 컨트롤러까지 세로로 한 번 관통시켰습니다. 댓글 쪽은 클래스 자리만 잡아 둔 상태였는데, 이번에 같은 세 층을 댓글 쪽에서 한 번 더 밟았습니다.
@@ -265,9 +265,9 @@ return false;
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/model/dto/CommentDto.java` (**번호만 든 쪽 DTO에 변환 메소드를 채우는 자리** — 부모를 `Integer boardId` 하나로만 들어 게시글 DTO가 목록을 통째로 든 것과 정확히 반대 방향이 되는 대비와 그 비대칭 덕분에 순환이 성립하지 않는 점, `toEntity()` 가 값 셋만 담아 번호·시각·부모 참조의 통로를 안 여는 배치와 `boardId` 필드가 있는데도 변환에서 안 쓰이는 이유가 "번호를 객체로 바꾸려면 리포지토리가 필요한데 DTO는 그 층을 모른다"는 경계선인 점)
-- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/service/CommentService.java` (**번호를 객체로 바꿔 끼우는 네 단계** — 웹에서 오는 것은 번호인데 JPA가 요구하는 것은 객체 참조라 그 틈을 메우는 조회가 끼어드는 구조와 번호→객체→번호로 한 바퀴 갔다 오는 수고가 조회에서 점으로 관계를 따라가는 편의와 짝인 점, `findById` 가 객체 얻기와 없는 번호 걸러 내기를 겸해 DB 외래키 제약보다 앞에서 값으로 막는 배치, 성공 판정을 넘긴 객체가 아니라 **돌려받은** 엔티티의 PK로 하는 전제, 리포지토리를 둘 주입받는 자리와 "서비스의 단위는 표 하나가 아니라 하나의 일"이라는 정리·조회와 저장 사이의 틈이 곧 `@Transactional` 이 붙는 자리가 되는 점)
-- `2026B_Spring/springweb/src/main/java/day08/pratice5_Repeat/controller/CommentController.java` (**댓글 주소를 따로 여는 자리** — 앞머리를 `/api/comments` 로 잡아 게시글 주소와 나란히 두는 갈래와 `/api/board/{boardId}/comments` 로 아래에 붙이는 갈래의 대비·"주소에 관계를 드러낼 것인가"가 기준이 되는 점과 부모 번호를 DTO 필드로 이미 받고 있으면 통로가 하나로 모이는 사정, 등록은 `@RequestBody` 로 한 벌을·삭제는 `@RequestParam` 으로 값 둘을 받아 "무엇이 오는가가 표시를 정한다"가 다시 확인되는 자리, 컨트롤러 본문이 서비스 호출 한 줄로 남는 것이 "판단은 서비스가 HTTP 표현은 컨트롤러가"라는 층 나누기의 결과인 점)
+- `2026B_Spring/springweb/src/main/java/day07/pratice5_Repeat/model/dto/CommentDto.java` (**번호만 든 쪽 DTO에 변환 메소드를 채우는 자리** — 부모를 `Integer boardId` 하나로만 들어 게시글 DTO가 목록을 통째로 든 것과 정확히 반대 방향이 되는 대비와 그 비대칭 덕분에 순환이 성립하지 않는 점, `toEntity()` 가 값 셋만 담아 번호·시각·부모 참조의 통로를 안 여는 배치와 `boardId` 필드가 있는데도 변환에서 안 쓰이는 이유가 "번호를 객체로 바꾸려면 리포지토리가 필요한데 DTO는 그 층을 모른다"는 경계선인 점)
+- `2026B_Spring/springweb/src/main/java/day07/pratice5_Repeat/service/CommentService.java` (**번호를 객체로 바꿔 끼우는 네 단계** — 웹에서 오는 것은 번호인데 JPA가 요구하는 것은 객체 참조라 그 틈을 메우는 조회가 끼어드는 구조와 번호→객체→번호로 한 바퀴 갔다 오는 수고가 조회에서 점으로 관계를 따라가는 편의와 짝인 점, `findById` 가 객체 얻기와 없는 번호 걸러 내기를 겸해 DB 외래키 제약보다 앞에서 값으로 막는 배치, 성공 판정을 넘긴 객체가 아니라 **돌려받은** 엔티티의 PK로 하는 전제, 리포지토리를 둘 주입받는 자리와 "서비스의 단위는 표 하나가 아니라 하나의 일"이라는 정리·조회와 저장 사이의 틈이 곧 `@Transactional` 이 붙는 자리가 되는 점)
+- `2026B_Spring/springweb/src/main/java/day07/pratice5_Repeat/controller/CommentController.java` (**댓글 주소를 따로 여는 자리** — 앞머리를 `/api/comments` 로 잡아 게시글 주소와 나란히 두는 갈래와 `/api/board/{boardId}/comments` 로 아래에 붙이는 갈래의 대비·"주소에 관계를 드러낼 것인가"가 기준이 되는 점과 부모 번호를 DTO 필드로 이미 받고 있으면 통로가 하나로 모이는 사정, 등록은 `@RequestBody` 로 한 벌을·삭제는 `@RequestParam` 으로 값 둘을 받아 "무엇이 오는가가 표시를 정한다"가 다시 확인되는 자리, 컨트롤러 본문이 서비스 호출 한 줄로 남는 것이 "판단은 서비스가 HTTP 표현은 컨트롤러가"라는 층 나누기의 결과인 점)
 
 ## 관련 노트
 

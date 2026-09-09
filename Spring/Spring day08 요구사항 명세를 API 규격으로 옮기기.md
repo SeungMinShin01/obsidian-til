@@ -1,14 +1,14 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day08/practice5_test, springweb/src/main/resources/application.properties
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day07/practice5_test, springweb/src/main/resources/application.properties
 작성일: 2026-09-08
 tags: [학습, java]
 ---
 
 # Spring day08 — 요구사항 명세를 API 규격으로 옮기기
 
-> 실습 파일: `springweb/src/main/java/day08/practice5_test/` (`AppStart.java`, `model/entity`, `model/dto`, `model/repository`, `service`, `controller`), `springweb/src/main/resources/application.properties`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]]
+> 실습 파일: `springweb/src/main/java/day07/practice5_test/` (`AppStart.java`, `model/entity`, `model/dto`, `model/repository`, `service`, `controller`), `springweb/src/main/resources/application.properties`
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]] · 다음: [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]]
 
 같은 게시판을 세 번째로 짰습니다. 앞의 두 번과 갈리는 점은 **요구사항 문서가 먼저 있다**는 것입니다. 조건 1부터 5까지가 엔티티 설계·감사 필드·REST API 규격·프론트 연동·시드 SQL로 나뉘어 적혀 있고, 그 문서를 읽어 각 조건이 어느 파일의 어느 줄로 내려앉는지를 정하는 것이 이번 작업이었습니다.
 
@@ -338,13 +338,13 @@ DELETE /api/board 를 틀린 비밀번호로 부르면 → 그대로 남는다
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/java/day08/practice5_test/readme.md` (**명세를 코드 자리로 나누는 작업** — 조건 다섯이 파일로 내려앉는 표와 조건 하나가 파일 하나로 안 떨어지는 자리(감사 필드는 두 파일에·프론트 연동은 DTO 필드 이름이라는 계약으로), 명세의 문단 나눔이 "기능" 축이고 코드의 나눔이 "층" 축이라 기능 하나가 컨트롤러 한 줄과 서비스 한 덩어리로 쪼개지는 대비, 명세가 정하는 것과 내가 정하는 것의 갈림이 곧 "밖에서 보이는 면"과 구현의 경계인 정리, 명세를 읽는 순서를 코드 짜는 순서로 재배열하기(시드 SQL의 컬럼 이름이 가장 구체적이라 먼저 보는 자리))
-- `2026B_Spring/springweb/src/main/java/day08/practice5_test/model/entity/BaseTime.java`, `BoardEntity.java`, `CommentEntity.java` (**명세의 표시를 그대로 옮기는 자리** — 감사가 도는 세 자리(필드 표시·엔티티 리스너·진입점 활성화)와 하나만 빠져도 오류 없이 `null` 로 남는 점·명세가 이 조건을 따로 떼어 적어 둔 이유, `@MappedSuperclass` 가 자기 표를 안 갖는 필드 묶음이라는 표시인 점, `mappedBy` 가 상대 엔티티의 자바 필드 이름이라 자식 쪽 필드 이름이 명세에서 이미 정해진 셈인 자리와 어긋나면 서버가 뜰 때 걸리는 점, `@JoinColumn(name="board_id")` 이 조건 5의 시드 SQL 컬럼 이름과 짝이라 한쪽을 바꾸면 다른 쪽도 함께 봐야 하는 구조, 명세에 없는데 함께 붙는 `@ToString.Exclude`·`@Builder.Default` 가 도메인 요구가 아니라 도구를 써서 따라오는 것이라는 갈림)
-- `2026B_Spring/springweb/src/main/java/day08/practice5_test/model/dto/BoardDto.java`, `CommentDto.java` (**응답 모양이 화면과 맺은 계약** — "작성일시와 댓글 목록이 포함되어야 한다"는 한 줄이 DTO 필드 모양을 정하는 자리와 자바 필드 이름이 그대로 JSON 키가 되므로 화면이 읽는 이름과 맞춰야 하는 점·`@JsonProperty` 로 갈라 두면 값을 따라갈 때 한 단계가 느는 대가, 한 값이 DB 컬럼→엔티티 필드→DTO 필드→JSON 키→화면 코드로 다섯 자리를 지나며 첫 칸만 자동 변환이고 나머지는 손으로 맞추는 실측, 겸용 DTO라 응답에도 비밀번호 자리가 함께 나가는 성질과 빼는 갈래 셋)
-- `2026B_Spring/springweb/src/main/java/day08/practice5_test/controller/BoardController.java`, `CommentController.java` (**주소·파라미터 규격을 맞추는 자리** — 댓글 주소를 게시글 아래에 붙여 소속을 드러내는 갈래와 앞 실습의 나란히 두는 갈래의 대비, 앞머리가 겹쳐도 완전히 같지 않으면 충돌하지 않고 주소+방식의 짝이 같아지면 서버가 뜰 때 걸리는 점, `@RequestParam(name="commentId")` 이 바깥 이름과 자바 매개변수 이름을 갈라 두는 표기이고 밖은 다르고 안은 같은 상태를 흡수하는 자리·컴파일 옵션에 따라 매개변수 이름이 결과물에 안 남는 경우까지 덮는 안전장치인 점, 컨트롤러 표 다섯 줄을 먼저 적어 두고 서버 시작 로그의 매핑 목록과 대조하는 확인 방법)
-- `2026B_Spring/springweb/src/main/java/day08/practice5_test/service/BoardService.java`, `CommentService.java`, `model/repository/` (**세 번째로 밟는 같은 층** — 등록의 변환→저장→PK 판정·조회의 두 겹 조립·삭제의 조회→대조→삭제·댓글 등록의 번호를 객체로 바꿔 끼우는 네 단계가 세 번 모두 같은 모양으로 나오는 실측과 갈림이 바깥층(주소·파라미터 이름·설정)에 몰려 있다는 정리, 반복 실습에서 얻는 것이 손에 익는 것만이 아니라 "어디가 변하는 부분인지"에 대한 실측이라는 점)
+- `2026B_Spring/springweb/src/main/java/day07/practice5_test/readme.md` (**명세를 코드 자리로 나누는 작업** — 조건 다섯이 파일로 내려앉는 표와 조건 하나가 파일 하나로 안 떨어지는 자리(감사 필드는 두 파일에·프론트 연동은 DTO 필드 이름이라는 계약으로), 명세의 문단 나눔이 "기능" 축이고 코드의 나눔이 "층" 축이라 기능 하나가 컨트롤러 한 줄과 서비스 한 덩어리로 쪼개지는 대비, 명세가 정하는 것과 내가 정하는 것의 갈림이 곧 "밖에서 보이는 면"과 구현의 경계인 정리, 명세를 읽는 순서를 코드 짜는 순서로 재배열하기(시드 SQL의 컬럼 이름이 가장 구체적이라 먼저 보는 자리))
+- `2026B_Spring/springweb/src/main/java/day07/practice5_test/model/entity/BaseTime.java`, `BoardEntity.java`, `CommentEntity.java` (**명세의 표시를 그대로 옮기는 자리** — 감사가 도는 세 자리(필드 표시·엔티티 리스너·진입점 활성화)와 하나만 빠져도 오류 없이 `null` 로 남는 점·명세가 이 조건을 따로 떼어 적어 둔 이유, `@MappedSuperclass` 가 자기 표를 안 갖는 필드 묶음이라는 표시인 점, `mappedBy` 가 상대 엔티티의 자바 필드 이름이라 자식 쪽 필드 이름이 명세에서 이미 정해진 셈인 자리와 어긋나면 서버가 뜰 때 걸리는 점, `@JoinColumn(name="board_id")` 이 조건 5의 시드 SQL 컬럼 이름과 짝이라 한쪽을 바꾸면 다른 쪽도 함께 봐야 하는 구조, 명세에 없는데 함께 붙는 `@ToString.Exclude`·`@Builder.Default` 가 도메인 요구가 아니라 도구를 써서 따라오는 것이라는 갈림)
+- `2026B_Spring/springweb/src/main/java/day07/practice5_test/model/dto/BoardDto.java`, `CommentDto.java` (**응답 모양이 화면과 맺은 계약** — "작성일시와 댓글 목록이 포함되어야 한다"는 한 줄이 DTO 필드 모양을 정하는 자리와 자바 필드 이름이 그대로 JSON 키가 되므로 화면이 읽는 이름과 맞춰야 하는 점·`@JsonProperty` 로 갈라 두면 값을 따라갈 때 한 단계가 느는 대가, 한 값이 DB 컬럼→엔티티 필드→DTO 필드→JSON 키→화면 코드로 다섯 자리를 지나며 첫 칸만 자동 변환이고 나머지는 손으로 맞추는 실측, 겸용 DTO라 응답에도 비밀번호 자리가 함께 나가는 성질과 빼는 갈래 셋)
+- `2026B_Spring/springweb/src/main/java/day07/practice5_test/controller/BoardController.java`, `CommentController.java` (**주소·파라미터 규격을 맞추는 자리** — 댓글 주소를 게시글 아래에 붙여 소속을 드러내는 갈래와 앞 실습의 나란히 두는 갈래의 대비, 앞머리가 겹쳐도 완전히 같지 않으면 충돌하지 않고 주소+방식의 짝이 같아지면 서버가 뜰 때 걸리는 점, `@RequestParam(name="commentId")` 이 바깥 이름과 자바 매개변수 이름을 갈라 두는 표기이고 밖은 다르고 안은 같은 상태를 흡수하는 자리·컴파일 옵션에 따라 매개변수 이름이 결과물에 안 남는 경우까지 덮는 안전장치인 점, 컨트롤러 표 다섯 줄을 먼저 적어 두고 서버 시작 로그의 매핑 목록과 대조하는 확인 방법)
+- `2026B_Spring/springweb/src/main/java/day07/practice5_test/service/BoardService.java`, `CommentService.java`, `model/repository/` (**세 번째로 밟는 같은 층** — 등록의 변환→저장→PK 판정·조회의 두 겹 조립·삭제의 조회→대조→삭제·댓글 등록의 번호를 객체로 바꿔 끼우는 네 단계가 세 번 모두 같은 모양으로 나오는 실측과 갈림이 바깥층(주소·파라미터 이름·설정)에 몰려 있다는 정리, 반복 실습에서 얻는 것이 손에 익는 것만이 아니라 "어디가 변하는 부분인지"에 대한 실측이라는 점)
 - `2026B_Spring/springweb/src/main/resources/application.properties` (**실습마다 손대는 두 줄** — DB 주소와 시드 경로만 갈리고 나머지는 한 번 맞춰 두면 그대로 가는 배치, 시드 네 줄이 함께 다니는 이유(파일 지정·표 생성 뒤로 미루기·MySQL에서도 돌게 하기·한글 인코딩)와 `ddl-auto=create-drop`+`show-sql` 로 엔티티만 고쳐 표 모양을 확인하는 통로, 접속 정보가 설정 파일에 평문으로 남아 형상관리에 그대로 올라가는 자리)
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 옮겨 담은 프로젝트에 상위 층 얹기]] · [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]] · [[KDT_2026 학습 지도]]
