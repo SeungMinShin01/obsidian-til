@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 컬렉션 순회와 스트림 API
 
 > 실습 파일: `day08/exam/exam3.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 구현체를 값처럼 넘기는 람다]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 구현체를 값처럼 넘기는 람다]] · 다음: [[Spring day08 메소드 레퍼런스로 줄인 람다]]
 
 앞 노트는 **동작 자체를 값으로 만들어 넘기는 표기**(익명 구현체·람다·표준 함수형 인터페이스 네 개)를 정리한 자리였습니다. 거기서 만든 람다는 대부분 직접 `apply()`·`test()` 를 불러 확인만 했고, "남의 메소드에 넘기는 자리"는 이름만 적어 두고 넘어갔습니다.
 
@@ -428,4 +428,4 @@ return boardRepository.findAll().stream()
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 구현체를 값처럼 넘기는 람다]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 구현체를 값처럼 넘기는 람다]] · [[Spring day08 메소드 레퍼런스로 줄인 람다]] · [[KDT_2026 학습 지도]]
