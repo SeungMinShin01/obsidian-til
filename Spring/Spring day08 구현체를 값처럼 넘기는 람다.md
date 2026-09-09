@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 구현체를 값처럼 넘기는 람다
 
 > 실습 파일: `day08/exam/exam2.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]] · 다음: [[Spring day08 컬렉션 순회와 스트림 API]]
 
 앞 노트는 **다른 클래스의 메소드를 어떻게 부르는가**를 네 표기로 갈라 본 자리였습니다. 거기서 부르는 대상은 언제나 "이미 어딘가에 정의된 메소드"였고, 부르는 쪽은 그 이름을 적기만 했습니다.
 
@@ -362,4 +362,4 @@ Function<Integer, Integer> f = x -> x + base;  // 된다
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 다른 클래스의 메소드를 부르는 네 가지 길]] · [[Spring day08 컬렉션 순회와 스트림 API]] · [[KDT_2026 학습 지도]]
