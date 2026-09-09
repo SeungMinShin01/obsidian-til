@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 다른 클래스의 메소드를 부르는 네 가지 길
 
 > 실습 파일: `day08/exam/exam1.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 요구사항 명세를 API 규격으로 옮기기]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 요구사항 명세를 API 규격으로 옮기기]] · 다음: [[Spring day08 구현체를 값처럼 넘기는 람다]]
 
 앞의 다섯 노트는 같은 게시판을 세 번 짜면서 층을 나누고 이름을 관통시키는 이야기였습니다. 그동안 코드에는 `dto.toEntity()`, `BoardDto.from(entity)`, `boardRepository.findById(...)` 처럼 **다른 클래스의 메소드를 부르는 줄**이 계속 나왔는데, 그 줄들이 어떤 표기로 갈리는지는 그때그때 필요한 만큼만 보고 지나갔습니다.
 
@@ -362,4 +362,4 @@ private final TestService testService;
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 요구사항 명세를 API 규격으로 옮기기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 요구사항 명세를 API 규격으로 옮기기]] · [[Spring day08 구현체를 값처럼 넘기는 람다]] · [[KDT_2026 학습 지도]]
