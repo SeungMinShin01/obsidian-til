@@ -14,3 +14,4 @@ tags: [허브]
 | --- | --- |
 | [[Spring Maven 환경설정]] | JDK·Maven 확인, Spring Initializr로 프로젝트 생성, pom.xml 구조 |
 | [[수집기 프로젝트 MOC]] | 채용공고 무인 수집 파이프라인 프로젝트의 허브 |
+| [[RAG 챗봇 프로젝트 MOC]] | 데이터시트 RAG 챗봇 팀 프로젝트의 허브 — 코드 이해 정리 |
