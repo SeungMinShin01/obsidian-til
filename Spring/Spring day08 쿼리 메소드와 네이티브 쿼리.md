@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day08 — 쿼리 메소드와 네이티브 쿼리
 
 > 실습 파일: `day08/exam/TodoEntity.java`, `day08/exam/TodoRepository.java`, `day08/exam/TodoController.java`, `day08/exam/AppStart.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 메소드 레퍼런스로 줄인 람다]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 메소드 레퍼런스로 줄인 람다]] · 다음: [[Spring day09 화면 쪽 자바스크립트 기초 다시 훑기]]
 
 앞의 네 노트는 자바 문법 쪽으로 잠깐 나가 있던 자리였습니다. 호출 표기 넷 → 람다 → 스트림 → 메소드 레퍼런스로 이어지며 "동작을 값으로 넘기는 방법"을 정리했고, 이번 실습에서 다시 스프링 쪽으로 돌아옵니다.
 
@@ -447,4 +447,4 @@ SQL을 직접 적으면 넓어지는 대신 따라오는 대가가 있습니다.
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 메소드 레퍼런스로 줄인 람다]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 메소드 레퍼런스로 줄인 람다]] · [[Spring day09 화면 쪽 자바스크립트 기초 다시 훑기]] · [[KDT_2026 학습 지도]]
