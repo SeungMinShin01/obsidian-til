@@ -7,7 +7,7 @@ tags: [학습, react]
 
 # React day01 — 컴포넌트와 렌더링
 
-> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam3.jsx`, `package.json`
+> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam4.jsx`, `package.json`
 > 허브: [[React MOC]] · 이전: (없음 — React 첫 노트, 선행 흐름은 JS day14 게시판 CRUD) · 다음: (예정)
 
 React 수업의 첫날이다. 2026_FE에서 하던 순수 JS·DOM 조작과 달리, 새 저장소 `2026_React`는 **Vite로 만든 프로젝트**이고 화면을 "컴포넌트"라는 함수 단위로 그린다. 오늘은 프로젝트가 어떻게 켜지는지(진입점)와 컴포넌트를 하나 만들어 화면에 띄우는 최소 흐름까지 다뤘다.
@@ -178,6 +178,87 @@ export default Component2;
 
 여기서 하나 더 보이는 것 — `<ol>` 안에 `<FrontComp>`·`<BackComp>`를 넣었는데 각 컴포넌트가 `<li>`로 시작하는 조각을 반환한다. `<>…</>`는 실제 DOM에 아무 태그도 남기지 않으므로, 결과 HTML은 `<ol><li>…</li><ul>…</ul><li>…</li><ul>…</ul></ol>`처럼 조각들이 부모 안에 그대로 펼쳐진다. 조각(Fragment)이 "포장 없이 묶는다"는 뜻이 이것이다.
 
+### 1-8. props — 부모가 자식에게 넘기는 객체
+
+```jsx
+// src/example/day01/exam4.jsx
+/*
+    변수: 하나의 값을 저장하는 수
+    매개변수: 함수/메소드에서 (인수)를 받아서 함수 안에서 사용하는 변수
+    인수/인자값: 함수가 실행될 때 함수에게 전달하는 값
+*/
+function plus(x, y) {} // 함수 정의 — x, y 매개변수
+plus(3, 4);            // 함수 호출 — 3, 4 인수
+```
+
+props에 들어가기 전에 용어부터 다시 잡았다. **매개변수**는 함수가 받는 자리 이름(`x`, `y`), **인수**는 부를 때 실제로 넣는 값(`3`, `4`)이다. `plus(3, 4)`는 3을 `x`에, 4를 `y`에 대입하는 것이다. 이 구분이 되어야 props가 무엇인지 한 줄로 설명된다.
+
+> **props = 상위 컴포넌트가 하위 컴포넌트에게 전달하는 객체. 읽기 전용.**
+
+일반 함수에 빗대면 `plus2({ v1: 3, v2: 4 })`처럼 **값 여러 개를 객체 하나에 담아 매개변수 하나로 넘기는 것**과 같다. 컴포넌트 함수의 매개변수 `props`가 그 객체를 받는 자리다.
+
+```jsx
+export default function Component3(props) {
+  let name = "유재석";
+  // --- return 부터 JSX 문법 구역, 주석: { /* 주석 */ }
+  return (
+    <>
+      {/* JSX 주석 */}
+      <div>{name} </div>
+      <input type="text" value="안녕" name="입력상자" />
+      <SubComp1 name="유재석" age="40" />
+    </>
+  );
+}
+
+function SubComp1(props) {
+  console.log(props); // { name: "유재석", age: "40" }
+  return (
+    <>
+      <h4>{props.name}</h4>
+      <h4>{props.age}</h4>
+    </>
+  );
+}
+```
+
+흐름을 표로 정리하면 이렇다.
+
+| 위치 | 코드 | 의미 |
+| --- | --- | --- |
+| 부모 (인수) | `<SubComp1 name="유재석" age="40" />` | 태그의 속성이 곧 넘기는 값. 함수 호출로 치면 `SubComp1({ name: "유재석", age: "40" })` |
+| 자식 (매개변수) | `function SubComp1(props)` | 속성들이 **객체 하나**로 묶여 `props`에 들어온다 |
+| 자식 (사용) | `{props.name}` | JSX 안 `{}`에서 객체 프로퍼티로 꺼내 쓴다 |
+
+`console.log(props)`를 찍어 보면 `{ name: "유재석", age: "40" }`이 나온다. 속성 이름이 그대로 키가 되고, 값은 **문자열**로 들어온다 — `age="40"`은 숫자 40이 아니라 `"40"`이다. 숫자로 넘기고 싶으면 `age={40}`처럼 중괄호를 써야 한다.
+
+읽기 전용이라는 점이 중요하다. 자식 안에서 `props.name = "다른 이름"`처럼 고쳐 쓰지 않는다. 값을 바꾸는 주체는 항상 그 값을 넘겨준 부모다.
+
+#### 함께 나온 JSX 표기 두 가지
+
+| 표기 | 예 | 설명 |
+| --- | --- | --- |
+| JSX 주석 | `{/* 주석 */}` | `return` 안에서는 `//`·`/* */`를 그냥 못 쓴다. 중괄호로 JS 구역을 열고 그 안에 블록 주석을 넣는다 |
+| 변수 끼워 넣기 | `<div>{name}</div>` | `return` 위에서 선언한 JS 변수를 `{}`로 꺼내 쓴다 (2-4와 같은 이야기) |
+
+`return (` 을 기준으로 위는 평범한 JS 구역, 아래는 JSX 구역이다. 주석 표기가 달라지는 것도 이 경계 때문이다.
+
+#### 구조 분해로 받기
+
+```jsx
+function SubComp2({ name, age }) {
+  return (
+    <>
+      <h4>{name}님 {age}세</h4>
+    </>
+  );
+}
+```
+
+`props`를 통째로 받아 `props.name`으로 꺼내는 대신, 매개변수 자리에서 **객체 구조 분해**로 필요한 키만 바로 뽑을 수 있다. `{ name, age }`는 `const { name, age } = props;`를 매개변수 자리에서 한 것과 같다. 본문에서 `props.`를 반복하지 않아도 되어 실무에서는 이쪽이 더 흔하다. 오늘 실습 파일에는 정의만 있고 부모에서 태그로 부르지는 않았지만, `<SubComp2 name="유재석" age="40" />`로 부르면 `SubComp1`과 같은 결과가 나온다.
+
+`main.jsx`에서는 `import Component3 from "./example/day01/exam4.jsx"; create.render(<Component3 />);`로 이 컴포넌트를 그린다. 앞선 `exam1`·`exam2`의 렌더링 줄은 주석 처리되어 있다 — 같은 루트에 `render()`를 여러 번 부르면 마지막 것만 남는다는 1-2의 규칙 때문에, 실습마다 하나만 살려 두는 방식이다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 실행 명령 세 개
@@ -235,19 +316,32 @@ export default function Page() {
 
 부모는 "무엇을 어디에 놓을지"만 정하고, 각 부품의 내용은 자기 함수 안에서 책임진다. 이 분리가 나중에 파일이 수십 개로 늘어도 구조를 읽을 수 있게 해 준다.
 
-### 2-3. props로 값 넘기기 (다음에 바로 쓰게 될 것)
+### 2-3. props를 실전에서 쓰는 관용
+
+1-8의 `SubComp1`·`SubComp2`를 실제 화면에 적용할 때 자주 붙는 표기 몇 가지다.
 
 ```jsx
-// 부모
-<Greeting name="홍길동" />
+// 숫자·불리언·배열·함수는 중괄호로 넘긴다 (따옴표는 전부 문자열)
+<Profile name="유재석" age={40} isAdmin={true} hobbies={["축구", "요리"]} />
 
-// 자식
-export default function Greeting(props) {
-  return <p>안녕, {props.name}</p>;
-}
+// 기본값 — 부모가 안 넘기면 이 값을 쓴다
+function Profile({ name, age = 0, isAdmin = false }) { … }
+
+// 목록 데이터를 props로 흘려 보내기
+const users = [{ id: 1, name: "유재석" }, { id: 2, name: "강호동" }];
+<ul>
+  {users.map((u) => <UserItem key={u.id} name={u.name} />)}
+</ul>
 ```
 
-JSX 안에서 `{}`는 JS 표현식을 끼워 넣는 자리다. 오늘 `props`를 받아만 두었는데, 이렇게 태그의 속성으로 넘긴 값이 `props` 객체에 담겨 온다. JS day10 함수의 매개변수 개념이 그대로다.
+| 관용 | 설명 |
+| --- | --- |
+| `age={40}` | 문자열이 아닌 값은 반드시 `{}`. `age="40"`이면 `"40"` 문자열이 온다 |
+| 기본값 | 구조 분해 자리에서 `= 값`으로 둔다. 없는 키를 `undefined`로 받는 사고를 막는다 |
+| `key` | 배열을 돌려 컴포넌트를 여러 개 찍을 때 React가 각 항목을 구분하는 표식. props처럼 보이지만 자식 `props`에는 들어오지 않는다 |
+| `children` | 태그 사이에 넣은 내용(`<Card>본문</Card>`)이 `props.children`으로 들어온다. 레이아웃 컴포넌트를 만들 때 쓴다 |
+
+props는 부모→자식 한 방향으로만 흐른다. 자식이 부모 값을 바꾸고 싶으면 부모가 **함수를 props로 내려주고** 자식이 그 함수를 부르는 식으로 돌아간다(`onChange={handler}`). 이 패턴은 상태(state)를 배운 뒤에 다시 만난다.
 
 ### 2-4. 컴포넌트 안의 JS 변수 쓰기
 
@@ -285,8 +379,8 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 
 ### 3-3. 다음에 볼 키워드
 
-- `props` 전달과 구조 분해 `function Comp({ name })`
-- `useState` — 상태와 재렌더링
+- `props.children`, `PropTypes`/TypeScript로 props 타입 잡기
+- `useState` — 상태와 재렌더링, 자식→부모로 값을 올리는 콜백 props
 - 조건부 렌더링(`&&`, 삼항), 목록 렌더링(`map` + `key`)
 - 이벤트 핸들러 `onClick`·`onChange`, 제어 컴포넌트(input)
 - `useEffect` — 화면 그린 뒤 실행할 일(fetch 등)
@@ -300,6 +394,7 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 - `KDT_2026/2026_React/src/example/day01/exam1.jsx`
 - `KDT_2026/2026_React/src/example/day01/exam2.jsx` — 헤더·메인·푸터 조립
 - `KDT_2026/2026_React/src/example/day01/exam3.jsx` — 함수 표기 세 가지, 목록·폼 컴포넌트
+- `KDT_2026/2026_React/src/example/day01/exam4.jsx` — 매개변수·인수 용어, props 전달과 구조 분해, JSX 주석
 - `KDT_2026/2026_React/src/App.jsx` (Vite 기본 생성 — 참고용)
 - `KDT_2026/2026_React/package.json`
 
