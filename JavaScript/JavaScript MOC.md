@@ -29,6 +29,9 @@ day02 변수·입출력 ─→ day03 자료형·연산자 ─→ day04 조건문
                                                                 │
                                                                 ▼
 day14 게시판 CRUD ←─ day13 웹스토리지 ←─ day12 CRUD ←─ day11 DOM ←─ day10 함수 ←─ day07 객체
+        │
+        ▼
+React day01 컴포넌트·렌더링
 ```
 
 | day | 노트 | 핵심 |
@@ -44,6 +47,14 @@ day14 게시판 CRUD ←─ day13 웹스토리지 ←─ day12 CRUD ←─ day11
 | 13 | [[JS day13 웹 스토리지와 인터벌]] | localStorage, 쿼리스트링, setInterval |
 | 14 | [[JS day14 게시판 CRUD]] | write/list/view/update 4화면 완성 |
 | 과제 | [[JS 과제 LevelUP과 게시판]] | 모델링·삼항·틱택토·조인, Message_Board |
+
+## React (2026_React)
+
+순수 JS·DOM 조작 다음 단계. Vite 프로젝트에서 컴포넌트 단위로 화면을 그린다.
+
+| day | 노트 | 핵심 |
+| --- | --- | --- |
+| React 01 | [[JS React day01 컴포넌트와 렌더링]] | Vite 구조, `createRoot().render()`, 컴포넌트 함수, JSX 규칙 |
 
 ## 주제별 심화
 

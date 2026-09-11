@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # JS day14 — 게시판 CRUD
 
 > 실습 파일: `day14/test/note`(설계 문서), `write.js`, `list.js`, `view.js`, `update.js`
-> 허브: [[JavaScript MOC]] · 이전: [[JS day13 웹 스토리지와 인터벌]] · 다음: JS 과제 LevelUP과 게시판
+> 허브: [[JavaScript MOC]] · 이전: [[JS day13 웹 스토리지와 인터벌]] · 다음: [[JS React day01 컴포넌트와 렌더링]] (과제: JS 과제 LevelUP과 게시판)
 
 ## 1. 배운 내용
 
