@@ -18,6 +18,7 @@ zones:
     notion: true
     담당: KDT 학습
   JavaScript: { prefix: "JS ", 링크: { 뼈대: "MOC → day 사슬", 가로: 금지, 관문: 허용 }, 개념승격: true, 공개: true, notion: true, 담당: KDT 학습 }
+  React:     { prefix: "React ", 링크: { 뼈대: "MOC → day 사슬", 가로: 금지, 관문: 허용 }, 개념승격: true, 공개: true, notion: true, 담당: KDT 학습 }  # 2026-09-11 JavaScript에서 분리 (원본 2026_React)
   CSS:       { prefix: "CSS ", 링크: { 뼈대: "MOC → day 사슬", 가로: 금지, 관문: 허용 }, 개념승격: true, 공개: true, notion: true, 담당: KDT 학습 }
   HTML:      { prefix: "HTML ", 링크: { 뼈대: "MOC → day 사슬", 가로: 금지, 관문: 허용 }, 개념승격: true, 공개: true, notion: true, 담당: KDT 학습 }
   CS 이론:   { prefix: "SQL |CS ", 링크: { 뼈대: "MOC → day 사슬", 가로: 금지, 관문: 허용 }, 개념승격: true, 공개: true, notion: true, 담당: KDT 학습 }

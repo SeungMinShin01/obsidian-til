@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "수집기",
+  "search": "",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -127,6 +127,13 @@
       }
     },
     {
+      "query": "path:\"React/\"",
+      "color": {
+        "a": 1,
+        "rgb": 6412027
+      }
+    },
+    {
       "query": "path:\"코드정리/JS/\"",
       "color": {
         "a": 1,
@@ -235,6 +242,6 @@
   "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 0.8001385790218217,
-  "close": false
+  "scale": 0.08411635361792973,
+  "close": true
 }
