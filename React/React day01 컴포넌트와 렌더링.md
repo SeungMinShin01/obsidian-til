@@ -7,7 +7,7 @@ tags: [학습, react]
 
 # React day01 — 컴포넌트와 렌더링
 
-> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam4.jsx`, `package.json`
+> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam5.jsx`, `package.json`
 > 허브: [[React MOC]] · 이전: (없음 — React 첫 노트, 선행 흐름은 JS day14 게시판 CRUD) · 다음: (예정)
 
 React 수업의 첫날이다. 2026_FE에서 하던 순수 JS·DOM 조작과 달리, 새 저장소 `2026_React`는 **Vite로 만든 프로젝트**이고 화면을 "컴포넌트"라는 함수 단위로 그린다. 오늘은 프로젝트가 어떻게 켜지는지(진입점)와 컴포넌트를 하나 만들어 화면에 띄우는 최소 흐름까지 다뤘다.
@@ -259,6 +259,100 @@ function SubComp2({ name, age }) {
 
 `main.jsx`에서는 `import Component3 from "./example/day01/exam4.jsx"; create.render(<Component3 />);`로 이 컴포넌트를 그린다. 앞선 `exam1`·`exam2`의 렌더링 줄은 주석 처리되어 있다 — 같은 루트에 `render()`를 여러 번 부르면 마지막 것만 남는다는 1-2의 규칙 때문에, 실습마다 하나만 살려 두는 방식이다.
 
+### 1-9. props로 배열 넘기고 목록으로 찍기
+
+```jsx
+// src/example/day01/exam5.jsx
+function FrontComp(props) {
+  const liRows = []; // 배열
+  for (let i = 0; i < props.propData1.length; i++) {
+    // 부모로부터 전달받은 props 내 propData1 반복
+    liRows.push(<li key={i}>{props.propData1[i]} </li>);
+  }
+  return (
+    <>
+      <li>{props.frTitle}</li> <ul> {liRows} </ul>
+    </>
+  );
+}
+
+// 원래 props 객체인데 구조 분해하여 propData2 변수와 baTitle 변수로 각각 저장
+function BackComp({ propData2, baTitle }) {
+  const liRows = [];
+  for (let i = 0; i < propData2.length; i++) {
+    liRows.push(<li key={i}>{propData2[i]} </li>);
+  }
+  return (
+    <>
+      <li>{baTitle}</li> <ul> {liRows} </ul>
+    </>
+  );
+}
+
+export default function Component4(props) {
+  // *추후에 연동할 백엔드와 통신 AXIOS*
+  const frontData = ["HTML5", "CSS3", "Javascript", "jQuery", "React"];
+  const backData = ["Java", "Oracle", "JSP", "Spring Boot"];
+  return (
+    <>
+      <div>
+        <h2> 리액트 프롭스 </h2>
+        <ol>
+          <FrontComp propData1={frontData} frTitle="프론트엔드" />
+          <BackComp propData2={backData} baTitle="벡엔드" />
+        </ol>
+      </div>
+    </>
+  );
+}
+```
+
+1-7의 `FrontComp`·`BackComp`는 `<li>`를 하드코딩했는데, 여기서는 **부모가 배열을 props로 내려주고 자식이 반복문으로 `<li>`를 만든다.** 데이터와 화면이 분리되는 첫 장면이다. 주석에 적힌 대로 나중에는 이 배열 자리에 백엔드에서 AXIOS로 받아온 응답이 들어간다.
+
+| 위치 | 코드 | 의미 |
+| --- | --- | --- |
+| 부모 | `propData1={frontData}` | 배열은 문자열이 아니므로 **중괄호**로 넘긴다 (2-3의 규칙 그대로) |
+| 자식 | `const liRows = []; … liRows.push(<li>…</li>)` | JSX 조각도 JS 값이라 배열에 담을 수 있다 |
+| 자식 | `<ul> {liRows} </ul>` | `{}` 안에 **배열**을 두면 요소가 순서대로 펼쳐진다 |
+| 자식 | `key={i}` | 배열로 찍는 항목마다 붙이는 식별자. 없으면 콘솔 경고 |
+
+같은 일을 두 가지 방식으로 짰다. `FrontComp`는 `props`를 통째로 받아 `props.propData1`로 꺼내고, `BackComp`는 매개변수 자리에서 `{ propData2, baTitle }`로 구조 분해한다. 1-8의 `SubComp1`·`SubComp2` 대비를 배열 props에서 한 번 더 반복한 것이다. 결과는 같고, 본문에서 `props.`가 사라지는 구조 분해 쪽이 읽기 편하다.
+
+`key`는 반복으로 찍은 형제 요소들 사이에서 React가 "어느 게 어느 것"인지 알아보는 표식이다. 지금은 인덱스 `i`를 썼지만, 항목이 중간에 추가·삭제되는 목록이라면 인덱스가 밀려서 엉킨다 — 그런 경우는 데이터 자체의 고유값(id)을 쓰는 편이 안전하다. 오늘처럼 고정 배열이면 인덱스로 충분하다.
+
+### 1-10. 이벤트 — onclick이 아니라 onClick={함수}
+
+```jsx
+// src/example/day01/exam5.jsx
+export default function Component5(props) {
+  function event1() { alert("이벤트발생"); }
+  const event2 = function () { alert("이벤트발생2"); };
+  const event3 = () => { alert("이벤트발생3"); };
+
+  // onclick = "함수명()" --리액트 방법--> onClick = {함수명}
+  // 1. c -> C   2. 함수 실행 X
+  return (
+    <>
+      <button onClick={event1}>이벤트1</button>
+      <button onClick={event2}>이벤트2</button>
+      <button onClick={event3}>이벤트3</button>
+      <button onClick={() => { alert("이벤트발생4"); }}>이벤트4</button>
+    </>
+  );
+}
+```
+
+1-5의 표에서 한 줄로 지나갔던 `onclick` → `onClick` 차이를 실제로 써 봤다. 주석의 두 규칙이 전부다.
+
+| 규칙 | HTML | JSX | 이유 |
+| --- | --- | --- | --- |
+| ① 카멜케이스 | `onclick` | `onClick` | JSX 속성은 JS 프로퍼티 이름을 따른다 (`onChange`, `onSubmit`, `onKeyDown` 모두 같은 식) |
+| ② 함수를 **넘긴다** | `onclick="event1()"` | `onClick={event1}` | 문자열이 아니라 함수 자체를 넘긴다. `onClick={event1()}`이라고 쓰면 렌더링 시점에 바로 실행되고 그 반환값(`undefined`)이 핸들러로 들어가 버린다 |
+
+핸들러는 컴포넌트 함수 **안에서** 정의한다. 1-7의 세 가지 함수 표기(선언·표현식·화살표)가 여기서도 그대로 통하고, 네 번째 버튼처럼 `onClick={() => …}` 인라인 화살표로 그 자리에서 바로 써도 된다. 한 줄짜리면 인라인, 재사용하거나 길어지면 이름 있는 함수로 빼는 정도로 나누면 된다.
+
+`return` 위에서 함수를 정의한다는 건, 이 함수들이 **컴포넌트가 그려질 때마다 새로 만들어진다**는 뜻이다. 지금은 신경 쓸 일이 없지만, 상태(state)를 배우고 나면 이 사실이 왜 중요한지 다시 만난다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 실행 명령 세 개
@@ -354,6 +448,47 @@ export default function Today() {
 
 `return` 위쪽은 평범한 JS 자리라 변수 선언·계산을 마음껏 한다. `return` 안 `{}`에서 그 값을 꺼내 쓴다. 문자열 붙이기(`"오늘은 " + now`) 대신 이 방식이 React의 표준 표기다.
 
+### 2-5. for + push 대신 map
+
+1-9의 `for` + `liRows.push(...)`는 배열을 만드는 과정을 눈으로 따라가기 좋은 방식이다. 실무 코드에서는 같은 일을 `map` 한 줄로 쓴다.
+
+```jsx
+function BackComp({ propData2, baTitle }) {
+  return (
+    <>
+      <li>{baTitle}</li>
+      <ul>
+        {propData2.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+    </>
+  );
+}
+```
+
+`map`은 배열의 각 값을 다른 값으로 바꾼 **새 배열**을 돌려준다. 문자열 배열 → `<li>` 배열로 바꾸는 일이 정확히 그것이라, 임시 변수 없이 `{}` 안에 바로 둘 수 있다. 결과는 1-9와 같다. `for`로 먼저 익히고 `map`으로 줄이는 순서가 자연스럽다.
+
+### 2-6. 핸들러에 값 넘기기와 이벤트 객체
+
+1-10에서 `onClick={event1()}`이 안 되는 이유를 봤다. 그럼 핸들러에 인수를 주고 싶을 때는 어떻게 하는가 — 화살표 함수로 한 번 감싼다.
+
+```jsx
+function remove(id) { alert(id + "번 삭제"); }
+
+<button onClick={() => remove(3)}>삭제</button>   // 클릭 시에만 remove(3) 실행
+
+// 이벤트 객체는 첫 번째 인수로 자동 전달된다
+<input onChange={(e) => console.log(e.target.value)} />
+<form onSubmit={(e) => { e.preventDefault(); /* … */ }}>
+```
+
+| 상황 | 표기 |
+| --- | --- |
+| 인수 없이 그냥 실행 | `onClick={handler}` |
+| 인수를 주고 싶다 | `onClick={() => handler(값)}` |
+| 이벤트 객체가 필요하다 | `onClick={(e) => …}` — `e.target`, `e.preventDefault()` |
+
+`e.preventDefault()`는 JS day14 게시판 CRUD에서 폼 새로고침을 막던 그 함수다. React에서도 폼을 다룰 때 같은 자리에서 같은 역할을 한다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. render()를 다시 부르지 않는다 — 상태(state)
@@ -382,7 +517,7 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 - `props.children`, `PropTypes`/TypeScript로 props 타입 잡기
 - `useState` — 상태와 재렌더링, 자식→부모로 값을 올리는 콜백 props
 - 조건부 렌더링(`&&`, 삼항), 목록 렌더링(`map` + `key`)
-- 이벤트 핸들러 `onClick`·`onChange`, 제어 컴포넌트(input)
+- `onChange`와 제어 컴포넌트(input) — `onClick`(1-10)의 다음 단계, 입력값을 state로 묶기
 - `useEffect` — 화면 그린 뒤 실행할 일(fetch 등)
 - React 19의 React Compiler(`babel-plugin-react-compiler`가 devDependencies에 이미 있다)
 - Vite의 HMR, `import.meta.env`
@@ -395,6 +530,7 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 - `KDT_2026/2026_React/src/example/day01/exam2.jsx` — 헤더·메인·푸터 조립
 - `KDT_2026/2026_React/src/example/day01/exam3.jsx` — 함수 표기 세 가지, 목록·폼 컴포넌트
 - `KDT_2026/2026_React/src/example/day01/exam4.jsx` — 매개변수·인수 용어, props 전달과 구조 분해, JSX 주석
+- `KDT_2026/2026_React/src/example/day01/exam5.jsx` — 배열 props를 반복문으로 목록 렌더링(`key`), `onClick={함수}` 이벤트 핸들러 네 가지 표기
 - `KDT_2026/2026_React/src/App.jsx` (Vite 기본 생성 — 참고용)
 - `KDT_2026/2026_React/package.json`
 
