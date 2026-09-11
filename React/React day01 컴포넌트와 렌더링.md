@@ -7,7 +7,7 @@ tags: [학습, react]
 
 # React day01 — 컴포넌트와 렌더링
 
-> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx`, `package.json`
+> 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam3.jsx`, `package.json`
 > 허브: [[React MOC]] · 이전: (없음 — React 첫 노트, 선행 흐름은 JS day14 게시판 CRUD) · 다음: (예정)
 
 React 수업의 첫날이다. 2026_FE에서 하던 순수 JS·DOM 조작과 달리, 새 저장소 `2026_React`는 **Vite로 만든 프로젝트**이고 화면을 "컴포넌트"라는 함수 단위로 그린다. 오늘은 프로젝트가 어떻게 켜지는지(진입점)와 컴포넌트를 하나 만들어 화면에 띄우는 최소 흐름까지 다뤘다.
@@ -114,6 +114,70 @@ HTML과 다른 점은 다음 수업부터 계속 마주친다.
 
 기본 생성된 `App.jsx`에 이 네 가지가 전부 들어 있다(`className`, `onClick={() => …}`, `<img … />`, `<>…</>`).
 
+### 1-6. 컴포넌트 안에 컴포넌트 — 한 파일에서 조립하기
+
+```jsx
+// src/example/day01/exam2.jsx
+export default function Component1(props) {
+  return (
+    <>
+      <Header></Header>
+      <div> 메인페이지 </div>
+      <Footer></Footer>
+    </>
+  );
+}
+function Header(props) { return <div> 헤더구역 </div>; }
+function Footer(props) { return <div> 푸터구역 </div>; }
+```
+
+컴포넌트는 다른 컴포넌트를 태그로 품을 수 있다. 헤더·메인·푸터 세 덩어리를 각각 함수로 만들고, 대표 컴포넌트 `Component1`이 그 셋을 `<>…</>` 안에 나열해 한 화면으로 조립한다. 파일을 만드는 순서로 정리하면 이렇다.
+
+| 순서 | 할 일 | 비고 |
+| --- | --- | --- |
+| ① | `컴포넌트명.jsx` 파일 생성 | 파일 하나 = 화면 조각 하나 |
+| ② | `export default function 컴포넌트명(props) { }` | 다른 파일에서 `import`하려면 `export default` 필요 |
+| ③ | `return` 안에 JSX, 두 줄 이상이면 `<>…</>`로 묶기 | `return` 밖은 그냥 JS |
+
+`Header`·`Footer`에는 `export`가 없다. **이 파일 안에서만 쓰는 부품이면 내보내지 않아도 된다.** 바깥으로 나가는 건 `export default` 하나뿐이고, 그 하나가 `main.jsx`에서 `<Component1 />`로 그려진다. 함수 선언은 호이스팅되므로 `Component1`이 위에 있고 `Header`가 아래에 있어도 문제없다.
+
+### 1-7. 컴포넌트를 정의하는 세 가지 함수 표기
+
+```jsx
+// src/example/day01/exam3.jsx
+function FrontComp() { return ( <> <li>프론트엔드</li> <ul>…</ul> </> ); }   // 함수 선언
+const BackComp = () => { return ( <> <li>백엔드</li> <ul>…</ul> </> ); };     // 화살표 함수
+let FormComp = function () { return ( <> <form>…</form> </> ); };            // 함수 표현식
+
+function Component2() {
+  return (
+    <>
+      <div>
+        <h2>React - Component</h2>
+        <ol>
+          <FrontComp></FrontComp>
+          <BackComp />
+        </ol>
+        <FormComp />
+      </div>
+    </>
+  );
+}
+export default Component2;
+```
+
+컴포넌트는 "JSX를 반환하는 함수"이기만 하면 되므로, JS day10 함수에서 본 세 가지 표기가 전부 통한다.
+
+| 표기 | 형태 | 특징 |
+| --- | --- | --- |
+| 함수 선언 | `function A() {}` | 호이스팅됨 — 순서 신경 안 써도 됨 |
+| 화살표 함수 | `const A = () => {}` | 요즘 가장 흔한 표기. `const`라 재할당 불가 |
+| 함수 표현식 | `let A = function () {}` | 화살표 이전 방식. 잘 안 쓰지만 같은 것 |
+
+어느 쪽이든 **이름이 대문자**여야 태그로 쓸 수 있다는 규칙은 같다. `export default`도 함수 선언에 바로 붙이든(`exam2`), 맨 아래에 `export default Component2;`로 따로 쓰든(`exam3`) 결과는 같다.
+
+여기서 하나 더 보이는 것 — `<ol>` 안에 `<FrontComp>`·`<BackComp>`를 넣었는데 각 컴포넌트가 `<li>`로 시작하는 조각을 반환한다. `<>…</>`는 실제 DOM에 아무 태그도 남기지 않으므로, 결과 HTML은 `<ol><li>…</li><ul>…</ul><li>…</li><ul>…</ul></ol>`처럼 조각들이 부모 안에 그대로 펼쳐진다. 조각(Fragment)이 "포장 없이 묶는다"는 뜻이 이것이다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 실행 명령 세 개
@@ -136,6 +200,40 @@ src/
 ```
 
 `main.jsx`에는 렌더링 코드만 두고, 화면 내용은 전부 컴포넌트 파일로 뺀다. 컴포넌트 하나 = 파일 하나 = `export default` 하나가 기본 단위다.
+
+파일 안의 작은 부품(`Header`·`Footer` 같은)이 다른 화면에서도 필요해지면 그때 파일을 분리하고 `export`를 붙인다. 하나의 파일에서 여러 개를 내보낼 때는 이름 내보내기를 쓴다.
+
+```jsx
+// components/Layout.jsx
+export function Header() { return <header>…</header>; }
+export function Footer() { return <footer>…</footer>; }
+
+// 가져오는 쪽 — 중괄호로 이름을 골라 받는다
+import { Header, Footer } from "./components/Layout.jsx";
+```
+
+`export default`는 파일당 하나, 가져올 때 이름을 마음대로 붙일 수 있다. `export`(이름 내보내기)는 여러 개 가능하고, 가져올 때 `{ }` 안에 원래 이름을 써야 한다.
+
+### 2-2-1. 부모 컴포넌트에서 자식 부품 나열하기
+
+`exam2`·`exam3` 패턴을 실제 페이지에 적용하면 이런 모양이 된다.
+
+```jsx
+export default function Page() {
+  return (
+    <>
+      <Header />
+      <main>
+        <Nav />
+        <Content />
+      </main>
+      <Footer />
+    </>
+  );
+}
+```
+
+부모는 "무엇을 어디에 놓을지"만 정하고, 각 부품의 내용은 자기 함수 안에서 책임진다. 이 분리가 나중에 파일이 수십 개로 늘어도 구조를 읽을 수 있게 해 준다.
 
 ### 2-3. props로 값 넘기기 (다음에 바로 쓰게 될 것)
 
@@ -200,6 +298,8 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 - `KDT_2026/2026_React/index.html`
 - `KDT_2026/2026_React/src/main.jsx`
 - `KDT_2026/2026_React/src/example/day01/exam1.jsx`
+- `KDT_2026/2026_React/src/example/day01/exam2.jsx` — 헤더·메인·푸터 조립
+- `KDT_2026/2026_React/src/example/day01/exam3.jsx` — 함수 표기 세 가지, 목록·폼 컴포넌트
 - `KDT_2026/2026_React/src/App.jsx` (Vite 기본 생성 — 참고용)
 - `KDT_2026/2026_React/package.json`
 
