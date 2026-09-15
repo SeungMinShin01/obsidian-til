@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day01 — 컴포넌트와 렌더링
 
 > 실습 파일: `index.html`, `src/main.jsx`, `src/example/day01/exam1.jsx` ~ `exam5.jsx`, `package.json`
-> 허브: [[React MOC]] · 이전: (없음 — React 첫 노트, 선행 흐름은 JS day14 게시판 CRUD) · 다음: (예정)
+> 허브: [[React MOC]] · 이전: (없음 — React 첫 노트, 선행 흐름은 JS day14 게시판 CRUD) · 다음: [[React day02 객체 배열과 map 렌더링]]
 
 React 수업의 첫날이다. 2026_FE에서 하던 순수 JS·DOM 조작과 달리, 새 저장소 `2026_React`는 **Vite로 만든 프로젝트**이고 화면을 "컴포넌트"라는 함수 단위로 그린다. 오늘은 프로젝트가 어떻게 켜지는지(진입점)와 컴포넌트를 하나 만들어 화면에 띄우는 최소 흐름까지 다뤘다.
 
@@ -536,4 +536,4 @@ JS day14 게시판 CRUD에서 `list()` 함수가 매번 `innerHTML`을 통째로
 
 ## 관련 노트
 
-[[React MOC]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day02 객체 배열과 map 렌더링]] · [[KDT_2026 학습 지도]]

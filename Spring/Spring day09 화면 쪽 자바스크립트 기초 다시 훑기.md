@@ -8,7 +8,7 @@ tags: [학습, javascript]
 # Spring day09 — 화면 쪽 자바스크립트 기초 다시 훑기
 
 > 실습 파일: `static/day09/index.html`, `static/day09/index.js`
-> 허브: [[Spring MOC]] · 이전: [[Spring day08 쿼리 메소드와 네이티브 쿼리]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day08 쿼리 메소드와 네이티브 쿼리]] · 다음: [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]]
 
 day08까지는 서버 쪽만 다뤘습니다. 리포지토리의 빈 몸통을 이름과 SQL로 채우는 자리에서 끝났고, 그 앞의 네 노트는 자바 문법(호출 표기·람다·스트림·메소드 레퍼런스)으로 나가 있었습니다.
 
@@ -435,4 +435,4 @@ day08에서 자바 쪽으로 정리한 것과 모양이 겹칩니다. 익명 구
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day08 쿼리 메소드와 네이티브 쿼리]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day08 쿼리 메소드와 네이티브 쿼리]] · [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]] · [[KDT_2026 학습 지도]]
