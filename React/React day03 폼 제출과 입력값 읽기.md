@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day03 — 폼 제출과 입력값 읽기
 
 > 실습 파일: `src/example/day03/exam2.jsx` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day03 JSX 스타일링과 이미지 경로]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day03 JSX 스타일링과 이미지 경로]] · 다음: [[React day03 전화번호부 실습 배열 상태 추가와 삭제]]
 
 day02의 `CategoryManager`에서는 입력값을 전부 `useState`에 묶는 제어 컴포넌트로 폼을 만들었다. 이번 예제는 그 반대편을 한 번 짚는다 — 상태 없이 `<form onSubmit>`의 **이벤트 객체에서 직접 값을 꺼내는** 방식이다. 같은 파일 안에 `<input>` 세 개를 나란히 놓고 "value를 어떻게 주느냐"에 따라 입력창이 어떻게 달라지는지도 비교한다. 작은 예제지만 React가 폼을 다루는 두 갈래(제어·비제어)와 상태의 역할이 한눈에 드러나서, 나중에 어느 쪽을 고를지 판단할 때 기준이 되는 내용이다.
 
@@ -184,4 +184,4 @@ const titleRef = useRef(null);
 
 ## 관련 노트
 
-[[React MOC]] · [[React day03 JSX 스타일링과 이미지 경로]] · [[React day02 useEffect와 fetch로 서버 CRUD]] · [[React day02 컴포넌트 분리와 콜백 props]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day03 JSX 스타일링과 이미지 경로]] · [[React day03 전화번호부 실습 배열 상태 추가와 삭제]] · [[React day02 useEffect와 fetch로 서버 CRUD]] · [[React day02 컴포넌트 분리와 콜백 props]] · [[KDT_2026 학습 지도]]
