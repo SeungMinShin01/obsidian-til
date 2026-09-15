@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day03 — JSX 스타일링과 이미지 경로
 
 > 실습 파일: `src/example/day03/exam1.jsx` · `src/index.css` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day02 모달과 컴포넌트 간 상태 전달]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day02 모달과 컴포넌트 간 상태 전달]] · 다음: [[React day03 폼 제출과 입력값 읽기]]
 
 day02까지는 상태와 서버 통신으로 **동작**을 만드는 자리였고, 이번에는 잠깐 숨을 고르며 **생김새**를 다룬다. React에서 스타일을 입히는 세 가지 길(인라인 `style` 객체, `className`으로 외부 CSS, `id` 선택자)과, 이미지를 불러오는 세 가지 경로(`public/` 절대 경로, `import`한 파일, 외부 URL)를 한 파일 안에서 나란히 비교한다. 예제는 작지만 Vite가 파일을 어떻게 다루는지가 그대로 드러나서, 나중에 프로젝트를 배포할 때 다시 돌아와 보게 될 내용이다.
 
@@ -148,4 +148,4 @@ styled-components·Emotion은 스타일을 JS 안에 템플릿 리터럴로 쓰�
 
 ## 관련 노트
 
-[[React MOC]] · [[React day02 모달과 컴포넌트 간 상태 전달]] · [[React day01 컴포넌트와 렌더링]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day02 모달과 컴포넌트 간 상태 전달]] · [[React day03 폼 제출과 입력값 읽기]] · [[React day01 컴포넌트와 렌더링]] · [[KDT_2026 학습 지도]]

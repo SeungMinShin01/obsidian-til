@@ -10,7 +10,7 @@ React 학습노트의 허브입니다. 상위 지도는 [[KDT_2026 학습 지도
 
 ## 학습 순서
 
-[[React day01 컴포넌트와 렌더링]] → [[React day02 객체 배열과 map 렌더링]] → [[React day02 컴포넌트 분리와 콜백 props]] → [[React day02 useState와 상태 갱신]] → [[React day02 useEffect와 fetch로 서버 CRUD]] → [[React day02 모달과 컴포넌트 간 상태 전달]] → [[React day03 JSX 스타일링과 이미지 경로]]
+[[React day01 컴포넌트와 렌더링]] → [[React day02 객체 배열과 map 렌더링]] → [[React day02 컴포넌트 분리와 콜백 props]] → [[React day02 useState와 상태 갱신]] → [[React day02 useEffect와 fetch로 서버 CRUD]] → [[React day02 모달과 컴포넌트 간 상태 전달]] → [[React day03 JSX 스타일링과 이미지 경로]] → [[React day03 폼 제출과 입력값 읽기]]
 
 ## 노트
 
@@ -23,6 +23,7 @@ React 학습노트의 허브입니다. 상위 지도는 [[KDT_2026 학습 지도
 | [[React day02 useEffect와 fetch로 서버 CRUD]] | 실습 2(통합 제품 관리)의 `CategoryManager`로 보는 서버 통신 기본형 — DB 컬럼명 = JSON 키 = 프로퍼티명(`totalPractice.sql`), 목록 초기값 `[]`, `async/await` + `fetch` → `res.ok` → `res.json()` → `Array.isArray` 방어, `useEffect(…, [])`로 첫 렌더링 뒤 한 번만 조회(본문에서 부르면 무한 반복), POST(`Content-Type: application/json` + `JSON.stringify`) 뒤 재조회, DELETE는 쿼리 스트링 `?cno=`, `window.confirm`, 제어 컴포넌트(`value`/`onChange`, `setName('')`로 비우기), `<form onSubmit>` + `preventDefault`, 빈 목록 삼항과 `key={cat.cno}`, 오류·로딩 상태, 주소 상수화, CORS·StrictMode 이중 실행·AXIOS로 이어지는 자리 |
 | [[React day02 모달과 컴포넌트 간 상태 전달]] | `ProductManager`·`ReviewManager` — 상태 7개(목록·모달 boolean·모달+대상 객체·폼 객체), 객체 폼 상태의 스프레드 갱신(`{ ...form, name }`), `<select value>` 제어와 옵셔널 체이닝, 문자열 → `Number` 변환, 모달 = `상태 && <JSX>` + `position: fixed` 배경, 인라인 `style` 객체 두 겹, 자식→부모 콜백 `oncategoryupdated(list)`로 두 벌의 목록 맞추기, `product`·`onclose`로 자식이 모달 껍데기까지 그리는 패턴, `useEffect` 의존성 `[product?.bno]`, 수정 모달(폼 채우기 + PUT 본문에 키), `repeat`로 별점, `onChange` 합치기·`Modal` 컴포넌트와 `children`·상태 끌어올리기 한계 → Context·커스텀 훅·포털로 이어지는 자리 |
 | [[React day03 JSX 스타일링과 이미지 경로]] | `exam1.jsx` — 인라인 `style`은 문자열이 아니라 객체(중괄호 두 겹, `backgroundColor` 카멜케이스, 단위까지 문자열, 컴포넌트 바깥 상수로 재사용), CSS 파일을 `import "../../index.css"`로 끌어와 `className`·`id`로 붙이기(`class` 예약어, import한 CSS는 전역), 이미지 세 경로(`public/` 절대 경로 vs `src/assets` `import`로 해시 경로 vs 외부 URL), `main.jsx`에서 진입 컴포넌트 갈아끼우기, 조건부 `className`·스타일 객체 스프레드·인라인과 CSS 파일 역할 나누기, CSS Modules·Tailwind·styled-components로 이어지는 자리 |
+| [[React day03 폼 제출과 입력값 읽기]] | `exam2.jsx` — `<form onSubmit>`은 버튼이 아니라 폼의 이벤트, `preventDefault`로 GET 이동 차단, `event.target`이 폼 자신이라 `event.target.name속성.value`로 상태 없이 입력값 읽기(`name` 필수), 상태 없는 `WriteForm`이 값을 콜백 props로 올리고 부모가 검증·`message` 상태 갱신, `<input>` 세 개 비교(비제어 · 고정 `value`는 타이핑 불가 · `value`+`onChange` 제어), 제어 vs 비제어 고르는 기준, `FormData`·`reset()`·`trim()`·`defaultValue`, `useRef`·React Hook Form으로 이어지는 자리 |
 
 ## 앞선 갈래
 
