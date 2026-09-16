@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day03 — 전화번호부 실습: 배열 상태 추가와 삭제
 
 > 실습 파일: `src/example/day03/pracitce/practice.jsx` · `src/example/day03/pracitce/index.css` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day03 폼 제출과 입력값 읽기]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day03 폼 제출과 입력값 읽기]] · 다음: [[React day04 React Router 도입과 라우트 정의]]
 
 day03 실습은 앞 예제 두 개를 한 화면에 합친 작은 전화번호부다. `exam2.jsx`의 비제어 폼(`event.target.name.value`)으로 성명·연락처·나이를 받고, 그 값을 객체로 묶어 **배열 상태**에 쌓은 뒤 `map`으로 목록을 찍고 삭제 버튼으로 지운다. 서버 없이 상태만으로 돌아가는 CRUD의 축소판이라, day02에서 따로따로 정리한 "배열 상태는 주소값이 바뀌어야 다시 그려진다"와 "폼은 값을 올려보내고 부모가 상태를 맡는다"가 실제로 어떻게 맞물리는지 확인하기 좋은 예제다.
 
@@ -255,4 +255,4 @@ const [array, dispatch] = useReducer(reducer, []);
 
 ## 관련 노트
 
-[[React MOC]] · [[React day03 폼 제출과 입력값 읽기]] · [[React day02 useState와 상태 갱신]] · [[React day02 객체 배열과 map 렌더링]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day03 폼 제출과 입력값 읽기]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day02 useState와 상태 갱신]] · [[React day02 객체 배열과 map 렌더링]] · [[KDT_2026 학습 지도]]
