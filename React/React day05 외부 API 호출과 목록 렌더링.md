@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day05 — 외부 API 호출과 목록 렌더링
 
 > 실습 파일: `src/example/day05/ExternalApiFetcher.jsx` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day05 컴포넌트 생명주기와 useEffect]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day05 컴포넌트 생명주기와 useEffect]] · 다음: [[React day05 axios로 백엔드에 POST 보내기]]
 
 day05의 `TopNav`에 걸어 둔 세 갈래 중 **외부통신** 차례다. day02에서 `fetch`로 부른 서버는 같은 수업에서 만든 스프링 백엔드였는데, 이번에는 우리와 아무 상관 없는 **공개 API(randomuser.me)** 를 부른다. 도메인이 다른 남의 서버에서 JSON을 받아 와 표로 그리고, 표의 항목을 누르면 그 항목의 원본 데이터를 부모 쪽으로 올려보내는 것까지가 이 날의 범위다. 지금까지 따로 배운 조각들(`useState` · `useEffect(…, [])` · `map`+`key` · 콜백 props · `preventDefault`)이 한 컴포넌트 안에서 전부 맞물리는 예제라, 새 문법보다 **조각들이 붙는 순서**를 보는 것이 목적이다.
 
@@ -37,6 +37,19 @@ function RandomUser(props) {
 | `useState` | 응답 JSON을 담을 자리 | **초기값의 모양을 응답과 똑같이** 맞춘다 |
 | `useEffect(…, [])` | 첫 렌더링 뒤 한 번만 요청 | 본문에서 부르면 요청 → 상태 변경 → 재렌더링 → 요청… 무한 반복 |
 | `map` | 받아 둔 배열을 태그 목록으로 | `key` 필수 |
+
+요청 도구는 최종적으로 **axios**로 정리했다. `npm install axios` 뒤 `import axios from "axios"` 한 줄을 더하고, 요청 부분이 이렇게 바뀐다.
+
+```jsx
+import { useState, useEffect } from "react";
+import axios from "axios";
+
+const response = await axios.get("https://api.randomuser.me?results=10");
+const data = response.data;   // .json() 단계가 없다
+setMyJSON(data);
+```
+
+`fetch`와 견주면 달라지는 곳은 두 줄뿐이다 — `res.json()`을 거치지 않고 `response.data`가 바로 파싱된 객체이고, HTTP 오류는 `res.ok` 확인 없이 `catch`로 간다. 나머지 구조(초기값·`useEffect(…, [])`·`map`)는 그대로다. 두 방식의 차이는 2-1에 표로 정리해 뒀고, 한 요청 안에서 섞지 않는 것이 요점이다. 쿼리 스트링(`?results=10`)으로 받아 올 인원 수를 정하는 것도 주소 문자열에 그대로 붙이면 된다(2-4).
 
 여기서 제일 중요한 한 줄은 초기값 `{ results: [] }`이다. randomuser.me의 응답은 `{ "results": [ {...} ], "info": {...} }` 모양이라, 초기값도 같은 껍데기를 갖춰 둬야 한다. 초기값을 빈 객체 `{}`나 `null`로 두면 **응답이 도착하기 전 첫 렌더링에서** `myJSON.results.map(...)`이 `undefined`를 만나 그 자리에서 화면이 죽는다.
 
@@ -407,4 +420,4 @@ const { data, loading, error } = useFetch("https://api.randomuser.me/?results=20
 
 ## 관련 노트
 
-[[React MOC]] · [[React day05 컴포넌트 생명주기와 useEffect]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day05 컴포넌트 생명주기와 useEffect]] · [[React day05 axios로 백엔드에 POST 보내기]] · [[KDT_2026 학습 지도]]
