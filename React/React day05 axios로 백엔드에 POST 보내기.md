@@ -7,7 +7,7 @@ tags: [학습, react]
 
 # React day05 — axios로 백엔드에 POST 보내기
 
-> 실습 파일: `src/example/day04/practice/신승민.jsx` · `src/example/day04/practice/index.css` · `src/main.jsx`
+> 실습 파일: `src/example/day04/practice/신승민.jsx` · `src/example/day04/practice/권유린.jsx` · `src/example/day04/practice/조현우.jsx` · `src/example/day04/practice/김지환.jsx` · `src/example/day04/practice/index.css` · `src/main.jsx`
 > 허브: [[React MOC]] · 이전: [[React day05 외부 API 호출과 목록 렌더링]] · 다음: (예정)
 
 외부 API를 `axios.get`으로 읽어 오는 것까지 해 봤으니, 이번에는 반대 방향 — **폼에 입력한 값을 `axios.post`로 백엔드에 보내는** 차례다. 코드가 놓인 자리는 day04에서 만든 사이드 네비 팀 소개 실습(`day04/practice/`)의 내 페이지인데, 내용은 라우팅이 아니라 이 날 배운 axios 통신이다. 라우트 하나에 꽂힌 페이지 컴포넌트 안에서 상태·폼·통신이 전부 돌아가는 형태라, day03의 제어 컴포넌트와 day02의 POST 요청이 axios 표기로 다시 합쳐지는 모양이 된다.
@@ -150,6 +150,196 @@ export default function Seung(props) {
 
 day04 실습에서 쓰던 `index.css`에 이 규칙들이 덧붙었다. `import`한 CSS는 전역이므로(day03), 팀원 각자가 같은 파일에 규칙을 추가하면 클래스 이름이 겹칠 때 서로 영향을 준다. 그래서 `.sTbody`·`.inputWrap`처럼 **자기 페이지에서만 쓰는 접두사 붙은 이름**을 고르는 편이 안전하다.
 
+### 1-7. 같은 실습 폴더의 조회 쪽 페이지 — `axios.get`으로 카테고리 목록 받기
+
+같은 `day04/practice/` 폴더에 조회 방향 페이지도 하나 더 붙었다. 등록 폼이 `cno`(카테고리 번호)를 손으로 입력받는 구조였으니, 그 카테고리가 실제로 무엇인지 백엔드에서 받아 표로 보여 주는 페이지다. 한 실습 폴더 안에서 **POST(등록)와 GET(조회)이 양쪽으로 갈라지는** 모양이 된다.
+
+```jsx
+import axios from "axios";
+import { useEffect, useState } from "react";
+
+export default function Practice2(props) {
+  const [myJSON, setMyJSON] = useState([]);
+
+  useEffect(function () {
+    const 카테고리조회 = async () => {
+      const response = await axios.get("https://<백엔드주소>/api/categories");
+      const data = response.data;
+      console.log(data);
+      setMyJSON(data);
+    };
+    카테고리조회();
+  }, []);
+  …
+}
+```
+
+정리하면 뼈대는 `ExternalApiFetcher`와 같다 — `useState` 초기값 → `useEffect(…, [])`로 마운트 1회 요청 → 받은 값을 상태에 대입 → 재렌더링 → `map` 렌더링. 다른 점은 두 가지다.
+
+| 항목 | 외부 공개 API(randomuser) | 자체 백엔드(`/api/categories`) |
+| --- | --- | --- |
+| 응답 최상위 모양 | `{ results: [ … ] }` — 객체로 한 번 감싸여 있음 | `[ { cno, name }, … ]` — 배열이 곧 응답 |
+| `useState` 초기값 | `{ results: [] }` | `[]` |
+| 값 꺼내기 | `data.name.first` 처럼 중첩 | `data.cno` · `data.name` 으로 바로 |
+
+**초기값은 응답의 모양을 그대로 따라간다**는 규칙이 여기서도 같다. 응답이 배열이면 초기값도 `[]`여야 첫 렌더링에서 `.map`이 안전하게 돌아간다. 초기값을 `{}`나 `null`로 두면 데이터가 오기 전 한 번의 렌더링에서 바로 터진다 — 자체 서버는 응답이 평평한 객체 배열이라 보통 이쪽이 더 단순하다.
+
+```jsx
+let trTag = myJSON.map((data) => {
+  return (
+    <tr key={data.cno}>
+      <td>{data.cno}</td>
+      <td>{data.name}</td>
+    </tr>
+  );
+});
+
+<tbody>{trTag}</tbody>;
+```
+
+`map` 결과를 `trTag` 변수에 담아 `<tbody>`에 꽂는 방식도 day05 외부 API 노트에서 정리한 것과 같다. 목록을 그릴 때 각 항목에 `key`를 주는 것은 잊지 않는 편이 좋다 — `cno`처럼 응답에 들어 있는 고유값을 쓰면 인덱스보다 안전하다.
+
+한 가지 더, `useEffect`의 콜백 자체를 `async function`으로 만들지 않는 것이 규칙이다. `async` 함수는 항상 `Promise`를 반환하는데 `useEffect`는 반환값을 **정리(cleanup) 함수**로 해석하기 때문이다. 위 코드처럼 콜백 안쪽에 `async` 함수를 선언하고 곧바로 호출하는 형태가 표준형이다. 자세한 이유는 [[React day05 외부 API 호출과 목록 렌더링]]의 `useEffect`와 `async` 항목에 정리해 뒀다.
+
+### 1-8. 팀 실습의 공용 `index.css` — 사이드 네비 레이아웃과 본문 정렬
+
+조회 페이지가 붙으면서 공용 `index.css`도 같이 자랐다. day04에서 만든 사이드 네비 레이아웃 규칙과 이번 폼 규칙이 한 파일에 섞여 있는 상태다.
+
+```css
+* {
+  padding: 0px;
+  margin: 0px;
+}
+.wrap {
+  display: flex;
+}
+.Nav {
+  display: flex;
+  flex-direction: column;
+  width: 20%;
+  height: 100vh;
+  background-color: #343336;
+}
+.bottomNav:hover {
+  background-color: rgb(71, 71, 235);
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+}
+.Box {
+  margin: 0 auto;
+}
+```
+
+- `*` 선택자로 `padding`·`margin`을 0으로 초기화하는 것은 브라우저 기본 여백을 지우는 **리셋 CSS**의 최소판이다. 레이아웃을 `flex`로 짤 때 기본 여백이 계산을 흐트러뜨리므로 먼저 깔아 두는 편이 편하다.
+- `.wrap`에 `display: flex`, `.Nav`에 `width: 20%` + `height: 100vh`를 준 것이 사이드 네비의 골격이다. `vh`는 화면 높이 기준 단위라 `100vh`면 내용이 적어도 네비 기둥이 화면 끝까지 내려온다.
+- `.Nav`에 다시 `flex-direction: column`을 준 것은 **바깥은 가로, 안쪽은 세로**로 두 겹을 쓰는 형태다. `flex`는 이렇게 중첩해서 방향을 바꿔 가며 쓰는 것이 기본 사용법이다.
+- `:hover`로 배경색·`border-radius`·굵기를 함께 바꾸면 클릭 가능한 항목이라는 신호가 된다. 다만 `margin`처럼 **자리를 차지하는 속성을 `:hover`에서 바꾸면 마우스를 올릴 때 레이아웃이 밀린다.** 호버에서는 `background-color`·`color`처럼 자리를 건드리지 않는 속성만 바꾸는 편이 안정적이다.
+- `.Box { margin: 0 auto; }`는 좌우 여백을 자동으로 반씩 나눠 **가로 가운데 정렬**하는 관용구다. 이 방법은 블록 요소이고 `width`가 정해져 있을 때 동작하므로, `flex` 컨테이너 안에서는 부모에 `justify-content: center`를 주는 편이 더 직접적이다.
+
+주석 처리해 둔 `/* border: 1px solid red; */`는 요소 경계를 눈으로 확인할 때 잠깐 켜 보는 디버깅용 관용구다. 필요할 때만 주석을 풀어 쓰고 다시 닫아 두면 레이아웃이 어긋난 자리를 빨리 찾을 수 있다.
+
+### 1-9. 표 한 줄이 곧 등록 폼 — 카테고리 등록 페이지
+
+같은 실습 폴더에 등록 방향 페이지가 하나 더 붙었다. 이번에는 제품이 아니라 **카테고리**를 만드는 쪽이다. 앞의 등록 폼이 `cno`를 숫자로 손수 적어 넣는 구조였으니, 그 `cno`를 만들어 내는 자리가 여기가 된다.
+
+```jsx
+function Content(props) {
+  const [name, setName] = useState("");
+
+  const addCategory = async () => {
+    await axios.post("https://<백엔드주소>/api/categories", { name });
+  };
+
+  return (
+    <tr>
+      <td>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="카테고리명"
+        />
+      </td>
+      <td>
+        <button type="button" onClick={addCategory}>등록</button>
+      </td>
+    </tr>
+  );
+}
+```
+
+정리하면 입력이 하나뿐인 최소 폼이다. 상태 하나 → `value`/`onChange` 한 벌 → `axios.post(주소, { name })`. 보낼 값이 하나라도 **객체로 감싸서 보낸다**는 점은 같다. `axios.post(url, name)`처럼 문자열을 바로 넘기면 JSON 객체가 아니라 평문이 본문에 실려 서버의 DTO 바인딩이 비게 된다.
+
+버튼에 `type="button"`을 명시한 것도 의미가 있다. `<button>`의 기본 `type`은 `submit`이라, `<form>` 안에 있으면 누르는 순간 폼 제출(페이지 새로고침)이 함께 일어난다. **폼 제출이 목적이 아닌 버튼에는 `type="button"`을 붙이는 것**이 관용구다.
+
+구조 쪽에서 눈여겨볼 것은 이 부품이 `<tr>`을 반환한다는 점이다.
+
+```jsx
+<table>
+  <tbody>
+    <tr><td>학과</td><td>정보통신공학과</td></tr>
+    <Content></Content>      {/* 이 자리에 <tr>이 펼쳐진다 */}
+  </tbody>
+</table>
+```
+
+`<tbody>`의 자식으로는 `<tr>`만 올 수 있다. 컴포넌트를 표 안에 꽂을 때 `<div>`로 감싸 반환하면 브라우저가 표 밖으로 밀어내 배치가 어긋난다. **표 안에 들어갈 컴포넌트는 그 자리에 맞는 태그(`<tr>` 또는 `<td>`)를 그대로 반환**하도록 만들면 구조가 유지된다. 여러 줄을 한꺼번에 돌려줘야 하면 `<>…</>` 프래그먼트로 감싸는 방법이 있다(1-5에서 쓴 것과 같은 표기).
+
+### 1-10. 제품 전체 조회 — `bno`·`categoryname`으로 표 그리기
+
+조회 쪽도 카테고리에서 제품으로 한 단계 넓어졌다. `/api/products`를 `axios.get`으로 받아 표 전체를 그리는 페이지다.
+
+```jsx
+function ProductList(props) {
+  const [myJSON, setMyJSON] = useState([]);
+
+  // useEffect 안에서 axios.get → setMyJSON(data)
+
+  let trTag = myJSON.map((data) => (
+    <tr key={data.bno}>
+      <td>{data.bno}</td>
+      <td>{data.categoryname}</td>
+      <td>{data.name}</td>
+      <td>{data.price}원</td>
+    </tr>
+  ));
+
+  return (
+    <table border="1">
+      <thead>
+        <tr><th>bno</th><th>카테고리</th><th>상품명</th><th>가격</th></tr>
+      </thead>
+      <tbody>{trTag}</tbody>
+    </table>
+  );
+}
+```
+
+뼈대는 1-7의 카테고리 조회와 같고, 달라진 것은 응답 객체의 필드 수다.
+
+| 필드 | 무엇인가 |
+| --- | --- |
+| `bno` | 제품 번호 — 목록에서 `key`로 쓰기 좋은 고유값 |
+| `name` | 제품명 |
+| `price` | 가격 — 숫자로 오므로 `{data.price}원`처럼 뒤에 단위를 붙인다 |
+| `categoryname` | 카테고리 **이름** — 제품 테이블의 `cno`가 아니라 조인해서 붙여 온 값 |
+
+`categoryname`이 섞여 있다는 것은 서버가 제품 테이블과 카테고리 테이블을 **조인해서** 내려 줬다는 뜻이다. 프론트에서 `cno`를 받아 카테고리 목록과 맞춰 이름을 찾는 방법도 있지만, 화면에 필요한 모양으로 서버가 한 번에 내려 주면 요청이 한 번으로 끝난다. 어느 쪽을 택할지는 "화면 하나를 그리는 데 요청이 몇 번 나가는가"로 판단하면 된다.
+
+표 구조는 `<thead>`(제목 줄)와 `<tbody>`(데이터 줄)를 나눠 썼다. `map`으로 만드는 것은 `<tbody>` 쪽뿐이고 머리말은 고정이라, 이렇게 갈라 두면 "고정된 부분 / 데이터로 만들어지는 부분"이 코드에서도 눈에 띈다. `border="1"`은 HTML 속성으로 선을 긋는 옛 표기이고, 지금은 CSS `border-collapse: collapse` + `td, th { border: 1px solid … }` 조합이 표준이다 — 확인용으로 잠깐 켜 둘 때는 속성 쪽이 빠르다.
+
+한 가지 더, 부모가 자식에게 `onProfile` 같은 **콜백 props**를 내려 두는 형태도 함께 나온다.
+
+```jsx
+<ProductList
+  onProfile={(sData) => {
+    alert(`상품명: ${sData.name}\n가격: ${sData.price}원`);
+  }}
+/>
+```
+
+부모가 함수를 내려 주고 자식이 필요할 때 호출하는 구조는 day02의 콜백 props와 같다. 자식이 행을 클릭했을 때 `props.onProfile(data)`를 부르면, 무엇을 보여 줄지는 부모가 정하고 자식은 "클릭됐다"만 알리는 역할 분담이 된다. 목록 컴포넌트를 여러 화면에서 재사용할 때 이 분리가 쓸모 있어진다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `<form onSubmit>`으로 감싸기 — 엔터 제출과 초기화
@@ -285,7 +475,10 @@ await axios.post(url, form);   // 그대로 본문으로
 ## 실습 파일
 
 - `KDT_2026/2026_React/src/example/day04/practice/신승민.jsx` — 제어 입력 세 개 + `axios.post`로 제품 등록
-- `KDT_2026/2026_React/src/example/day04/practice/index.css` — 폼 영역 `flex` 세로 배치(`.sTbody`·`.inputWrap`)
+- `KDT_2026/2026_React/src/example/day04/practice/권유린.jsx` — `axios.get`으로 자체 백엔드 카테고리 목록 조회 후 표로 렌더링
+- `KDT_2026/2026_React/src/example/day04/practice/조현우.jsx` — 입력 하나짜리 최소 폼 + `axios.post`로 카테고리 등록, 부품 컴포넌트가 `<tr>`을 반환해 표 안에 들어가는 구조
+- `KDT_2026/2026_React/src/example/day04/practice/김지환.jsx` — `axios.get`으로 제품 전체 조회, `thead`/`tbody` 분리와 `key={data.bno}`, 부모가 내려 준 콜백 props
+- `KDT_2026/2026_React/src/example/day04/practice/index.css` — 폼 영역 `flex` 세로 배치(`.inputWrap`)와 팀 실습 공용 레이아웃(`*` 리셋 · `.wrap`/`.Nav` `flex` 두 겹 · `.bottomNav:hover` · `.Box` 가운데 정렬)
 - `KDT_2026/2026_React/src/main.jsx` — `BrowserRouter`로 감싼 `App3` 렌더링 유지
 
 ## 관련 노트
