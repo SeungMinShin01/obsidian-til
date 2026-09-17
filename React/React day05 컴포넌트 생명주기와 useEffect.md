@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day05 — 컴포넌트 생명주기와 useEffect
 
 > 실습 파일: `src/example/day05/App.jsx` · `src/example/day05/Lifecycle.jsx` · `src/example/day05/TopNav.jsx` · `src/example/day05/exam.md` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day04 React Router 도입과 라우트 정의]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day04 React Router 도입과 라우트 정의]] · 다음: [[React day05 외부 API 호출과 목록 렌더링]]
 
 day05는 **컴포넌트의 생명주기(lifecycle)** 를 눈으로 확인하는 날이다. day02에서 `useEffect`를 "첫 렌더링 뒤에 한 번 서버를 부르는 도구"로 썼는데, 그건 `useEffect`의 세 가지 쓰임 중 하나일 뿐이었다. 이번에는 상자를 좌우로 옮기는 아주 작은 컴포넌트 하나에 `console.log`를 심어, **컴포넌트가 언제 태어나고(마운트) 언제 다시 그려지고(업데이트) 언제 사라지는지(언마운트)** 를 콘솔 로그의 순서로 직접 본다. 화면에 보이는 결과보다 로그가 찍히는 순서가 이 날의 학습 대상이다.
 
@@ -308,4 +308,4 @@ useEffect(() => {
 
 ## 관련 노트
 
-[[React MOC]] · [[React day04 React Router 도입과 라우트 정의]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day05 외부 API 호출과 목록 렌더링]] · [[KDT_2026 학습 지도]]
