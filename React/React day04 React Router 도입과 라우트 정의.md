@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day04 — React Router 도입과 라우트 정의
 
 > 실습 파일: `src/example/day04/exam1.jsx` · `src/example/day04/App.jsx` · `src/example/day04/Home.jsx` · `src/example/day04/LayoutIndex.jsx` · `src/example/day04/NotFound.jsx` · `src/example/day04/TopNavi.jsx` · `src/example/day04/RouterHooks.jsx` · `src/example/day04/CommonLayout.jsx` · `src/example/day04/practice/*` · `src/main.jsx` · `package.json`
-> 허브: [[React MOC]] · 이전: [[React day03 전화번호부 실습 배열 상태 추가와 삭제]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day03 전화번호부 실습 배열 상태 추가와 삭제]] · 다음: [[React day05 컴포넌트 생명주기와 useEffect]]
 
 day04는 **React Router**를 처음 붙이는 날이다. 지금까지는 `main.jsx`에서 컴포넌트 하나를 골라 `render`하는 식으로 화면을 바꿨는데, 실제 사이트는 주소창의 경로(`/`, `/board`, `/login` …)에 따라 다른 화면이 나와야 한다. 이 "경로 → 컴포넌트" 대응을 맡는 라이브러리가 `react-router-dom`이고, 이번 예제는 그 최소 골격 — 라우터로 감싸기, 라우트 정의, 페이지 컴포넌트 — 세 조각만 세운다. 코드 자체는 몇 줄 안 되지만 앞으로 만들 모든 페이지가 이 틀 위에 올라가므로 구조를 정확히 잡아 두는 것이 목적이다.
 
@@ -500,4 +500,4 @@ React Router 6.4 이후로는 `createBrowserRouter` + `RouterProvider`로 라우
 
 ## 관련 노트
 
-[[React MOC]] · [[React day03 전화번호부 실습 배열 상태 추가와 삭제]] · [[React day02 컴포넌트 분리와 콜백 props]] · [[React day01 컴포넌트와 렌더링]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day03 전화번호부 실습 배열 상태 추가와 삭제]] · [[React day05 컴포넌트 생명주기와 useEffect]] · [[React day02 컴포넌트 분리와 콜백 props]] · [[React day01 컴포넌트와 렌더링]] · [[KDT_2026 학습 지도]]
