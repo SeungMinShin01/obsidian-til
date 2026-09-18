@@ -257,6 +257,47 @@ public List<Map<String, Object>> test3() {
 
 컨트롤러 쪽도 주소가 하나 늘어, `/test1`(JSON) · `/test2`(XML) · `/test3` 세 개가 열립니다. 서비스 메소드 셋을 각각 주소로 꺼내 브라우저에서 바로 확인하는 구조입니다.
 
+### 1-8-2. 리액트 화면에 내줄 주소 하나 열기 (보강)
+
+여기까지는 브라우저 주소창으로 결과를 눈으로 확인하는 자리였습니다. 마지막에 주소가 하나 더 붙는데, 이번에는 **소비자가 리액트 화면**입니다.
+
+```java
+@CrossOrigin(value = "http://localhost:5173")
+@GetMapping("/api4")
+public Map<String, Object> api4() {
+    return apiService.api4();
+}
+```
+
+서비스 쪽은 앞의 `test1`과 같은 모양입니다. 주소·페이지·인증키를 이어 붙이고 `WebClient`로 GET 한 번, 결과를 `Map`으로 받아 그대로 반환합니다.
+
+```java
+public Map<String, Object> api4() {
+    String url = "https://api.odcloud.kr/api/15111326/v1/uddi:186ae4bf-…";
+    url += "?page=" + 1;
+    url += "&perPage=" + 10;
+    url += "&serviceKey=" + serviceKey;
+
+    return webClient.get()
+            .uri(URI.create(url))
+            .retrieve()
+            .bodyToMono(Map.class)
+            .block();
+}
+```
+
+새로 갈리는 것은 `@CrossOrigin` 한 줄입니다. `/test1`~`/test3`은 같은 서버가 띄운 주소창에서 열어 보는 것이라 출처가 하나였지만, 이 주소는 Vite 개발 서버(`localhost:5173`)에서 도는 화면이 부릅니다. 포트가 다르면 브라우저 입장에서는 **다른 출처**라 응답 헤더에 허용 표시가 없으면 값을 읽지 못하게 막습니다. 그 허용 표시를 붙여 주는 애노테이션입니다.
+
+| 붙이는 자리 | 범위 |
+| --- | --- |
+| 메소드 위 | 그 주소 하나만 |
+| 클래스 위 | 그 컨트롤러의 모든 주소 |
+| `WebMvcConfigurer` / `@Bean CorsFilter` | 앱 전체 (경로 패턴·메소드·헤더까지 한곳에서) |
+
+주소 하나만 화면에 열어 주는 단계에서는 메소드 위가 간단하고, 열어 줄 주소가 늘어나면 설정 클래스로 모으는 편이 관리하기 쉽습니다. 막힌 화면을 만났을 때 볼 자리가 프론트 코드가 아니라 **서버 설정**이라는 점이 이 한 줄의 요지입니다.
+
+정리하면 이 자리에서 서버는 두 얼굴을 동시에 갖습니다. 바깥 API에 대해서는 **클라이언트**이고, 리액트 화면에 대해서는 **서버**입니다. 인증키는 서버 안에만 남고 화면은 내 주소 하나만 알면 되는 구조라, 프론트 코드에 키가 노출되지 않는 이점이 따라옵니다.
+
 ### 1-9. JSON · XML · CSV — 같은 데이터, 다른 그릇
 
 세 번의 실습이 사실 같은 질문의 세 가지 답입니다. "바깥 데이터를 어떤 형식으로 받아 내 자료구조에 담을 것인가."
@@ -435,6 +476,7 @@ CSV를 읽어 화면에 바로 뿌리는 대신, 기동 시 한 번 읽어 내 �
 - `2026B_Spring/springweb/build.gradle` (**형식별 의존성** — `spring-boot-starter-webflux`(WebClient), `tools.jackson.dataformat:jackson-dataformat-xml`(XmlMapper, Jackson 3 계열이라 패키지가 `tools.jackson`), `com.opencsv:opencsv:5.12.0`(CSV 파서))
 - `2026B_Spring/springweb/src/main/resources/static/중소벤처기업부_벤처기업명단_20260521.csv` (**읽을 대상 CSV** — 클래스패스 안에 둔 파일을 `ClassPathResource`로 여는 실습용 데이터, CP949로 저장된 공공데이터 파일)
 - `2026B_Spring/springweb/src/main/java/day10/ApiService.java` · `ApiController.java` (**이후 보강분** — CSV 쪽이 `new CSVReaderBuilder(reader).build()` + `Charset.forName("EUC-KR")`로 바뀌고, `readNext()`로 제목 행을 먼저 받아 `LinkedHashMap`에 헤더↔값을 짝지어 `List<Map<String, Object>>`로 반환하는 모양이 된 상태. 컨트롤러도 `/test3`까지 세 주소를 여는 형태)
+- `2026B_Spring/springweb/src/main/java/day10/ApiController.java` · `ApiService.java` (**화면에 내줄 주소 추가분** — 성동구 어린이보호구역 데이터를 받는 `api4()`가 `test1`과 같은 WebClient 체인으로 붙고, 컨트롤러 쪽 `/api4`에는 `@CrossOrigin(value = "http://localhost:5173")`이 얹혀 Vite 개발 서버에서 도는 리액트 화면이 응답을 읽을 수 있게 열린 상태)
 - `2026B_Spring/springweb/src/main/java/day10/AppStart.java` (**day10 전용 실행 진입점** — `@SpringBootApplication` 한 장으로 이 패키지를 기준으로 컴포넌트 스캔이 시작되는 자리)
 - `2026B_Spring/springweb/src/main/resources/application.properties` (**설정 키 총정리** — 포트·데이터소스·`ddl-auto`·`show-sql`·초기 SQL 실행 순서와, 스프링이 정한 키가 아닌 내가 만든 키(`api.public-data.service-key`)를 `@Value`로 읽는 구조)
 

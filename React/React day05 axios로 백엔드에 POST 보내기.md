@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day05 — axios로 백엔드에 POST 보내기
 
 > 실습 파일: `src/example/day04/practice/신승민.jsx` · `src/example/day04/practice/권유린.jsx` · `src/example/day04/practice/조현우.jsx` · `src/example/day04/practice/김지환.jsx` · `src/example/day04/practice/index.css` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day05 외부 API 호출과 목록 렌더링]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day05 외부 API 호출과 목록 렌더링]] · 다음: [[React day06 내 서버를 거쳐 받는 공공데이터]]
 
 외부 API를 `axios.get`으로 읽어 오는 것까지 해 봤으니, 이번에는 반대 방향 — **폼에 입력한 값을 `axios.post`로 백엔드에 보내는** 차례다. 코드가 놓인 자리는 day04에서 만든 사이드 네비 팀 소개 실습(`day04/practice/`)의 내 페이지인데, 내용은 라우팅이 아니라 이 날 배운 axios 통신이다. 라우트 하나에 꽂힌 페이지 컴포넌트 안에서 상태·폼·통신이 전부 돌아가는 형태라, day03의 제어 컴포넌트와 day02의 POST 요청이 axios 표기로 다시 합쳐지는 모양이 된다.
 
@@ -483,4 +483,4 @@ await axios.post(url, form);   // 그대로 본문으로
 
 ## 관련 노트
 
-[[React MOC]] · [[React day05 외부 API 호출과 목록 렌더링]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day03 폼 제출과 입력값 읽기]] · [[React day02 useEffect와 fetch로 서버 CRUD]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day06 내 서버를 거쳐 받는 공공데이터]] · [[React day05 외부 API 호출과 목록 렌더링]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day03 폼 제출과 입력값 읽기]] · [[React day02 useEffect와 fetch로 서버 CRUD]] · [[KDT_2026 학습 지도]]
