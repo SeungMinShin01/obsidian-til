@@ -10,6 +10,7 @@ tags: [학습, spring]
 
 > 상위: [[뉴스 인덱스]]
 > 이전: [[뉴스 - 2026-09-16 IllegalArgumentException은 400 Bad Request인가]]
+> 다음: [[뉴스 - 2026-09-18 Spring Statemachine 도입기]]
 > 예습자료 — 자동 생성, 사용자 미검증. 정리본이 아니다.
 
 ## 오늘의 글
