@@ -1,16 +1,18 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day10
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day10, springweb/src/main/resources/application.properties, springweb/src/main/resources/static/중소벤처기업부_벤처기업명단_20260521.csv, springweb/build.gradle
 작성일: 2026-09-18
 tags: [학습, java]
 ---
 
 # Spring day10 — WebClient로 공공데이터 API 대신 호출하기
 
-> 실습 파일: `day10/ApiController.java`, `day10/ApiService.java`, `resources/application.properties`
+> 실습 파일: `day10/ApiController.java`, `day10/ApiService.java`, `resources/application.properties`, `resources/static/*.csv`, `build.gradle`
 > 허브: [[Spring MOC]] · 이전: [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]] · 다음: (없음)
 
 지금까지는 내 DB에 있는 데이터를 꺼내 JSON으로 내보냈습니다. 이번에는 방향이 하나 더 늘어납니다. 서버가 **클라이언트 입장이 되어** 바깥 공개 API를 호출하고, 받아 온 결과를 다시 내 API의 응답으로 흘려보내는 자리입니다. 컨트롤러 → 서비스 두 층은 그대로 두고, 서비스 아래가 리포지토리 대신 **HTTP 클라이언트**로 바뀐다고 보면 정리가 쉽습니다.
+
+받아 오는 형식은 한 가지가 아닙니다. 이번 자리에서 JSON·XML·CSV 세 가지를 차례로 다루는데, 앞의 둘은 API 호출로, 마지막은 프로젝트 안에 넣어 둔 파일을 읽는 방식으로 가져옵니다. 형식마다 변환을 맡는 도구가 다를 뿐 "바깥 데이터를 내 자료구조(`Map`·`List`)에 담는다"는 목적은 같습니다.
 
 ## 1. 배운 내용
 
@@ -144,6 +146,89 @@ Map<String, Object> response = webClient.get()
 
 `new ...<>() {}` 끝의 중괄호는 익명 하위 클래스를 만드는 표기입니다. 자바 제네릭은 실행 시점에 타입이 지워지지만(타입 소거), 클래스를 상속하면 상위 타입 인자는 클래스 정보에 남기 때문에 이 우회로가 성립합니다. `클래스명.class`가 리플렉션으로 클래스 정보를 얻는 표기라는 것도 같은 맥락에서 같이 정리해 둡니다.
 
+### 1-7. XML로 내려오는 API — 문자열로 받아 매퍼로 변환
+
+두 번째 호출 대상(전국 약국 정보)은 응답이 JSON이 아니라 XML입니다. 이때는 `bodyToMono(Map.class)`가 통하지 않습니다. 변환을 맡는 쪽이 JSON 전용이라 XML 본문을 만나면 읽어 내지 못하기 때문입니다.
+
+그래서 순서를 두 단계로 나눕니다.
+
+```java
+String response = webClient.get().uri(url).retrieve()
+        .bodyToMono(String.class)   // 1) XML 원문을 문자열 그대로 받음
+        .block();
+
+XmlMapper xmlMapper = new XmlMapper();   // 2) 문자열 → Map 변환
+Map<String, Object> map = xmlMapper.readValue(response, Map.class);
+```
+
+| 단계 | 하는 일 |
+| --- | --- |
+| `bodyToMono(String.class)` | 응답 본문을 해석하지 않고 문자열로 통째 수신 |
+| `new XmlMapper()` | Jackson의 XML 확장 매퍼. `ObjectMapper`의 XML판이라고 보면 맞습니다 |
+| `readValue(문자열, Map.class)` | XML 트리를 `Map` 구조로 펴서 반환 |
+
+`readValue`는 파싱 실패 시 예외를 던지므로 `try~catch`로 감쌉니다. 바깥에서 오는 데이터는 형식이 어긋날 수 있다고 전제하고 다루는 편이 안전합니다.
+
+의존성은 `build.gradle`에 따로 넣어야 합니다.
+
+```gradle
+implementation 'tools.jackson.dataformat:jackson-dataformat-xml'
+```
+
+패키지 이름이 `com.fasterxml`이 아니라 `tools.jackson`인 점이 눈에 띕니다. Jackson 3부터 그룹·패키지가 바뀌었고, 지금 쓰는 스프링 부트 4 계열이 Jackson 3을 쓰기 때문에 import도 `tools.jackson.dataformat.xml.XmlMapper`가 됩니다. 검색해서 나오는 예제 대부분은 Jackson 2(`com.fasterxml.jackson.dataformat.xml`) 기준이라, 임포트가 안 잡히면 버전 계열부터 확인하는 편이 빠릅니다.
+
+### 1-8. 프로젝트 안에 둔 CSV 파일 읽기
+
+세 번째는 바깥 호출이 아니라 **내 프로젝트 안에 넣어 둔 파일**을 읽는 흐름입니다. 공공데이터를 API가 아니라 파일로 내려받아 쓰는 경우가 여기에 해당합니다.
+
+```java
+String fileName = "static/중소벤처기업부_벤처기업명단_20260521.csv";
+ClassPathResource resource = new ClassPathResource(fileName);
+
+byte[] bytes = resource.getInputStream().readAllBytes();
+InputStreamReader reader = new InputStreamReader(
+        new ByteArrayInputStream(bytes),
+        Charset.forName("CP949"));
+CSVReader csvReader = new CSVReader(reader);
+```
+
+| 요소 | 하는 일 |
+| --- | --- |
+| `ClassPathResource` | 클래스패스(= `resources/` 이하) 기준으로 파일을 찾는 스프링 추상화. 경로에 `classpath:`나 절대경로를 쓰지 않아도 됨 |
+| `getInputStream()` | 파일 내용을 바이트 흐름으로 염 |
+| `readAllBytes()` | 흐름 전체를 바이트 배열로 한 번에 읽음 |
+| `InputStreamReader(스트림, Charset)` | 바이트 → 문자로 바꾸는 다리. **여기서 인코딩을 정함** |
+| `Charset.forName("CP949")` | 한글 윈도우 계열 인코딩. UTF-8로 읽으면 글자가 깨짐 |
+| `CSVReader` | opencsv 라이브러리. 쉼표·따옴표 규칙을 처리해 한 줄을 `String[]`로 돌려줌 |
+
+의존성은 이렇게 추가합니다.
+
+```gradle
+implementation 'com.opencsv:opencsv:5.12.0'
+```
+
+CSV를 `split(",")`로 직접 자르지 않고 라이브러리를 쓰는 이유는 **값 안에 쉼표가 들어 있는 경우** 때문입니다. `"서울시 중구, 세종대로"` 같은 칸은 따옴표로 묶여 오는데, 단순 분리는 이걸 두 칸으로 쪼개 버립니다. 파서는 따옴표 규칙·줄바꿈 포함 값·이스케이프까지 함께 처리합니다.
+
+인코딩은 별도로 신경 쓸 자리입니다. 공공기관이 배포하는 CSV는 EUC-KR/CP949로 저장된 것이 많고, 읽는 쪽에서 UTF-8을 가정하면 한글이 전부 깨집니다. 반대로 UTF-8 BOM이 붙은 파일을 그냥 읽으면 첫 칸 앞에 보이지 않는 문자가 하나 붙습니다. **파일을 받으면 인코딩부터 확인**하는 습관이 사고를 줄입니다.
+
+### 1-9. JSON · XML · CSV — 같은 데이터, 다른 그릇
+
+세 번의 실습이 사실 같은 질문의 세 가지 답입니다. "바깥 데이터를 어떤 형식으로 받아 내 자료구조에 담을 것인가."
+
+| 형식 | 생김새 | 받는 방법 | 자연스럽게 대응하는 자료구조 |
+| --- | --- | --- | --- |
+| JSON | `{ "키": 값, "키": 값 }` | `bodyToMono(Map.class)` | `Map` (키-값 쌍) |
+| XML | `<태그>값</태그>` | `bodyToMono(String.class)` → `XmlMapper` | `Map` (중첩이 깊어지기 쉬움) |
+| CSV | `값1,값2,값3` 줄 단위 | `ClassPathResource` → `CSVReader` | `List<String[]>` → `List<Map>` |
+
+컬렉션 쪽과 짝지어 정리해 두면 형식이 바뀌어도 코드가 어디로 갈지 보입니다.
+
+- `List` — 인덱스로 구분되는 여러 값 → `[ 값1, 값2, 값3 ]`
+- `Set` — 인덱스 없이 중복을 허용하지 않는 모음
+- `Map` — 키와 값 한 쌍(entry)을 여러 개 → `{ 키:값, 키:값 }`
+
+JSON과 XML이 `Map`으로 떨어지는 이유는 둘 다 **이름이 붙은 계층 구조**이기 때문이고, CSV가 `List`로 떨어지는 이유는 **이름 없는 줄의 나열**이기 때문입니다. 그래서 CSV는 첫 줄(헤더)을 키로 삼아 `List<Map<String, Object>>`로 바꿔 두면 앞의 둘과 같은 모양으로 다룰 수 있습니다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. WebClient를 빈으로 꺼내 두기
@@ -194,7 +279,38 @@ public record PharmacyResponse(
 
 공공데이터 API 중에는 기본 응답이 XML인 것이 많습니다. 대부분 `_type=json` 또는 `dataType=JSON` 파라미터를 붙이면 JSON으로 바뀌고, 그렇지 않으면 `bodyToMono(String.class)`로 원문을 받아 따로 파싱해야 합니다. 어떤 형식이 오는지는 호출해 보기 전에 문서에서 확인해 두는 편이 시간을 아낍니다.
 
-### 2-5. 실패를 응답으로 갈라 주기
+### 2-5. CSV 한 줄을 객체로 받기
+
+`CSVReader`로 `String[]`을 받아 인덱스로 꺼내면 `row[7]`이 무슨 칸인지 코드만 봐서는 알 수 없습니다. opencsv에는 헤더 이름을 필드에 맞춰 주는 방식이 따로 있습니다.
+
+```java
+List<VentureDto> list = new CsvToBeanBuilder<VentureDto>(reader)
+        .withType(VentureDto.class)
+        .build()
+        .parse();
+```
+
+DTO 쪽에는 `@CsvBindByName(column = "회사명")`처럼 칸 이름을 붙여 둡니다. 헤더 순서가 바뀌어도 코드가 깨지지 않는다는 점이 인덱스 접근과 가장 큰 차이입니다. 헤더가 없는 파일이라면 `@CsvBindByPosition(position = 0)`으로 자리를 지정합니다.
+
+### 2-6. 읽은 파일을 닫기 — try-with-resources
+
+스트림·리더는 다 쓰고 나면 닫아야 합니다. 직접 `close()`를 부르면 중간에 예외가 났을 때 건너뛰므로, 괄호 안에서 여는 표기를 씁니다.
+
+```java
+try (CSVReader csvReader = new CSVReader(
+        new InputStreamReader(resource.getInputStream(), Charset.forName("CP949")))) {
+    List<String[]> rows = csvReader.readAll();
+    // ...
+} catch (Exception e) {
+    // 처리
+}
+```
+
+괄호 안에서 만든 객체는 블록을 벗어날 때 자동으로 닫힙니다(`AutoCloseable`). 파일을 많이 여는 코드일수록 이 표기를 쓰는 편이 안전합니다.
+
+덧붙여 `readAllBytes()`는 파일 전체를 메모리에 올리는 방식이라 수십 MB를 넘는 파일에서는 부담이 됩니다. 큰 파일은 한 줄씩 읽어 처리하면서 흘려보내는 방식(`readNext()` 반복)이 메모리를 아낍니다.
+
+### 2-7. 실패를 응답으로 갈라 주기
 
 바깥 API는 내 통제 밖이라 언제든 실패합니다. 상태 코드에 따라 처리를 갈라 두면 원인을 빨리 찾습니다.
 
@@ -239,7 +355,15 @@ public record PharmacyResponse(
 
 공공 API는 대개 일일 호출 한도가 있습니다. 자주 바뀌지 않는 데이터는 `@Cacheable`로 메모리에 담아 두거나, 스케줄러(`@Scheduled`)로 하루 한 번 받아 내 DB에 적재한 뒤 화면은 내 DB만 보게 하는 방식이 흔합니다. 이렇게 하면 상대 서버가 잠깐 죽어도 화면은 계속 뜹니다.
 
-### 3-5. 다음에 볼 키워드
+### 3-5. Jackson 2에서 3으로 — 패키지가 바뀐 이야기
+
+Jackson은 오랫동안 `com.fasterxml.jackson` 이름으로 쓰였습니다. 3.x로 올라오면서 그룹과 패키지가 `tools.jackson`으로 바뀌었고, 스프링 부트 4가 이 계열을 기본으로 씁니다. 라이브러리 버전이 크게 오를 때 패키지명까지 바꾸는 건 **같은 프로젝트의 두 버전이 한 클래스패스에 공존해도 충돌하지 않게 하려는** 목적이 큽니다. 마이그레이션 중에 둘을 동시에 올려 둘 수 있기 때문입니다. 예제 코드를 그대로 붙여 넣었는데 임포트가 안 잡히면, 문법이 아니라 이 세대 차이를 먼저 의심하는 편이 빠릅니다.
+
+### 3-6. 파일을 받아 DB에 넣는 흐름 (배치)
+
+CSV를 읽어 화면에 바로 뿌리는 대신, 기동 시 한 번 읽어 내 테이블에 적재해 두는 방식이 실무에서 더 흔합니다. 매번 파일을 파싱하지 않아도 되고, 정렬·검색·페이징을 DB에 맡길 수 있기 때문입니다. 수만 줄을 한 건씩 `save()`로 넣으면 느리므로 `saveAll()`로 묶거나 JDBC 배치 삽입(`hibernate.jdbc.batch_size`)을 켜는 쪽으로 갑니다. 나중에 Spring Batch까지 가면 읽기(Reader) → 가공(Processor) → 쓰기(Writer)를 정형화한 틀로 다룹니다.
+
+### 3-7. 다음에 볼 키워드
 
 - `RestClient` — 동기 호출을 위한 최신 표기
 - `WebClient.Builder` · `ExchangeFilterFunction` — 공통 헤더·로깅 필터
@@ -250,11 +374,20 @@ public record PharmacyResponse(
 - `@Cacheable` · `@Scheduled` — 외부 호출 횟수 줄이기
 - `Resilience4j` — 재시도·서킷 브레이커
 - 환경별 설정 분리 — `application-{profile}.properties`, `spring.profiles.active`
+- `XmlMapper` · `ObjectMapper` · `JsonNode` — 형식별 매퍼와 트리 탐색
+- `ClassPathResource` · `Resource` · `ResourceLoader` — 스프링의 자원 추상화
+- `CsvToBeanBuilder` · `@CsvBindByName` — CSV를 객체로 매핑
+- `Charset` · `StandardCharsets` · BOM — 인코딩을 다루는 기본
+- try-with-resources · `AutoCloseable` — 스트림 닫기
+- Spring Batch — 대용량 파일 적재를 위한 틀
 
 ## 실습 파일
 
 - `2026B_Spring/springweb/src/main/java/day10/ApiController.java` (**바깥 API용 컨트롤러** — `@GetMapping("/test1")`·`/test2` 두 주소를 열고 몸통은 서비스 호출 한 줄만 두는 모양, 반환 타입이 엔티티·DTO가 아니라 `Map<String, Object>`인 점)
-- `2026B_Spring/springweb/src/main/java/day10/ApiService.java` (**`@Value`로 인증키 주입 + WebClient 호출** — `WebClient.builder().build()` → `.get().uri().retrieve().bodyToMono(Map.class).block()` 체인, 이미 인코딩된 키를 그대로 이어 붙일 때 `URI.create`로 재인코딩을 막는 이유, `클래스명.class`가 리플렉션 표기라는 메모)
+- `2026B_Spring/springweb/src/main/java/day10/ApiService.java` (**`@Value`로 인증키 주입 + 세 가지 형식 받아오기** — ① JSON: `WebClient.builder().build()` → `.get().uri().retrieve().bodyToMono(Map.class).block()` 체인, 이미 인코딩된 키를 그대로 이어 붙일 때 `URI.create`로 재인코딩을 막는 이유, `클래스명.class`가 리플렉션 표기라는 메모 / ② XML: `bodyToMono(String.class)`로 원문을 받아 `XmlMapper.readValue`로 `Map` 변환 / ③ CSV: `ClassPathResource`로 `resources/static` 파일을 열고 `InputStreamReader` + `Charset.forName("CP949")`로 한글 인코딩을 맞춘 뒤 opencsv `CSVReader`에 넘기기, 파일 끝 주석의 JSON·XML·CSV와 List·Set·Map 대응 정리)
+- `2026B_Spring/springweb/src/main/java/day10/ApiController.java` (**주소 두 개를 여는 `@RestController`** — `/test1`(JSON)·`/test2`(XML), 몸통은 서비스 호출 한 줄)
+- `2026B_Spring/springweb/build.gradle` (**형식별 의존성** — `spring-boot-starter-webflux`(WebClient), `tools.jackson.dataformat:jackson-dataformat-xml`(XmlMapper, Jackson 3 계열이라 패키지가 `tools.jackson`), `com.opencsv:opencsv:5.12.0`(CSV 파서))
+- `2026B_Spring/springweb/src/main/resources/static/중소벤처기업부_벤처기업명단_20260521.csv` (**읽을 대상 CSV** — 클래스패스 안에 둔 파일을 `ClassPathResource`로 여는 실습용 데이터, CP949로 저장된 공공데이터 파일)
 - `2026B_Spring/springweb/src/main/resources/application.properties` (**설정 키 총정리** — 포트·데이터소스·`ddl-auto`·`show-sql`·초기 SQL 실행 순서와, 스프링이 정한 키가 아닌 내가 만든 키(`api.public-data.service-key`)를 `@Value`로 읽는 구조)
 
 ## 관련 노트
