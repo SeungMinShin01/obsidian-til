@@ -10,7 +10,8 @@ tags: [프로젝트, spring]
 # 코드 구조와 예시 — 주말 MVP (단일 WMS)
 
 > 팀 규칙 `02_코드컨벤션_백엔드.md`의 패키지 구조(도메인 = 폴더 = 담당자)를 따른다.
-> 루트 패키지는 `com.team.wms`로 가정한다. 스택: Java 21, Spring Boot 3.x, Spring Data JPA, Lombok.
+> 루트 패키지는 `com.team.wms`로 가정한다. 스택: **Java 17, Spring Boot 4.1.1**, Spring Data JPA, Lombok, MySQL 8.0 (의존성·Boot 4 주의사항은 `팀규칙/09_환경_버전_통일.md`).
+> 아래 예시 코드는 Boot 4에서 그대로 동작하는 문법만 쓴다 (record, switch 식, `toList()`는 Java 17 지원). Jackson을 직접 쓸 일이 생기면 `tools.jackson.*`를 import한다.
 > 상태 전이 규칙은 나중에 넣는다. 지금은 **enum 값 + 행동 메서드 + `transitionTo()` 한 곳**까지만 만든다.
 
 ---
