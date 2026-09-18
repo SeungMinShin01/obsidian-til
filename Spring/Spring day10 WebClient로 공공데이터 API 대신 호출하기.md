@@ -211,6 +211,52 @@ CSV를 `split(",")`로 직접 자르지 않고 라이브러리를 쓰는 이유�
 
 인코딩은 별도로 신경 쓸 자리입니다. 공공기관이 배포하는 CSV는 EUC-KR/CP949로 저장된 것이 많고, 읽는 쪽에서 UTF-8을 가정하면 한글이 전부 깨집니다. 반대로 UTF-8 BOM이 붙은 파일을 그냥 읽으면 첫 칸 앞에 보이지 않는 문자가 하나 붙습니다. **파일을 받으면 인코딩부터 확인**하는 습관이 사고를 줄입니다.
 
+### 1-8-1. 읽어 온 CSV를 헤더 키의 `Map`으로 바꾸기 (보강)
+
+파일을 여는 부분을 마무리한 뒤, 실습 코드가 한 걸음 더 나갔습니다. `CSVReader`를 바로 `new`로 만드는 대신 **빌더**를 쓰고, 인코딩도 `EUC-KR`로 지정하고, 읽은 줄을 그대로 두지 않고 **첫 줄(헤더)을 키로 삼아 `Map`으로 재구성**해서 `List<Map<String, Object>>`로 돌려주는 모양이 됐습니다.
+
+```java
+public List<Map<String, Object>> test3() {
+    List<Map<String, Object>> list = new ArrayList<>();
+    String fileName = "static/중소벤처기업부_벤처기업명단_20260521.csv";
+    ClassPathResource resource = new ClassPathResource(fileName);
+    try {
+        byte[] bytes = resource.getInputStream().readAllBytes();
+        InputStreamReader reader = new InputStreamReader(
+                new ByteArrayInputStream(bytes),
+                Charset.forName("EUC-KR"));
+        CSVReader csvReader = new CSVReaderBuilder(reader).build();
+
+        String[] headers = csvReader.readNext();   // 1) 첫 줄 = 제목 행
+        String[] values;
+        while (true) {                             // 2) 나머지 줄 반복
+            values = csvReader.readNext();
+            if (values == null) break;             // 3) 더 읽을 줄이 없으면 종료
+            Map<String, Object> row = new LinkedHashMap<>();
+            for (int index = 0; index < headers.length; index++) {
+                row.put(headers[index], values[index]);   // 4) 헤더 ↔ 값 짝짓기
+            }
+            list.add(row);
+        }
+    } catch (Exception e) {
+        System.out.println(e);
+    }
+    return list;
+}
+```
+
+| 바뀐 부분 | 정리 |
+| --- | --- |
+| `new CSVReaderBuilder(reader).build()` | opencsv의 빌더 표기. 구분자·따옴표 문자·건너뛸 줄 수 같은 옵션을 붙일 자리가 생깁니다. 옵션이 없으면 `new CSVReader(reader)`와 결과는 같습니다 |
+| `Charset.forName("EUC-KR")` | 같은 계열 인코딩이지만 CP949는 EUC-KR의 확장판입니다. 확장 글자가 없는 파일이면 EUC-KR로도 그대로 읽힙니다 |
+| `csvReader.readNext()` | 한 줄을 `String[]`로 돌려주고, 더 읽을 줄이 없으면 `null`. **`null`이 곧 파일 끝 신호**라서 반복 종료 조건이 됩니다 |
+| `LinkedHashMap` | `HashMap`과 달리 **넣은 순서를 지킵니다.** CSV는 칸 순서가 의미를 갖는 자료라, 응답 JSON에서도 원래 열 순서대로 보이게 하려면 이쪽이 맞습니다 |
+| 반환 타입 `List<Map<String, Object>>` | 1-9 표에서 "CSV는 헤더를 키로 삼아 `List<Map>`으로 바꿔 두면 JSON·XML과 같은 모양이 된다"고 정리한 바로 그 지점을 코드로 옮긴 결과입니다 |
+
+`headers.length`를 기준으로 도는 점이 눈에 띕니다. 값 배열 쪽이 아니라 **제목 행 길이를 기준으로 삼으면** 키 없는 값이 섞이는 일을 막을 수 있습니다. 다만 공공데이터 CSV는 줄마다 칸 수가 어긋난 행이 섞여 있는 경우가 있어서, 실제로 돌릴 때는 `values.length`와 비교해 짧은 쪽까지만 채우거나 빈 문자열로 메우는 방어를 한 줄 넣어 두는 편이 안전합니다.
+
+컨트롤러 쪽도 주소가 하나 늘어, `/test1`(JSON) · `/test2`(XML) · `/test3` 세 개가 열립니다. 서비스 메소드 셋을 각각 주소로 꺼내 브라우저에서 바로 확인하는 구조입니다.
+
 ### 1-9. JSON · XML · CSV — 같은 데이터, 다른 그릇
 
 세 번의 실습이 사실 같은 질문의 세 가지 답입니다. "바깥 데이터를 어떤 형식으로 받아 내 자료구조에 담을 것인가."
@@ -388,6 +434,8 @@ CSV를 읽어 화면에 바로 뿌리는 대신, 기동 시 한 번 읽어 내 �
 - `2026B_Spring/springweb/src/main/java/day10/ApiController.java` (**주소 두 개를 여는 `@RestController`** — `/test1`(JSON)·`/test2`(XML), 몸통은 서비스 호출 한 줄)
 - `2026B_Spring/springweb/build.gradle` (**형식별 의존성** — `spring-boot-starter-webflux`(WebClient), `tools.jackson.dataformat:jackson-dataformat-xml`(XmlMapper, Jackson 3 계열이라 패키지가 `tools.jackson`), `com.opencsv:opencsv:5.12.0`(CSV 파서))
 - `2026B_Spring/springweb/src/main/resources/static/중소벤처기업부_벤처기업명단_20260521.csv` (**읽을 대상 CSV** — 클래스패스 안에 둔 파일을 `ClassPathResource`로 여는 실습용 데이터, CP949로 저장된 공공데이터 파일)
+- `2026B_Spring/springweb/src/main/java/day10/ApiService.java` · `ApiController.java` (**이후 보강분** — CSV 쪽이 `new CSVReaderBuilder(reader).build()` + `Charset.forName("EUC-KR")`로 바뀌고, `readNext()`로 제목 행을 먼저 받아 `LinkedHashMap`에 헤더↔값을 짝지어 `List<Map<String, Object>>`로 반환하는 모양이 된 상태. 컨트롤러도 `/test3`까지 세 주소를 여는 형태)
+- `2026B_Spring/springweb/src/main/java/day10/AppStart.java` (**day10 전용 실행 진입점** — `@SpringBootApplication` 한 장으로 이 패키지를 기준으로 컴포넌트 스캔이 시작되는 자리)
 - `2026B_Spring/springweb/src/main/resources/application.properties` (**설정 키 총정리** — 포트·데이터소스·`ddl-auto`·`show-sql`·초기 SQL 실행 순서와, 스프링이 정한 키가 아닌 내가 만든 키(`api.public-data.service-key`)를 `@Value`로 읽는 구조)
 
 ## 관련 노트
