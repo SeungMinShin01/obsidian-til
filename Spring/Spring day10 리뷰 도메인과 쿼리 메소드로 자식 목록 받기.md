@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day10 — 리뷰 도메인과 쿼리 메소드로 자식 목록 받기
 
 > 실습 파일: `day10/model/entity/ReviewsEntity.java`, `model/dto/ReviewsDto.java`, `model/repository/ReviewRepository.java`, `service/ReviewService.java`, `controller/ReviewController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]]
+> 허브: [[Spring MOC]] · 이전: [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]] · 다음: [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]]
 
 앞 노트에서 DTO 만 자리를 잡아 두었던 **리뷰**가 엔티티부터 컨트롤러까지 한 벌로 채워졌습니다. 관계는 "상품 하나에 리뷰 여럿"이고, 카테고리 → 상품 → 리뷰 세 층이 완성되는 자리입니다. 리액트 쪽 `ReviewManager` 가 부르는 `/api/reviews` 가 여기입니다.
 
@@ -322,4 +322,4 @@ List<ReviewsEntity> findReviews(@Param("bno") Integer bno);
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]] · [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · [[KDT_2026 학습 지도]]
