@@ -7,10 +7,10 @@ tags: [학습, react]
 
 # React day07 — useRef와 렌더링을 일으키지 않는 값
 
-> 실습 파일: `src/example/day06/useRefExam1.jsx` · `TopNavi.jsx` · `App.jsx`
+> 실습 파일: `src/example/day06/useRefExam1.jsx` · `useRefExam2.jsx` · `TopNavi.jsx` · `App.jsx`
 > 허브: [[React MOC]] · 이전: [[React day06 내 서버를 거쳐 받는 공공데이터]] · 다음: (예정)
 
-지금까지 컴포넌트가 기억하는 값은 전부 `useState`였다. 이번에는 세 번째 종류의 값 보관법인 `useRef`가 나온다. 핵심 질문은 하나다 — **값은 유지하고 싶은데 화면은 다시 그리고 싶지 않다면?** 이걸 확인하려고 같은 카운터를 세 가지 방법(state 변수·ref 변수·지역변수)으로 나란히 만들어 버튼 세 개로 비교하는 실험을 했다.
+지금까지 컴포넌트가 기억하는 값은 전부 `useState`였다. 이번에는 세 번째 종류의 값 보관법인 `useRef`가 나온다. 핵심 질문은 하나다 — **값은 유지하고 싶은데 화면은 다시 그리고 싶지 않다면?** 이걸 확인하려고 같은 카운터를 세 가지 방법(state 변수·ref 변수·지역변수)으로 나란히 만들어 버튼 세 개로 비교하는 실험을 했다. 이어서 `useRefExam2`에서는 `useRef`의 또 다른 얼굴 — **DOM 요소를 직접 잡는 용도** — 를 비밀번호 확인 폼으로 실습했다.
 
 ## 1. 배운 내용
 
@@ -77,6 +77,63 @@ export default function UseRefExam1(props) {
 
 이번 예제도 이전처럼 라우트 표에 꽂아서 본다. `App.jsx`에 `/`·`/use-ref1`·`/use-ref2` 세 경로를 두고, `TopNavi`의 `NavLink` 두 개로 예제 사이를 오가는 구조다. 라우터 골격은 day04에서 만든 그대로이고, `element`에 꽂히는 예제 컴포넌트만 갈아 끼운다.
 
+### 1-5. useRef의 두 번째 얼굴 — DOM을 직접 잡기 (`useRefExam2`)
+
+카운터 실험이 "값 보관용 ref"였다면, 두 번째 예제는 **DOM 참조용 ref**다. JSX 태그에 `ref={...}`를 걸어 두면 렌더링이 끝난 뒤 `.current`에 **실제 DOM 노드**가 들어온다. 순수 JS에서 `document.querySelector`로 하던 일을 리액트식으로 하는 길이다.
+
+```jsx
+import { useEffect, useRef } from "react";
+
+export default function UseRefExam2(props) {
+  const passRef1 = useRef(); // 재렌더링 시 값 유지 변수
+  const passRef2 = useRef();
+
+  useEffect(() => {
+    console.log(passRef1, passRef2);
+    passRef1.current.focus(); // focus : 해당 DOM에 (깜빡이는) 커서 두기
+  }, []);
+
+  const checkPassword = () => {
+    if (passRef1.current.value === passRef2.current.value) {
+      alert("비밀번호 확인 성공");
+    } else alert("비밀번호 불일치");
+  };
+
+  return (
+    <>
+      <form>
+        패스워드1: <input ref={passRef1} />
+        <br />
+        패스워드2: <input ref={passRef2} />
+        <br />
+        <button type="button" onClick={checkPassword}>
+          패스워드
+        </button>
+      </form>
+    </>
+  );
+}
+```
+
+읽어 낼 지점을 순서대로 정리하면 이렇다.
+
+- **`useRef()`를 초기값 없이 부른다.** 카운터 때는 `useRef(0)`으로 값을 담았지만, DOM 참조용은 처음엔 빌 수밖에 없다(아직 렌더링 전이라 잡을 DOM이 없다). `<input ref={passRef1} />`이 그려진 **뒤에야** `.current`가 채워진다.
+- **그래서 첫 접근이 `useEffect(…, [])` 안에 있다.** effect는 화면이 그려진 다음에 도는 후처리라([[React day05 컴포넌트 생명주기와 useEffect]]), 그 시점엔 `.current`에 DOM이 확실히 들어와 있다. 함수 본문에서 바로 `passRef1.current.focus()`를 부르면 첫 렌더링 때는 아직 `undefined`라 에러가 난다. 1-2에서 정리한 "ref는 본문 말고 이벤트 핸들러나 effect에서" 규칙이 DOM 참조에서는 선택이 아니라 필수가 되는 셈이다.
+- **`focus()`** — 마운트 직후 첫 입력칸에 커서를 옮겨 두는 전형적인 용례다. "페이지 열리면 아이디 칸에 커서"가 바로 이 조합(`ref` + 마운트 effect + `focus`)이다.
+- **`.current.value`로 입력값을 읽는다.** state에 담지 않은 입력칸의 현재 값을 필요한 순간(버튼 클릭)에만 꺼내 읽는다. 타이핑할 때마다 재렌더링이 일어나지 않는 것이 특징이고, 이런 방식을 **비제어(uncontrolled) 입력**이라고 부른다. day03 폼 노트에서 예고했던 그 길이다.
+- **`<button type="button">`** — `form` 안의 버튼은 기본이 `submit`이라, 타입을 명시하지 않으면 클릭 순간 폼 제출로 페이지가 새로고침되어 SPA 흐름이 끊긴다. 제출이 목적이 아닌 버튼에는 `type="button"`을 붙이는 습관이 안전하다.
+
+두 예제를 한 표로 겹쳐 두면 `useRef` 하나가 두 얼굴을 갖는 게 보인다.
+
+| 구분 | 값 보관용 (`useRefExam1`) | DOM 참조용 (`useRefExam2`) |
+| --- | --- | --- |
+| 선언 | `useRef(0)` — 초기값 지정 | `useRef()` — 비워 둠 |
+| `.current`에 드는 것 | 내가 대입한 값 | 렌더링 뒤 실제 DOM 노드 |
+| 채워지는 시점 | 선언 즉시 | 첫 렌더링 완료 후 |
+| 주 용도 | 재렌더링과 무관한 값 기억 | `focus()`·`value` 등 DOM 조작 |
+
+공통점은 하나다 — **바뀌어도 재렌더링을 일으키지 않는다.** 그래서 입력값이 바뀌는 내내 컴포넌트는 조용하고, 버튼을 누른 순간에만 값을 꺼내 비교한다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. state로 둘까 ref로 둘까 — 판단 기준
@@ -108,9 +165,14 @@ ref는 바꿔도 리액트에 알림이 가지 않으므로, **렌더링 도중(
 
 ## 3. 더 나아가 알면 좋은 것
 
-### 3-1. useRef의 두 번째 얼굴 — DOM 참조
+### 3-1. 제어 컴포넌트 vs 비제어 컴포넌트
 
-`useRef`의 진짜 주 용도는 값 보관보다 **DOM 요소를 직접 잡는 것**이다. JSX 태그에 `ref={inputRef}`를 걸면 렌더링 뒤 `inputRef.current`에 실제 DOM 노드가 들어오고, `inputRef.current.focus()`처럼 직접 조작할 수 있다. 순수 JS에서 하던 `document.querySelector`의 리액트식 대체다. 비제어 입력값 읽기(`inputRef.current.value`)도 이 길로 간다 — [[React MOC]]의 day03 폼 노트에서 예고했던 `useRef`가 바로 이것이다.
+`useRefExam2`처럼 `ref.current.value`로 읽는 입력은 **비제어(uncontrolled)**, `value={state}` + `onChange`로 state에 묶는 입력은 **제어(controlled)** 방식이다. 갈림의 기준은 "입력값이 바뀔 때 리액트가 알아야 하는가"다.
+
+- 타이핑마다 검증 메시지·글자 수·버튼 활성화가 바뀌어야 하면 → **제어** (state)
+- 제출 순간에만 값이 필요하고 그 전엔 화면이 조용해도 되면 → **비제어** (ref)
+
+제어 방식은 입력마다 재렌더링이 도는 대신 값의 흐름이 리액트 안에 있어 추적이 쉽고, 비제어 방식은 가벼운 대신 값이 DOM에만 있어 리액트가 모른다. 폼 라이브러리 `react-hook-form`이 비제어+ref 방식을 기본으로 삼아 성능을 챙기는 대표 사례다.
 
 ### 3-2. 다음에 볼 키워드
 
@@ -123,6 +185,7 @@ ref는 바꿔도 리액트에 알림이 가지 않으므로, **렌더링 도중(
 ## 실습 파일
 
 - `KDT_2026/2026_React/src/example/day06/useRefExam1.jsx` — state·ref·지역변수 카운터 세 개를 버튼으로 비교하는 실험 (`useRef(0)`과 `.current`, 재렌더링 여부와 값 유지 여부의 조합)
+- `KDT_2026/2026_React/src/example/day06/useRefExam2.jsx` — DOM 참조용 ref 실습: `ref={…}`로 입력칸 두 개를 잡아 마운트 effect에서 `focus()`, 버튼 클릭 시 `.current.value`로 비밀번호 확인 (비제어 입력)
 - `KDT_2026/2026_React/src/example/day06/TopNavi.jsx` — useRef 예제 사이를 오가는 `NavLink` 상단 네비
 - `KDT_2026/2026_React/src/example/day06/App.jsx` — `/`·`/use-ref1`·`/use-ref2` 라우트 표, day04 라우터 골격 재사용
 
