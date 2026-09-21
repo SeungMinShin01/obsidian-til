@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day07 — useRef와 렌더링을 일으키지 않는 값
 
 > 실습 파일: `src/example/day06/useRefExam1.jsx` · `useRefExam2.jsx` · `TopNavi.jsx` · `App.jsx`
-> 허브: [[React MOC]] · 이전: [[React day06 내 서버를 거쳐 받는 공공데이터]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day06 내 서버를 거쳐 받는 공공데이터]] · 다음: [[React day07 게시판 종합실습 스킨 분해와 mode 전환]]
 
 지금까지 컴포넌트가 기억하는 값은 전부 `useState`였다. 이번에는 세 번째 종류의 값 보관법인 `useRef`가 나온다. 핵심 질문은 하나다 — **값은 유지하고 싶은데 화면은 다시 그리고 싶지 않다면?** 이걸 확인하려고 같은 카운터를 세 가지 방법(state 변수·ref 변수·지역변수)으로 나란히 만들어 버튼 세 개로 비교하는 실험을 했다. 이어서 `useRefExam2`에서는 `useRef`의 또 다른 얼굴 — **DOM 요소를 직접 잡는 용도** — 를 비밀번호 확인 폼으로 실습했다.
 
@@ -191,4 +191,4 @@ ref는 바꿔도 리액트에 알림이 가지 않으므로, **렌더링 도중(
 
 ## 관련 노트
 
-[[React MOC]] · [[React day06 내 서버를 거쳐 받는 공공데이터]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day06 내 서버를 거쳐 받는 공공데이터]] · [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · [[KDT_2026 학습 지도]]
