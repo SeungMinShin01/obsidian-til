@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day06 — 내 서버를 거쳐 받는 공공데이터
 
 > 실습 파일: `src/example/day04/practice/신승민2.jsx` · `src/example/day04/practice/App.jsx`
-> 허브: [[React MOC]] · 이전: [[React day05 axios로 백엔드에 POST 보내기]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day05 axios로 백엔드에 POST 보내기]] · 다음: [[React day07 useRef와 렌더링을 일으키지 않는 값]]
 
 day05에서 남의 서버(randomuser.me)를 직접 부르고, 그다음에는 내 백엔드로 `axios.post`를 보내 봤다. 이번에는 둘이 한 줄로 이어진다. 화면은 **내 서버만** 부르고, 공공데이터 API를 대신 다녀오는 일은 서버가 맡는다. 프론트 코드만 보면 day05의 `axios.get` 목록 렌더링과 모양이 거의 같은데, 부르는 주소가 `localhost:8080/api4` — 내가 만든 주소라는 점이 달라진다.
 
