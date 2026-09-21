@@ -10,7 +10,7 @@ tags: [학습, react]
 > 실습 파일: `src/example/day06/종합실습/skin_board.html` · `index.css` · `App.jsx` · `components/article/*` · `components/navigation/*` · `src/main.jsx`
 > 허브: [[React MOC]] · 이전: [[React day07 useRef와 렌더링을 일으키지 않는 값]] · 다음: (예정)
 
-지금까지 배운 것을 한 자리에 모으는 종합실습이다. 완성된 HTML 시안(`skin_board.html`) 하나를 받아 **컴포넌트로 쪼개고**, 화면들을 **`mode` 상태 하나로 갈아끼우는** 게시판을 만든다. 앞부분에서 목록·열람·쓰기 골격을 세운 뒤, 이어서 **열람에 데이터 연결 → 작성 처리 → 삭제 → 수정 화면**까지 실제 CRUD를 붙여 나갔다. JS 수업에서 DOM으로 만들던 게시판 CRUD를 리액트 방식으로 다시 세우는 실습이고, 컴포넌트 분리(day02) · 조건부 렌더링(day02) · 배열 렌더링과 `key`(day02) · props와 콜백(day02) · 폼 제출(day03)이 전부 한 코드에 등장한다.
+지금까지 배운 것을 한 자리에 모으는 종합실습이다. 완성된 HTML 시안(`skin_board.html`) 하나를 받아 **컴포넌트로 쪼개고**, 화면들을 **`mode` 상태 하나로 갈아끼우는** 게시판을 만든다. 앞부분에서 목록·열람·쓰기 골격을 세운 뒤, 이어서 **열람에 데이터 연결 → 작성 처리 → 삭제 → 수정 처리**까지 실제 CRUD 네 동작을 완성했다. JS 수업에서 DOM으로 만들던 게시판 CRUD를 리액트 방식으로 다시 세우는 실습이고, 컴포넌트 분리(day02) · 조건부 렌더링(day02) · 배열 렌더링과 `key`(day02) · props와 콜백(day02) · 폼 제출(day03)이 전부 한 코드에 등장한다.
 
 ## 1. 배운 내용
 
@@ -210,15 +210,38 @@ onClick={(event) => {
 
 `edit` 분기는 `view`와 똑같이 `no`로 `selectRow`를 찾아 내려주되, 본문에 표가 아니라 **폼**을 꽂는다. `NavEdit`은 뒤로(열람으로)·목록 두 갈래라 콜백도 `onBack`·`onChangeMode` 두 개를 받는다 — 콜백 props의 이름은 자식이 "무슨 일이 일어났는지"를 기준으로 짓는다.
 
-`ArticleEdit`은 작성 폼과 골격이 같지만 한 가지가 다르다. **빈 폼이 아니라 기존 글의 값이 채워진 채로 시작해야 한다.** 그래서 `selectRow`의 값을 초기값으로 삼는 상태를 두고, 입력칸의 `value`에 연결하는 제어 컴포넌트 방향으로 잡았다.
+`ArticleEdit`은 작성 폼과 골격이 같지만 한 가지가 다르다. **빈 폼이 아니라 기존 글의 값이 채워진 채로 시작해야 한다.** 그래서 `selectRow`의 값을 초기값으로 삼는 상태를 세 개 두고, 입력칸마다 `value` + `onChange` 짝을 완성한 **제어 컴포넌트**로 만들었다.
 
 ```jsx
 const [title, setTitle] = useState(props.selectRow.title);
 const [writer, setWriter] = useState(props.selectRow.writer);
 const [contents, setContents] = useState(props.selectRow.contents);
+
+<input type="text" name="title" value={title}
+  onChange={(event) => setTitle(event.target.value)} />
+// writer는 input, contents는 textarea — 셋 다 같은 짝
 ```
 
-제출은 작성과 같은 모양으로 `editAction` 콜백에 값을 실어 올리는 구조다. 여기까지가 이번 진도이고, 다음 단계가 뚜렷하게 남아 있다 — 입력칸마다 `onChange`로 상태를 갱신하는 제어 컴포넌트를 완성하고, 부모에서 `editAction`을 내려 **해당 번호의 글을 새 객체로 바꾼 새 배열**로 교체하는 것(1-7의 삭제·1-6의 추가와 같은 불변 업데이트 삼형제다).
+`textarea`도 HTML과 달리 태그 사이가 아니라 **`value` 속성으로** 내용을 넣는다 — 리액트가 입력 3종(input·textarea·select)을 전부 `value` + `onChange` 한 가지 모양으로 통일해 둔 덕이다. 제출은 작성 폼과 같은 모양으로 `event.target.이름.value`를 읽어 `editAction` 콜백에 실어 올린다.
+
+받는 쪽(`App`)의 `editAction`이 수정의 마무리다. 새 객체를 만들되 **번호와 작성일은 원래 글의 것을 유지**하고, 복사본 배열에서 같은 번호의 원소만 갈아끼운 뒤 열람 화면으로 돌아간다.
+
+```jsx
+editAction={(t, w, c) => {
+  let editBoardData = { no: no, title: t, writer: w, contents: c, date: selectRow.date };
+  let copyBoardData = [...boardData];
+  for (let i = 0; i < copyBoardData.length; i++) {
+    if (copyBoardData[i].no === no) {
+      copyBoardData[i] = editBoardData;
+      break;                    // 찾았으면 더 돌 필요가 없다
+    }
+  }
+  setBoardData(copyBoardData);
+  setMode("view");              // 목록이 아니라 방금 고친 글의 열람으로
+}}
+```
+
+추가(1-6)·삭제(1-7)·수정이 전부 "새 배열을 만들어 교체"로 끝나는 **불변 업데이트 삼형제**가 이로써 완성됐다. 수정 후 `setMode("view")`로 돌아가면, `view` 분기가 최신 `boardData`에서 같은 번호를 다시 찾으므로(2-3의 번호 방식) 고친 내용이 바로 열람 화면에 보인다.
 
 ### 1-9. `main.jsx` — 진입 컴포넌트 교체
 
@@ -289,7 +312,7 @@ setBoardData([...boardData, addBoardData]);
 // 삭제 — filter (1-7의 for문과 같은 결과)
 setBoardData(boardData.filter((row) => row.no !== no));
 
-// 수정 — map (editAction이 완성될 자리)
+// 수정 — map (editAction의 for + break와 같은 결과)
 setBoardData(boardData.map((row) => (row.no === no ? editedRow : row)));
 ```
 
@@ -303,7 +326,7 @@ setBoardData(boardData.map((row) => (row.no === no ? editedRow : row)));
 | --- | --- | --- |
 | 비제어 + `name` | 제출 시 `e.target.이름.value` | 작성 폼 (day03 방식) |
 | 비제어 + `ref` | `inputRef.current.value` | 비밀번호 확인 (day07 useRef) |
-| 제어 컴포넌트 | `value={state}` + `onChange` | 수정 폼이 가는 방향 |
+| 제어 컴포넌트 | `value={state}` + `onChange` | 수정 폼 (`ArticleEdit`) |
 
 주의할 일반 규칙 하나 — **입력칸에 `value`를 지정하면 그 순간부터 리액트가 값의 주인**이 되어, `onChange`로 상태를 갱신해 주지 않으면 타이핑이 화면에 반영되지 않는다. 초기값만 채우고 이후 입력은 브라우저에 맡기려면 `defaultValue`를 쓰고, 검증·글자수 세기처럼 입력을 실시간으로 다루려면 `value` + `onChange` 짝을 완성한다.
 
@@ -332,7 +355,7 @@ mode 방식은 구조가 단순해 컴포넌트 분해와 상태 흐름을 익�
 
 ### 3-3. 다음에 볼 키워드
 
-- 수정 폼 완성 — `onChange` 제어 컴포넌트 + `editAction`으로 `map` 교체 (2-4·2-5의 합류점)
+- `editAction`의 `for` + `break`를 `map` 한 줄로 줄이기 (2-4의 합류점)
 - `useReducer` — mode·no·nextNo·boardData처럼 얽힌 상태 여러 개를 액션으로 묶기
 - `Context` — `onChangeMode`를 여러 층 내려보내는 props drilling 줄이기
 - `<Outlet>` + 중첩 라우트로 게시판 레이아웃 만들기 (day04 복습)
