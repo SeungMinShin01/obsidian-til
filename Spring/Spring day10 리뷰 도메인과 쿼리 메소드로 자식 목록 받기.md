@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day10
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day09
 작성일: 2026-09-14
 tags: [학습, java]
 ---
 
 # Spring day10 — 리뷰 도메인과 쿼리 메소드로 자식 목록 받기
 
-> 실습 파일: `day10/model/entity/ReviewsEntity.java`, `model/dto/ReviewsDto.java`, `model/repository/ReviewRepository.java`, `service/ReviewService.java`, `controller/ReviewController.java`
+> 실습 파일: `day09/model/entity/ReviewsEntity.java`, `model/dto/ReviewsDto.java`, `model/repository/ReviewRepository.java`, `service/ReviewService.java`, `controller/ReviewController.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day10 상품·카테고리 도메인과 응답 DTO 분리]] · 다음: [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]]
 
 앞 노트에서 DTO 만 자리를 잡아 두었던 **리뷰**가 엔티티부터 컨트롤러까지 한 벌로 채워졌습니다. 관계는 "상품 하나에 리뷰 여럿"이고, 카테고리 → 상품 → 리뷰 세 층이 완성되는 자리입니다. 리액트 쪽 `ReviewManager` 가 부르는 `/api/reviews` 가 여기입니다.
@@ -314,11 +314,11 @@ List<ReviewsEntity> findReviews(@Param("bno") Integer bno);
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/java/day10/model/entity/ReviewsEntity.java` (**단방향 다대일** — `@ManyToOne` + `@JoinColumn(name = "bno")` 로 리뷰 표에 외래키를 두고 상품 쪽에는 목록 필드를 두지 않은 구조, 표 모양은 양방향과 같고 순환 방지 표시가 필요 없어지는 자리, `rating` 을 `int` 로 두어 `null` 자리를 없앤 점)
-- `2026B_Spring/springweb/src/main/java/day10/model/dto/ReviewsDto.java` (**`toEntity(ProductsEntity)`** — 연관 엔티티를 매개변수로 받아 빌더 안에서 바로 끼우는 모양과 DTO 가 여전히 리포지토리를 모르는 층 경계, `from()` 이 `getProductEntity().getBno()` 로 한 칸 따라가 `bno` 를 평평하게 펴는 자리)
-- `2026B_Spring/springweb/src/main/java/day10/model/repository/ReviewRepository.java` (**`findByProductEntity_Bno`** — 쿼리 메소드가 밑줄로 연관 엔티티 안의 필드까지 내려가는 표기, 단방향이라 상품 객체에서 못 꺼내는 리뷰 목록을 한 쿼리로 받는 대안)
-- `2026B_Spring/springweb/src/main/java/day10/service/ReviewService.java` (**전체 받아 거르기와 조건 조회의 대비** — `findAll()` 뒤 자바 `if` 로 거르는 지금 모양과 리포지토리 메소드로 DB 에 맡기는 갈래, `Integer` 비교에 `equals()` 를 쓰는 이유, 등록에서 `productsRepository.findById(bno).orElse(null)` 로 번호를 객체로 바꿔 `toEntity(productEntity)` 에 넘기는 순서와 이웃 리포지토리를 함께 드는 서비스, `getRno() >= 1` 성공 판정, 삭제가 거르지 않고 바로 `deleteById` 하는 자리)
-- `2026B_Spring/springweb/src/main/java/day10/controller/ReviewController.java` (`/api/reviews` 에 GET·POST·DELETE 셋 — 목록 조회가 항상 `bno` 를 `@RequestParam` 으로 받는 이유, `@GetMapping` 에 값을 안 적으면 클래스 주소가 그대로 쓰이는 점, 같은 `@CrossOrigin`, 필드 `@Autowired` 와 생성자 주입이 한 프로젝트에 섞인 자리)
+- `2026B_Spring/springweb/src/main/java/day09/model/entity/ReviewsEntity.java` (**단방향 다대일** — `@ManyToOne` + `@JoinColumn(name = "bno")` 로 리뷰 표에 외래키를 두고 상품 쪽에는 목록 필드를 두지 않은 구조, 표 모양은 양방향과 같고 순환 방지 표시가 필요 없어지는 자리, `rating` 을 `int` 로 두어 `null` 자리를 없앤 점)
+- `2026B_Spring/springweb/src/main/java/day09/model/dto/ReviewsDto.java` (**`toEntity(ProductsEntity)`** — 연관 엔티티를 매개변수로 받아 빌더 안에서 바로 끼우는 모양과 DTO 가 여전히 리포지토리를 모르는 층 경계, `from()` 이 `getProductEntity().getBno()` 로 한 칸 따라가 `bno` 를 평평하게 펴는 자리)
+- `2026B_Spring/springweb/src/main/java/day09/model/repository/ReviewRepository.java` (**`findByProductEntity_Bno`** — 쿼리 메소드가 밑줄로 연관 엔티티 안의 필드까지 내려가는 표기, 단방향이라 상품 객체에서 못 꺼내는 리뷰 목록을 한 쿼리로 받는 대안)
+- `2026B_Spring/springweb/src/main/java/day09/service/ReviewService.java` (**전체 받아 거르기와 조건 조회의 대비** — `findAll()` 뒤 자바 `if` 로 거르는 지금 모양과 리포지토리 메소드로 DB 에 맡기는 갈래, `Integer` 비교에 `equals()` 를 쓰는 이유, 등록에서 `productsRepository.findById(bno).orElse(null)` 로 번호를 객체로 바꿔 `toEntity(productEntity)` 에 넘기는 순서와 이웃 리포지토리를 함께 드는 서비스, `getRno() >= 1` 성공 판정, 삭제가 거르지 않고 바로 `deleteById` 하는 자리)
+- `2026B_Spring/springweb/src/main/java/day09/controller/ReviewController.java` (`/api/reviews` 에 GET·POST·DELETE 셋 — 목록 조회가 항상 `bno` 를 `@RequestParam` 으로 받는 이유, `@GetMapping` 에 값을 안 적으면 클래스 주소가 그대로 쓰이는 점, 같은 `@CrossOrigin`, 필드 `@Autowired` 와 생성자 주입이 한 프로젝트에 섞인 자리)
 
 ## 관련 노트
 

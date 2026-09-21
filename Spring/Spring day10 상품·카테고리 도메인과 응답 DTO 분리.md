@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026B_Spring/springweb/src/main/java/day10
+원본: KDT_2026/2026B_Spring/springweb/src/main/java/day09
 작성일: 2026-09-14
 tags: [학습, java]
 ---
 
 # Spring day10 — 상품·카테고리 도메인과 응답 DTO 분리
 
-> 실습 파일: `day10/AppStart.java`, `model/entity/ProductsEntity.java`, `model/entity/CategoryEntity.java`, `model/dto/ProductDto.java`, `model/dto/ProductResponseDto.java`, `model/dto/CategoryDto.java`, `model/dto/ReviewsDto.java`, `model/repository/ProductsRepository.java`, `model/repository/CategoryRepository.java`, `service/ProductsService.java`, `service/CategoryService.java`, `controller/ProductsController.java`, `controller/CategoryController.java`
+> 실습 파일: `day09/AppStart.java`, `model/entity/ProductsEntity.java`, `model/entity/CategoryEntity.java`, `model/dto/ProductDto.java`, `model/dto/ProductResponseDto.java`, `model/dto/CategoryDto.java`, `model/dto/ReviewsDto.java`, `model/repository/ProductsRepository.java`, `model/repository/CategoryRepository.java`, `service/ProductsService.java`, `service/CategoryService.java`, `controller/ProductsController.java`, `controller/CategoryController.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day09 화면 쪽 자바스크립트 기초 다시 훑기]] · 다음: [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]]
 
 day09가 화면 쪽 문법을 훑는 자리였다면, 이번에는 다시 서버로 돌아와 **새 도메인 한 벌**을 세웁니다. 게시글·댓글이 아니라 상품(product)·카테고리(category)이고, 관계는 "카테고리 하나에 상품 여럿"입니다. 층은 지금까지와 같이 엔티티 → 리포지토리 → 서비스 → 컨트롤러 넷이고, 골격은 day08의 반복 실습에서 굳힌 모양 그대로입니다.
@@ -18,10 +18,10 @@ day09가 화면 쪽 문법을 훑는 자리였다면, 이번에는 다시 서버
 
 ## 1. 배운 내용
 
-### 1-1. 진입점을 day10 패키지에 두기
+### 1-1. 진입점을 day09 패키지에 두기
 
 ```java
-package day10;
+package day09;
 
 @SpringBootApplication
 public class AppStart {
@@ -31,13 +31,13 @@ public class AppStart {
 }
 ```
 
-앞 day들과 같은 배치입니다. `@SpringBootApplication` 이 붙은 클래스의 **패키지가 컴포넌트 스캔의 뿌리**가 되므로, `day10` 아래에 있는 `controller`·`service`·`model` 만 이 진입점으로 뜹니다. day08·day09 의 클래스들은 옆 패키지라 스캔 범위 밖이고, 한 프로젝트에 `main` 이 여럿 있을 때 실행할 것을 고르는 문제는 day02 에서 정리한 대로입니다.
+앞 day들과 같은 배치입니다. `@SpringBootApplication` 이 붙은 클래스의 **패키지가 컴포넌트 스캔의 뿌리**가 되므로, `day09` 아래에 있는 `controller`·`service`·`model` 만 이 진입점으로 뜹니다. day08·day10 의 클래스들은 옆 패키지라 스캔 범위 밖이고, 한 프로젝트에 `main` 이 여럿 있을 때 실행할 것을 고르는 문제는 day02 에서 정리한 대로입니다.
 
 | 항목 | 정리 |
 | --- | --- |
 | 스캔 범위 | 진입점이 있는 패키지와 그 하위 |
 | 같은 프로젝트의 다른 day | 스캔 밖 — 서로 섞이지 않는다 |
-| 엔티티 스캔 | 같은 규칙. `day10.model.entity` 만 표로 만들어진다 |
+| 엔티티 스캔 | 같은 규칙. `day09.model.entity` 만 표로 만들어진다 |
 
 ### 1-2. 상품 엔티티 — "다" 쪽
 
@@ -441,20 +441,20 @@ public class WebConfig implements WebMvcConfigurer {
 
 ## 실습 파일
 
-- `2026B_Spring/springweb/src/main/java/day10/AppStart.java` (**진입점** — `@SpringBootApplication` 이 붙은 패키지가 컴포넌트 스캔의 뿌리라 `day10` 아래만 이 진입점으로 뜨는 배치)
-- `2026B_Spring/springweb/src/main/java/day10/model/entity/ProductsEntity.java` (**"다" 쪽 엔티티** — `@Table(name = "product")` 로 클래스 이름과 표 이름을 따로 두는 자리, `@ManyToOne` + `@JoinColumn(name = "cno")` 로 외래키 컬럼을 이쪽 표에 두고 자바에서는 객체로 드는 구조, PK 를 `Integer` 로 두어 저장 전 `null` 을 담는 점)
-- `2026B_Spring/springweb/src/main/java/day10/model/entity/CategoryEntity.java` (**"일" 쪽 엔티티** — `@OneToMany(mappedBy = "categoryEntity")` 의 값이 상대 필드 이름이고 외래키 주인은 저쪽이라는 표시, `cascade = CascadeType.ALL` 이 저장·삭제를 상품까지 번지게 하는 점, `@ToString.Exclude` 가 `@Data` 의 `toString` 순환을 끊는 자리, `@Builder.Default` 가 없으면 빌더 경로에서 목록이 `null` 이 되는 사정)
-- `2026B_Spring/springweb/src/main/java/day10/model/dto/ProductDto.java` (**받는 DTO** — 카테고리를 `cno` 번호로만 받는 이유, `toEntity()` 가 `cno` 를 담지 않는 것이 층 경계인 점)
-- `2026B_Spring/springweb/src/main/java/day10/model/dto/ProductResponseDto.java` (**내보내는 DTO** — `cName` 하나가 더 있어 화면이 카테고리 이름을 따로 맞추지 않아도 되는 자리, `from()` 이 `static` 인 이유)
-- `2026B_Spring/springweb/src/main/java/day10/model/dto/CategoryDto.java` (`List<ReviewsDto>` 를 `@Builder.Default` 로 잡아 둔 자리)
-- `2026B_Spring/springweb/src/main/java/day10/model/dto/ReviewsDto.java` (아직 엔티티가 없는 리뷰의 자리 — `rno`·`bno`·`reviewer`·`content`·`rating`)
-- `2026B_Spring/springweb/src/main/java/day10/model/repository/ProductsRepository.java` (`JpaRepository<ProductsEntity, Integer>` 빈 몸통)
-- `2026B_Spring/springweb/src/main/java/day10/service/ProductsService.java` (**응답 조립** — `findAll()` 결과를 `from()` 으로 바꾸며 `getCategoryEntity()` 로 연관 엔티티를 따라가 응답을 평평하게 만드는 자리, `@ManyToOne` 은 EAGER 라 이미 조인되어 있고 `@OneToMany` 목록은 LAZY 라 건드리는 순간 카테고리마다 쿼리가 나가는 1+N 의 실제 모양)
-- `2026B_Spring/springweb/src/main/java/day10/controller/ProductsController.java` (**CRUD 넷과 CORS** — 주소 하나에 방식 넷, 등록·수정은 `@RequestBody`·삭제는 `@RequestParam`, 생성자 주입, `@CrossOrigin("http://localhost:5173")` 이 Vite 개발 서버에서 오는 요청을 허용하는 헤더를 붙이는 자리와 막는 쪽이 서버가 아니라 브라우저인 점)
-- `2026B_Spring/springweb/src/main/java/day10/model/repository/CategoryRepository.java` (`JpaRepository<CategoryEntity, Integer>` 빈 몸통 — 상품 쪽과 제네릭 두 자리만 다르다)
-- `2026B_Spring/springweb/src/main/java/day10/service/CategoryService.java` (**카테고리 등록·목록·삭제** — `findAll().stream().map(CategoryDto::from).toList()` 로 메소드 레퍼런스가 서비스에 실제 쓰인 자리, 저장 성공을 `getCno() >= 1` 로 판정, 삭제 전 `findById` + `isPresent()` 로 거르는 뼈대)
-- `2026B_Spring/springweb/src/main/java/day10/controller/CategoryController.java` (`/api/categories` 에 POST·GET·DELETE 셋 — 수정이 없는 이유, 리액트 `CategoryManager` 가 부르는 주소, 같은 `@CrossOrigin`)
-- `2026B_Spring/springweb/src/main/java/day10/service/ProductsService.java` — 추가분 (**상품 CRUD 채움** — 조회에서 `from()` 뒤 `setCno`·`setCategoryname` 으로 연관 값을 덧붙이는 모양, 수정·삭제가 `findById` → `isPresent` 로 시작하는 공통 뼈대, 연관 참조를 옮길 때는 상대 엔티티를 꺼내 `setCategoryEntity` 로 갈아끼우는 방향)
+- `2026B_Spring/springweb/src/main/java/day09/AppStart.java` (**진입점** — `@SpringBootApplication` 이 붙은 패키지가 컴포넌트 스캔의 뿌리라 `day09` 아래만 이 진입점으로 뜨는 배치)
+- `2026B_Spring/springweb/src/main/java/day09/model/entity/ProductsEntity.java` (**"다" 쪽 엔티티** — `@Table(name = "product")` 로 클래스 이름과 표 이름을 따로 두는 자리, `@ManyToOne` + `@JoinColumn(name = "cno")` 로 외래키 컬럼을 이쪽 표에 두고 자바에서는 객체로 드는 구조, PK 를 `Integer` 로 두어 저장 전 `null` 을 담는 점)
+- `2026B_Spring/springweb/src/main/java/day09/model/entity/CategoryEntity.java` (**"일" 쪽 엔티티** — `@OneToMany(mappedBy = "categoryEntity")` 의 값이 상대 필드 이름이고 외래키 주인은 저쪽이라는 표시, `cascade = CascadeType.ALL` 이 저장·삭제를 상품까지 번지게 하는 점, `@ToString.Exclude` 가 `@Data` 의 `toString` 순환을 끊는 자리, `@Builder.Default` 가 없으면 빌더 경로에서 목록이 `null` 이 되는 사정)
+- `2026B_Spring/springweb/src/main/java/day09/model/dto/ProductDto.java` (**받는 DTO** — 카테고리를 `cno` 번호로만 받는 이유, `toEntity()` 가 `cno` 를 담지 않는 것이 층 경계인 점)
+- `2026B_Spring/springweb/src/main/java/day09/model/dto/ProductResponseDto.java` (**내보내는 DTO** — `cName` 하나가 더 있어 화면이 카테고리 이름을 따로 맞추지 않아도 되는 자리, `from()` 이 `static` 인 이유)
+- `2026B_Spring/springweb/src/main/java/day09/model/dto/CategoryDto.java` (`List<ReviewsDto>` 를 `@Builder.Default` 로 잡아 둔 자리)
+- `2026B_Spring/springweb/src/main/java/day09/model/dto/ReviewsDto.java` (아직 엔티티가 없는 리뷰의 자리 — `rno`·`bno`·`reviewer`·`content`·`rating`)
+- `2026B_Spring/springweb/src/main/java/day09/model/repository/ProductsRepository.java` (`JpaRepository<ProductsEntity, Integer>` 빈 몸통)
+- `2026B_Spring/springweb/src/main/java/day09/service/ProductsService.java` (**응답 조립** — `findAll()` 결과를 `from()` 으로 바꾸며 `getCategoryEntity()` 로 연관 엔티티를 따라가 응답을 평평하게 만드는 자리, `@ManyToOne` 은 EAGER 라 이미 조인되어 있고 `@OneToMany` 목록은 LAZY 라 건드리는 순간 카테고리마다 쿼리가 나가는 1+N 의 실제 모양)
+- `2026B_Spring/springweb/src/main/java/day09/controller/ProductsController.java` (**CRUD 넷과 CORS** — 주소 하나에 방식 넷, 등록·수정은 `@RequestBody`·삭제는 `@RequestParam`, 생성자 주입, `@CrossOrigin("http://localhost:5173")` 이 Vite 개발 서버에서 오는 요청을 허용하는 헤더를 붙이는 자리와 막는 쪽이 서버가 아니라 브라우저인 점)
+- `2026B_Spring/springweb/src/main/java/day09/model/repository/CategoryRepository.java` (`JpaRepository<CategoryEntity, Integer>` 빈 몸통 — 상품 쪽과 제네릭 두 자리만 다르다)
+- `2026B_Spring/springweb/src/main/java/day09/service/CategoryService.java` (**카테고리 등록·목록·삭제** — `findAll().stream().map(CategoryDto::from).toList()` 로 메소드 레퍼런스가 서비스에 실제 쓰인 자리, 저장 성공을 `getCno() >= 1` 로 판정, 삭제 전 `findById` + `isPresent()` 로 거르는 뼈대)
+- `2026B_Spring/springweb/src/main/java/day09/controller/CategoryController.java` (`/api/categories` 에 POST·GET·DELETE 셋 — 수정이 없는 이유, 리액트 `CategoryManager` 가 부르는 주소, 같은 `@CrossOrigin`)
+- `2026B_Spring/springweb/src/main/java/day09/service/ProductsService.java` — 추가분 (**상품 CRUD 채움** — 조회에서 `from()` 뒤 `setCno`·`setCategoryname` 으로 연관 값을 덧붙이는 모양, 수정·삭제가 `findById` → `isPresent` 로 시작하는 공통 뼈대, 연관 참조를 옮길 때는 상대 엔티티를 꺼내 `setCategoryEntity` 로 갈아끼우는 방향)
 
 ## 관련 노트
 
