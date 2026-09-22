@@ -157,17 +157,20 @@ List<Student> list2 = names.stream().map((name) -> {
 List<Student> list3 = names.stream().map(Student::new).toList();
 ```
 
-`Student` 는 이름 하나를 받는 생성자만 가진 작은 클래스입니다.
+`Student` 는 이름 하나를 받는 생성자를 가진 작은 클래스입니다. 이 클래스는 `exam4.java` 안에 다시 선언하지 않고 **같은 패키지의 `exam1.java` 에 이미 있는 것을 그대로 씁니다.**
 
 ```java
+// day08/exam/exam1.java 에 선언된 클래스
 class Student {
-    private String name;
+    String name;
 
-    public Student(String name) {
+    Student(String name) {
         this.name = name;
     }
 }
 ```
+
+여기서 챙길 규칙이 하나 있습니다. 자바에서 **같은 패키지 안에서는 파일이 달라도 같은 이름의 (톱레벨) 클래스를 두 번 선언할 수 없습니다.** `public` 이 아닌 클래스는 한 `.java` 파일 안에 여러 개 둘 수 있어서, 실습처럼 `exam1.java` 아래에 붙여 둔 `Student` 가 패키지 전체에서 보입니다. 다른 파일에서 같은 이름을 또 선언하면 그 자리에서 컴파일 오류가 나므로, 실습 파일을 늘려 갈 때는 보조 클래스를 어느 파일에 두었는지 기억해 두는 편이 안전합니다.
 
 ①과 ③을 견주면 갈림이 분명합니다.
 
