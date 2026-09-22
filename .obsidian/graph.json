@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "wms",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
@@ -242,6 +242,6 @@
   "repelStrength": 15.1689901394084,
   "linkStrength": 1,
   "linkDistance": 30,
-  "scale": 1.4051943785586194,
+  "scale": 1.4051943785586187,
   "close": false
 }

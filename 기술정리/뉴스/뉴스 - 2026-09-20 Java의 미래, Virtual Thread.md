@@ -10,6 +10,7 @@ tags: [학습, java]
 
 > 상위: [[뉴스 인덱스]]
 > 이전: [[뉴스 - 2026-09-19 에이전트 지침이 AGENTS.md로 수렴했다]]
+> 다음: [[뉴스 - 2026-09-20 에이전트가 시스템을 뚫기 시작했다]]
 
 원문: [Java의 미래, Virtual Thread](https://techblog.woowahan.com/15398/) — 김태헌 · 2023.12.12 · Backend
 
