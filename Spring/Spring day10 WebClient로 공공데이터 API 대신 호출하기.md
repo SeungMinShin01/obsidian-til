@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day10 — WebClient로 공공데이터 API 대신 호출하기
 
 > 실습 파일: `day10/ApiController.java`, `day10/ApiService.java`, `resources/application.properties`, `resources/static/*.csv`, `build.gradle`
-> 허브: [[Spring MOC]] · 이전: [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]] · 다음: (없음)
+> 허브: [[Spring MOC]] · 이전: [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]] · 다음: [[Spring day11 리액트 화면에 내줄 게시판 목록 API]]
 
 지금까지는 내 DB에 있는 데이터를 꺼내 JSON으로 내보냈습니다. 이번에는 방향이 하나 더 늘어납니다. 서버가 **클라이언트 입장이 되어** 바깥 공개 API를 호출하고, 받아 온 결과를 다시 내 API의 응답으로 흘려보내는 자리입니다. 컨트롤러 → 서비스 두 층은 그대로 두고, 서비스 아래가 리포지토리 대신 **HTTP 클라이언트**로 바뀐다고 보면 정리가 쉽습니다.
 
@@ -482,4 +482,4 @@ CSV를 읽어 화면에 바로 뿌리는 대신, 기동 시 한 번 읽어 내 �
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day10 리뷰 도메인과 쿼리 메소드로 자식 목록 받기]] · [[Spring day11 리액트 화면에 내줄 게시판 목록 API]] · [[KDT_2026 학습 지도]]

@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day07 — 게시판 종합실습: 스킨 분해와 mode 전환
 
 > 실습 파일: `src/example/day06/종합실습/skin_board.html` · `index.css` · `App.jsx` · `components/article/*` · `components/navigation/*` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day07 useRef와 렌더링을 일으키지 않는 값]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day07 useRef와 렌더링을 일으키지 않는 값]] · 다음: [[React day08 와일드카드 라우트와 서버 게시판 목록]]
 
 지금까지 배운 것을 한 자리에 모으는 종합실습이다. 완성된 HTML 시안(`skin_board.html`) 하나를 받아 **컴포넌트로 쪼개고**, 화면들을 **`mode` 상태 하나로 갈아끼우는** 게시판을 만든다. 앞부분에서 목록·열람·쓰기 골격을 세운 뒤, 이어서 **열람에 데이터 연결 → 작성 처리 → 삭제 → 수정 처리**까지 실제 CRUD 네 동작을 완성했다. JS 수업에서 DOM으로 만들던 게시판 CRUD를 리액트 방식으로 다시 세우는 실습이고, 컴포넌트 분리(day02) · 조건부 렌더링(day02) · 배열 렌더링과 `key`(day02) · props와 콜백(day02) · 폼 제출(day03)이 전부 한 코드에 등장한다.
 
@@ -373,7 +373,7 @@ mode 방식은 구조가 단순해 컴포넌트 분해와 상태 흐름을 익�
 
 ## 관련 노트
 
-[[React MOC]] · [[React day07 useRef와 렌더링을 일으키지 않는 값]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day07 useRef와 렌더링을 일으키지 않는 값]] · [[React day08 와일드카드 라우트와 서버 게시판 목록]] · [[KDT_2026 학습 지도]]
 
 <!--
 [문체 규칙]
