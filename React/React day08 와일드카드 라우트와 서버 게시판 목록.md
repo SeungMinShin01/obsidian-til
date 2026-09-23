@@ -7,10 +7,10 @@ tags: [학습, react]
 
 # React day08 — 와일드카드 라우트와 서버 게시판 목록
 
-> 실습 파일: `src/example/day07/App.jsx` · `NotFound.jsx` · `list.jsx` · `src/main.jsx`
+> 실습 파일: `src/example/day07/App.jsx` · `NotFound.jsx` · `list.jsx` · `write.jsx` · `src/main.jsx`
 > 허브: [[React MOC]] · 이전: [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · 다음: (예정)
 
-앞의 종합실습은 게시판 화면을 `mode` 상태 하나로 갈아끼웠고, 데이터도 컴포넌트 안 배열에 들어 있었다. 이번에는 두 가지를 바꾼다. 화면 전환은 **라우터(주소)** 로, 데이터는 **스프링 서버의 `/api`** 에서 받아 온다. 같은 날 Spring 수업에서 만든 게시판 목록 API(Spring day11 노트, 허브 경유)를 이 화면이 부르는 구조다. 이번 코드는 그 첫 칸인 **목록 화면 + 없는 주소 처리**까지다.
+앞의 종합실습은 게시판 화면을 `mode` 상태 하나로 갈아끼웠고, 데이터도 컴포넌트 안 배열에 들어 있었다. 이번에는 두 가지를 바꾼다. 화면 전환은 **라우터(주소)** 로, 데이터는 **스프링 서버의 `/api`** 에서 받아 온다. 같은 날 Spring 수업에서 만든 게시판 목록 API(Spring day11 노트, 허브 경유)를 이 화면이 부르는 구조다. 이번 코드는 **목록 화면 + 없는 주소 처리**에서 시작해, 오후에 **글쓰기 화면(`/write`) → 서버 저장 → 목록으로 돌아가기**까지 한 바퀴를 이었다(1-6).
 
 ## 1. 배운 내용
 
@@ -101,6 +101,50 @@ let lists = boardData.map((row) => {
 - `header`(제목) · `nav`(`<Link to="/write">글쓰기</Link>`) · `article`(표) — day07 종합실습에서 쪼갠 스킨 구조를 한 파일에 다시 모은 모양이다.
 - `className="cen"` · `id="boardTable"`은 앞 실습의 `index.css` 규칙을 그대로 쓴다. JSX에서는 `class`가 아니라 `className`.
 
+### 1-6. 글쓰기 화면 — 폼 제출 · `axios.post` · `useNavigate`
+
+```jsx
+// App.jsx 에 라우트 하나 추가
+<Route path="/write" element={<Write />} />
+
+// write.jsx
+export default function Write() {
+  const navigate = useNavigate();          // 코드로 화면 이동하는 훅
+  const 등록함수 = async (event) => {
+    event.preventDefault();
+    const obj = {
+      name: event.target.writer.value,
+      subject: event.target.title.value,
+      content: event.target.contents.value,
+    };
+    const response = await axios.post("http://localhost:8080/api", obj);
+    if (response.data == true) navigate("/list");
+  };
+  return (
+    <form onSubmit={등록함수}>
+      작성자 : <input type="text" name="writer" />
+      제목 : <input type="text" name="title" />
+      내용 : <textarea name="contents"></textarea>
+      <input type="submit" value="작성" />
+    </form>
+  );
+}
+```
+
+| 단계 | 코드 | 하는 일 |
+| --- | --- | --- |
+| 1 | `event.preventDefault()` | 폼 기본 동작(페이지 새로고침 + 주소 이동)을 막는다 |
+| 2 | `event.target.writer.value` | 제출된 `<form>` 안에서 `name="writer"` 입력칸 값을 꺼낸다 |
+| 3 | `{ name, subject, content }` | 입력칸 이름을 **서버 DTO 필드 이름**으로 바꿔 담는다 |
+| 4 | `axios.post(url, obj)` | 객체를 JSON 본문으로 보낸다 — 서버 `@RequestBody`가 받는 자리 |
+| 5 | `navigate("/list")` | 응답이 `true`면 코드로 목록 주소로 이동 → 목록이 다시 마운트되며 새 글까지 불러온다 |
+
+- 폼 입력값 읽기는 [[React day03 폼 제출과 입력값 읽기]]에서 본 `event.target.<name>.value` 그대로다. `useState`로 입력칸마다 상태를 두지 않아도, 제출 순간에 한 번에 읽는 방식이라 코드가 짧다.
+- 입력칸 `name`(`writer`·`title`·`contents`)과 보내는 키(`name`·`subject`·`content`)가 다르다. **화면 쪽 이름은 자유, 보내는 키만 서버 DTO와 맞으면 된다.** 중간의 `obj`가 그 번역표 역할을 한다.
+- `<Link>`는 사람이 **클릭**해서 이동, `useNavigate()`는 **코드가 조건을 보고** 이동한다. 저장 성공 후처럼 "일이 끝나면 넘어가기"는 후자의 자리다.
+- `useNavigate`도 `Routes`와 마찬가지로 Router 컨텍스트 안에서만 쓸 수 있다. `main.jsx`의 `BrowserRouter`가 여기까지 감싸고 있어서 동작한다.
+- 목록으로 돌아가면 List 컴포넌트가 새로 마운트되므로 `useEffect(…, [])`가 다시 돌아 방금 쓴 글이 포함된 목록을 받아 온다. 따로 "새로고침" 코드를 둘 필요가 없다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 첫 화면을 목록으로 — `Navigate`
@@ -132,9 +176,11 @@ const [error, setError] = useState(null);
 | 주소 | 컴포넌트 | 핵심 |
 | --- | --- | --- |
 | `/view/:idx` | View | `useParams()`로 번호 꺼내 `axios.get("/api/" + idx)` |
-| `/write` | Write | 폼 제출 → `axios.post` → `useNavigate()("/list")` |
+| `/write` (1-6에서 완성) | Write | 폼 제출 → `axios.post` → `useNavigate()("/list")` |
 | `/edit/:idx` | Edit | 기존 값 채운 폼 → `axios.put` |
 
+- 글쓰기 뒤 `navigate("/list", { replace: true })`로 이동하면 뒤로 가기를 눌러도 방금 제출한 폼으로 돌아가지 않는다.
+- 제출 버튼을 두 번 누르면 글이 두 번 저장될 수 있다. 요청 중에는 `disabled` state로 버튼을 잠그는 방식이 흔하다.
 - mode 상태로 하던 전환([[React day07 게시판 종합실습 스킨 분해와 mode 전환]])이 전부 주소로 바뀌면 새로고침·뒤로 가기·주소 공유가 자연스럽게 된다.
 
 ### 3-2. 다음에 볼 키워드
@@ -147,9 +193,10 @@ const [error, setError] = useState(null);
 
 ## 실습 파일
 
-- `KDT_2026/2026_React/src/example/day07/App.jsx` — `Routes` 안에 `*`(NotFound)와 `/list`(List) 두 라우트
+- `KDT_2026/2026_React/src/example/day07/App.jsx` — `Routes` 안에 `*`(NotFound)·`/list`(List)·`/write`(Write) 세 라우트
 - `KDT_2026/2026_React/src/example/day07/NotFound.jsx` — 없는 주소 안내와 `<Link to="/list">`, JSX 자기 닫는 태그 메모
 - `KDT_2026/2026_React/src/example/day07/list.jsx` — `axios.get("http://localhost:8080/api")`로 받은 게시글을 `map`으로 표 행 렌더링
+- `KDT_2026/2026_React/src/example/day07/write.jsx` — 폼 제출값을 객체로 묶어 `axios.post`, 응답 `true`면 `useNavigate`로 `/list` 이동
 - `KDT_2026/2026_React/src/main.jsx` — 진입 컴포넌트를 `day07/App`(`App7`)으로 교체, `BrowserRouter` 유지
 
 ## 관련 노트

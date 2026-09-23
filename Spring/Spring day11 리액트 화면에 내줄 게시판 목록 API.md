@@ -10,7 +10,7 @@ tags: [학습, java]
 > 실습 파일: `day11/AppStart.java`, `day11/controller/ApiController.java`, `day11/service/ApiService.java`, `day11/model/dto/ApiDto.java`, `day11/model/entity/ApiEntity.java`, `day11/model/repository/ApiRepository.java`, `resources/sql/sample.sql`, `resources/sql/sampledb.sql`, `resources/application.properties`
 > 허브: [[Spring MOC]] · 이전: [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · 다음: (예정)
 
-day10 마지막에서 `/api4`에 `@CrossOrigin`을 얹어 리액트 화면이 서버 응답을 읽을 수 있게 열었습니다. 이번에는 그 방향을 **내 DB 데이터**로 되돌립니다. 게시판 표(`board`) 하나를 엔티티 → 리포지토리 → 서비스 → 컨트롤러 네 층으로 다시 세우고, 목록 전체를 `/api` 한 주소로 내줍니다. 받는 쪽은 같은 날 React 수업에서 만든 게시판 목록 화면(React day08 노트, 허브 경유)입니다. 새 문법은 거의 없고, **화면이 요구하는 JSON 모양에 맞춰 백엔드 한 벌을 빠르게 세우는 연습**이 핵심입니다.
+day10 마지막에서 `/api4`에 `@CrossOrigin`을 얹어 리액트 화면이 서버 응답을 읽을 수 있게 열었습니다. 이번에는 그 방향을 **내 DB 데이터**로 되돌립니다. 게시판 표(`board`) 하나를 엔티티 → 리포지토리 → 서비스 → 컨트롤러 네 층으로 다시 세우고, 목록 전체를 `/api` 한 주소로 내줍니다. 받는 쪽은 같은 날 React 수업에서 만든 게시판 목록 화면(React day08 노트, 허브 경유)입니다. 새 문법은 거의 없고, **화면이 요구하는 JSON 모양에 맞춰 백엔드 한 벌을 빠르게 세우는 연습**이 핵심입니다. 오후에는 같은 주소에 `POST`를 하나 더 얹어, 화면의 글쓰기 폼이 보낸 JSON을 받아 저장하는 쪽까지 이어 갑니다(1-5·1-6).
 
 ## 1. 배운 내용
 
@@ -107,6 +107,50 @@ public static ApiDto from(ApiEntity e) {
 - 빌더는 **적은 칸만 채우고 나머지는 기본값(`null`)** 으로 둔다. 컴파일 오류가 나지 않기 때문에 한 칸이 빠져도 알아채기 어렵다.
 - 화면이 번호를 `key`나 상세 주소(`/view/` + 번호)로 쓴다면 PK(`idx`)도 DTO로 옮겨야 한다. 응답 JSON을 브라우저나 포스트맨으로 한 번 열어 **화면이 쓰는 키가 모두 값을 갖는지** 확인하는 편이 안전하다.
 
+### 1-5. 같은 주소에 쓰기 하나 더 — `POST /api` + `@RequestBody`
+
+```java
+// ApiController
+@PostMapping("/api")
+public boolean postMethodName(@RequestBody ApiDto apiDto) {
+    return apiService.save(apiDto);
+}
+
+// ApiService
+public boolean save(ApiDto apiDto) {
+    ApiEntity apiEntity = apiDto.toEntity();
+    ApiEntity saved = apiRepository.save(apiEntity);
+    if (saved.getIdx() >= 1) return true;
+    return false;
+}
+```
+
+| 요청 | 주소 | 들어오는 것 | 나가는 것 |
+| --- | --- | --- | --- |
+| 목록 | `GET /api` | 없음 | `List<ApiDto>` (JSON 배열) |
+| 쓰기 | `POST /api` | 본문 JSON → `ApiDto` | `true` / `false` |
+
+- **주소는 같고 HTTP 메소드만 다르다.** 스프링은 주소 + 메소드 짝으로 매핑을 가르므로 `/api` 하나로 "읽기"와 "쓰기"를 나눌 수 있다 → [[Spring day04 REST 컨트롤러 CRUD 골격]].
+- `@RequestBody`는 요청 본문 JSON을 키 이름 기준으로 DTO 필드에 채운다. 화면이 `{ name, subject, content }`만 보내면 `idx`·`regdate`는 비어 있는 채로 들어온다 — 둘 다 서버(DB)가 정할 값이라 그게 맞다.
+- 저장이 성공했는지는 **돌려받은 엔티티의 PK**로 판단한다. `save()`가 돌려준 객체에는 IDENTITY 전략으로 DB가 매긴 번호가 채워져 있으므로 `1` 이상이면 들어간 것이다. 화면은 이 `true`만 보고 목록으로 넘어간다.
+
+### 1-6. 반대 방향 변환 `toEntity()` · CORS를 클래스 위로
+
+```java
+public ApiEntity toEntity() {
+    return ApiEntity.builder()
+            .name(name)
+            .content(content)
+            .subject(subject)
+            .build();
+}
+```
+
+- `from(entity)`가 **엔티티 → DTO**(나가는 길)라면 `toEntity()`는 **DTO → 엔티티**(들어오는 길)다. 정적 메소드와 인스턴스 메소드로 방향을 나눠 두면 서비스 코드가 `ApiDto.from(e)` / `dto.toEntity()` 두 모양으로 읽힌다 → [[Spring day05 DTO 변환과 초기 데이터 적재]].
+- 여기서는 `idx`를 일부러 넣지 않는다. PK가 비어 있어야 JPA가 새 행으로 보고 `INSERT`를 한다(값이 있으면 기존 행 수정으로 본다).
+- `@CrossOrigin("http://localhost:5173")`을 메소드 위에서 **클래스 위로** 옮겼다. 클래스에 붙이면 그 컨트롤러의 모든 매핑(`GET`·`POST`)에 같은 허용이 걸린다. 메소드가 두 개로 늘어난 시점에 자연스러운 이동이다.
+- `POST`에 JSON 본문을 실으면 브라우저가 본 요청 전에 `OPTIONS` 사전 요청(preflight)을 먼저 보낸다. `@CrossOrigin`이 이 사전 요청까지 같이 받아 주기 때문에 따로 처리할 것은 없다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. CORS를 한 곳에서 — `WebMvcConfigurer`
@@ -146,11 +190,13 @@ public class WebConfig implements WebMvcConfigurer {
 | 화면 동작 | API | 서비스 |
 | --- | --- | --- |
 | 상세 보기 | `GET /api/{idx}` + `@PathVariable` | `findById(idx).orElseThrow()` |
-| 글쓰기 | `POST /api` + `@RequestBody ApiDto` | `save(dto.toEntity())` |
+| 글쓰기 (1-5에서 완성) | `POST /api` + `@RequestBody ApiDto` | `save(dto.toEntity())` |
 | 수정 | `PUT /api/{idx}` | 조회 후 setter → 변경 감지 |
 | 삭제 | `DELETE /api/{idx}` | `deleteById(idx)` |
 
 - 수정 흐름은 [[Spring day05 등록·수정 흐름과 변경 감지]]에서 본 모양 그대로다.
+- 쓰기 응답을 `boolean` 대신 `ResponseEntity.status(201).body(saved.getIdx())`처럼 **상태 코드 + 새 번호**로 돌려주면, 화면이 저장 직후 상세 화면(`/view/새번호`)으로 바로 넘어갈 수 있다.
+- `@Valid` + `@NotBlank`를 DTO에 붙이면 빈 제목·빈 작성자를 서버에서 한 번 더 걸러 낼 수 있다(화면 검사만으로는 우회가 가능하다).
 
 ### 3-2. 다음에 볼 키워드
 
@@ -165,9 +211,9 @@ public class WebConfig implements WebMvcConfigurer {
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day11/AppStart.java` — day11 전용 실행 진입점, 이 패키지 기준으로 컴포넌트 스캔
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day11/model/entity/ApiEntity.java` — `@Table(name = "board")` 게시글 엔티티, IDENTITY PK와 문자열 필드 넷
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day11/model/repository/ApiRepository.java` — `JpaRepository<ApiEntity, Integer>` 상속만 있는 빈 인터페이스
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day11/model/dto/ApiDto.java` — 빌더로 엔티티를 펴는 `from()` 정적 메소드
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day11/service/ApiService.java` — 스트림 `map`으로 엔티티 목록 → DTO 목록
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day11/controller/ApiController.java` — `GET /api` + `@CrossOrigin("http://localhost:5173")`
+- `KDT_2026/2026B_Spring/springweb/src/main/java/`day11/model/dto/ApiDto.java` — 빌더로 엔티티를 펴는 `from()` 정적 메소드와 반대 방향 `toEntity()`
+- `KDT_2026/2026B_Spring/springweb/src/main/java/`day11/service/ApiService.java` — 스트림 `map`으로 엔티티 목록 → DTO 목록, `save()`로 저장 후 PK로 성공 판정
+- `KDT_2026/2026B_Spring/springweb/src/main/java/`day11/controller/ApiController.java` — 클래스 단위 `@CrossOrigin("http://localhost:5173")`, `GET /api` 목록 + `POST /api` 쓰기
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/sampledb.sql` — `mydb0923` DB 생성
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/sample.sql` — `board` 게시글 10건 INSERT
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/application.properties` — 접속 DB를 `mydb0923`으로, 초기 SQL 경로를 `sample.sql`로 바꾼 설정
