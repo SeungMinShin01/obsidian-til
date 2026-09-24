@@ -20,3 +20,4 @@ tags: [허브]
 | B06 | [[Spring 예습 - B06 자동설정 원리·직접 만들기]] | 스타터를 넣으면 알아서 되던 것의 실체 — 이미 있는 자동설정을 비키게 하고 끄는 쪽(1부)과, 조건 애노테이션·`imports` 파일 규약·테스트·스타터 제작으로 직접 만드는 쪽(2부) |
 | B07 | [[Spring 예습 - B07 서블릿 웹 애플리케이션]] | 부트가 Spring MVC 위에 자동으로 까는 층 — 메시지 컨버터·정적 자원·웰컴 페이지·에러 처리(`/error`)·콘텐츠 협상·CORS·API 버저닝, 그리고 내장 서블릿 컨테이너에 서블릿·필터 등록과 서버 커스터마이즈 |
 | B08 | [[Spring 예습 - B08 Spring Security]] | 의존성만 넣어도 전부 잠기는 기본 보안과, 무엇을 빈으로 올리면 자동설정이 물러나는지의 규칙 — 그리고 OAuth2를 클라이언트·리소스 서버·인가 서버 세 역할로 나눠 보는 자리와 SAML Relying Party 설정 |
+| B09 | [[Spring 예습 - B09 SQL 데이터베이스와 JPA]] | 데이터 접근 층 전체의 지도 — `DataSource`·커넥션 풀 같은 연결 아래층, SQL을 직접 적는 `JdbcTemplate`/`JdbcClient`, JPA와 그 대안(Spring Data JDBC·jOOQ·R2DBC), 그리고 `data.sql`에서 Flyway·Liquibase로 올라가는 초기화 층위 |
