@@ -10,6 +10,7 @@ tags: [학습, spring, java]
 
 > 상위: [[뉴스 인덱스]]
 > 이전: [[뉴스 - 2026-09-24 사장님 입점신청 자동승인 주기를 10분에서 10초로]]
+> 다음: [[뉴스 - 2026-09-25 싸게 많이 굴리게 된 주와 그 청구서가 같이 왔다]]
 
 **원문**: [Spring Cache(@Cacheable) + Spring Data Redis 사용 시 record 직렬화 오류 원인과 해결](https://techblog.woowahan.com/22767/) — 조충범 · 2025.08.19 · Backend
 
