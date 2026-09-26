@@ -21,3 +21,5 @@ tags: [허브]
 | B07 | [[Spring 예습 - B07 서블릿 웹 애플리케이션]] | 부트가 Spring MVC 위에 자동으로 까는 층 — 메시지 컨버터·정적 자원·웰컴 페이지·에러 처리(`/error`)·콘텐츠 협상·CORS·API 버저닝, 그리고 내장 서블릿 컨테이너에 서블릿·필터 등록과 서버 커스터마이즈 |
 | B08 | [[Spring 예습 - B08 Spring Security]] | 의존성만 넣어도 전부 잠기는 기본 보안과, 무엇을 빈으로 올리면 자동설정이 물러나는지의 규칙 — 그리고 OAuth2를 클라이언트·리소스 서버·인가 서버 세 역할로 나눠 보는 자리와 SAML Relying Party 설정 |
 | B09 | [[Spring 예습 - B09 SQL 데이터베이스와 JPA]] | 데이터 접근 층 전체의 지도 — `DataSource`·커넥션 풀 같은 연결 아래층, SQL을 직접 적는 `JdbcTemplate`/`JdbcClient`, JPA와 그 대안(Spring Data JDBC·jOOQ·R2DBC), 그리고 `data.sql`에서 Flyway·Liquibase로 올라가는 초기화 층위 |
+| B10 | [[Spring 예습 - B10 테스팅]] | 부트가 테스트를 위해 컨텍스트를 어떻게 잘라서 띄우는가 — `@SpringBootTest` 한 덩어리와 슬라이스 애노테이션들(`@WebMvcTest`·`@DataJpaTest`·`@JsonTest`·`@RestClientTest` …), 목 환경과 실제 서버 두 갈래, 빈 교체(`@MockitoBean`)·컨텍스트 캐싱·Testcontainers·테스트 유틸 |
+| B11 | [[Spring 예습 - B11 캐싱·REST 클라이언트·검증]] | IO 챕터에서 고른 세 페이지 — 캐시 추상에 부트가 붙이는 제공자 탐색·`CacheManager` 자동설정, 남의 API를 부르는 세 갈래 클라이언트(`WebClient`·`RestClient`·`RestTemplate`)와 그 아래 HTTP 구현 선택·전역 설정·SSRF 방어·선언형 HTTP 인터페이스, 그리고 켜짐 조건만 말하는 짧은 메서드 검증 |
