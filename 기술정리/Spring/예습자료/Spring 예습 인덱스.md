@@ -23,3 +23,5 @@ tags: [허브]
 | B09 | [[Spring 예습 - B09 SQL 데이터베이스와 JPA]] | 데이터 접근 층 전체의 지도 — `DataSource`·커넥션 풀 같은 연결 아래층, SQL을 직접 적는 `JdbcTemplate`/`JdbcClient`, JPA와 그 대안(Spring Data JDBC·jOOQ·R2DBC), 그리고 `data.sql`에서 Flyway·Liquibase로 올라가는 초기화 층위 |
 | B10 | [[Spring 예습 - B10 테스팅]] | 부트가 테스트를 위해 컨텍스트를 어떻게 잘라서 띄우는가 — `@SpringBootTest` 한 덩어리와 슬라이스 애노테이션들(`@WebMvcTest`·`@DataJpaTest`·`@JsonTest`·`@RestClientTest` …), 목 환경과 실제 서버 두 갈래, 빈 교체(`@MockitoBean`)·컨텍스트 캐싱·Testcontainers·테스트 유틸 |
 | B11 | [[Spring 예습 - B11 캐싱·REST 클라이언트·검증]] | IO 챕터에서 고른 세 페이지 — 캐시 추상에 부트가 붙이는 제공자 탐색·`CacheManager` 자동설정, 남의 API를 부르는 세 갈래 클라이언트(`WebClient`·`RestClient`·`RestTemplate`)와 그 아래 HTTP 구현 선택·전역 설정·SSRF 방어·선언형 HTTP 인터페이스, 그리고 켜짐 조건만 말하는 짧은 메서드 검증 |
+| B12 | [[Spring 예습 - B12 Actuator 엔드포인트·메트릭]] | 애플리케이션을 띄운 뒤 밖에서 들여다보는 층 — 엔드포인트의 접근·노출 두 축과 건강·커스텀 엔드포인트, 별도 관리 서버, 그리고 Micrometer Observation 하나로 메트릭·트레이스를 함께 만드는 관측 가능성 층(자동 계측 목록·샘플링·로그 상관 ID)과 감사·HTTP 교환 기록 같은 운영 장치 |
+| B13 | [[Spring 예습 - B13 컨테이너 이미지와 배포]] | 만든 뒤의 이야기 — 실행 가능한 jar를 풀어 놓기·AOT 캐시·CRaC·네이티브 이미지로 모양을 바꾸는 패키징 갈래와, 변경 빈도로 나눈 레이어(`layers.idx`)를 Dockerfile 또는 버일드팩으로 굽는 컨테이너 이미지, 그리고 WAR·클라우드 플랫폼·OS 서비스로 얹는 배포 |
