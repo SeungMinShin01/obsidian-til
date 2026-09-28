@@ -24,6 +24,15 @@ React + Spring Boot + MySQL. 입고 → 재고 → FEFO 할당 → 피킹 → �
 | 6 | [[WMS 설계 - 설계서 v2 3PL 목표]] | 화주 3곳·Portal·RabbitMQ까지 붙인 목표 설계 (3PL 기준 이름) | 목표 (화주 도입 후) |
 | 7 | [[WMS 설계 - 주말 MVP 명세 v1]] | 3PL 화주 기준 첫 주말 명세 — v2로 대체 | 대체됨 |
 
+## 코드리뷰
+
+같은 스토리를 팀장·팀원이 각자 구현한 코드를 비교한 기록. 옳고 그름 판정이 아니라 무엇이 다르고 각자 무엇을 놓쳤는지, 메서드 단위 IN/OUT을 본다.
+
+| 순서 | 노트 | 내용 |
+|---|---|---|
+| 1 | [[WMS 코드리뷰 - ED-10 ED-21 정렬 비교]] | 입고 목록·재고 조회 정렬: 안정/불안정 정렬, isBefore vs compareTo, Comparator 조합 (comparing·nullsLast·thenComparing) |
+| 2 | [[WMS 코드리뷰 - ED-16 적치]] | 적치 1건: 검증 유무, 가드 절 vs if 중첩, break, 더티 체킹 vs save |
+
 ## 읽는 순서
 
 1. **주말 MVP 명세 v2** — 지금 만드는 것의 기준. 기능 요구사항 → ERD → API → 테스트 시나리오
