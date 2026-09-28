@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day08 — 와일드카드 라우트와 서버 게시판 목록
 
 > 실습 파일: `src/example/day07/App.jsx` · `NotFound.jsx` · `list.jsx` · `write.jsx` · `src/main.jsx`
-> 허브: [[React MOC]] · 이전: [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · 다음: [[React day09 로그인·회원가입 폼과 세션 인증 상태]]
 
 앞의 종합실습은 게시판 화면을 `mode` 상태 하나로 갈아끼웠고, 데이터도 컴포넌트 안 배열에 들어 있었다. 이번에는 두 가지를 바꾼다. 화면 전환은 **라우터(주소)** 로, 데이터는 **스프링 서버의 `/api`** 에서 받아 온다. 같은 날 Spring 수업에서 만든 게시판 목록 API(Spring day11 노트, 허브 경유)를 이 화면이 부르는 구조다. 이번 코드는 **목록 화면 + 없는 주소 처리**에서 시작해, 오후에 **글쓰기 화면(`/write`) → 서버 저장 → 목록으로 돌아가기**까지 한 바퀴를 이었다(1-6).
 
@@ -201,7 +201,7 @@ const [error, setError] = useState(null);
 
 ## 관련 노트
 
-[[React MOC]] · [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day06 내 서버를 거쳐 받는 공공데이터]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day07 게시판 종합실습 스킨 분해와 mode 전환]] · [[React day09 로그인·회원가입 폼과 세션 인증 상태]] · [[React day04 React Router 도입과 라우트 정의]] · [[React day06 내 서버를 거쳐 받는 공공데이터]] · [[KDT_2026 학습 지도]]
 
 <!--
 [문체 규칙]
