@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day11 — 리액트 화면에 내줄 게시판 목록 API
 
 > 실습 파일: `day11/AppStart.java`, `day11/controller/ApiController.java`, `day11/service/ApiService.java`, `day11/model/dto/ApiDto.java`, `day11/model/entity/ApiEntity.java`, `day11/model/repository/ApiRepository.java`, `resources/sql/sample.sql`, `resources/sql/sampledb.sql`, `resources/application.properties`
-> 허브: [[Spring MOC]] · 이전: [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · 다음: (예정)
+> 허브: [[Spring MOC]] · 이전: [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · 다음: [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]]
 
 day10 마지막에서 `/api4`에 `@CrossOrigin`을 얹어 리액트 화면이 서버 응답을 읽을 수 있게 열었습니다. 이번에는 그 방향을 **내 DB 데이터**로 되돌립니다. 게시판 표(`board`) 하나를 엔티티 → 리포지토리 → 서비스 → 컨트롤러 네 층으로 다시 세우고, 목록 전체를 `/api` 한 주소로 내줍니다. 받는 쪽은 같은 날 React 수업에서 만든 게시판 목록 화면(React day08 노트, 허브 경유)입니다. 새 문법은 거의 없고, **화면이 요구하는 JSON 모양에 맞춰 백엔드 한 벌을 빠르게 세우는 연습**이 핵심입니다. 오후에는 같은 주소에 `POST`를 하나 더 얹어, 화면의 글쓰기 폼이 보낸 JSON을 받아 저장하는 쪽까지 이어 갑니다(1-5·1-6).
 
