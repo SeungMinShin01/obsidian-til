@@ -5,11 +5,12 @@
 tags: [학습, java]
 ---
 <!-- 2026-09-28 보강: AppStart(@EnableJpaAuditing)·CORS 자격증명·/me·/logout·실제 비밀번호 해싱 추가 -->
+<!-- 2026-09-30 보강(2차): Refresh 토큰 생성(createRefreshToken)·RedisService(RT:회원번호 저장·조회·삭제) 추가 -->
 <!-- 2026-09-30 보강: 세션 → JWT 쿠키 전환(JwtUtil·ResponseCookie·@CookieValue), Redis 문자열 CRUD(RedisController) 추가 -->
 
 # Spring day12 — 컨트롤러가 받는 HttpServletRequest와 세션
 
-> 실습 파일: `day12/JwtUtil.java`, `day12/RedisController.java`, `day12/MemberController.java`, `day12/MemberEntity.java`, `day12/MemberDto.java`, `day12/MemberRepository.java`, `day12/MemberService.java`, `day12/BaseTime.java`, `day12/AppStart.java`, `resources/sql/0928.sql`, `build.gradle`
+> 실습 파일: `day12/JwtUtil.java`, `day12/RedisService.java`, `day12/RedisController.java`, `day12/MemberController.java`, `day12/MemberEntity.java`, `day12/MemberDto.java`, `day12/MemberRepository.java`, `day12/MemberService.java`, `day12/BaseTime.java`, `day12/AppStart.java`, `resources/sql/0928.sql`, `build.gradle`
 > 허브: [[Spring MOC]] · 이전: [[Spring day11 리액트 화면에 내줄 게시판 목록 API]] · 다음: (예정)
 
 지금까지 컨트롤러 메소드는 `@RequestParam`·`@PathVariable`·`@RequestBody`로만 값을 받아 왔는데, 이번에는 매개변수에 서블릿 API 타입인 `HttpServletRequest`를 그대로 받는 자리를 확인한다. [[Spring day01 서블릿과 HTTP 메소드]]에서 이론으로만 짚었던 요청 객체·세션이 스프링 컨트롤러 안에서 실제로 어떻게 손에 잡히는지 보는 자리이고, 다음에 올 로그인 기능이 정보를 어디에 담아 둘지에 대한 준비이기도 하다.
@@ -406,6 +407,32 @@ boolean result = stringRedisTemplate.delete("member:" + mno);
 - `writeValueAsString`(직렬화)과 `readValue(문자열, 타입.class)`(역직렬화)는 둘 다 검사 예외(`JsonProcessingException`)를 던지므로 메소드에 `throws`가 붙는다. `build.gradle`의 주석대로, 스프링 부트 4의 기본 Jackson은 3(`tools.jackson`)이라 여기서 쓰는 `com.fasterxml.jackson.databind.ObjectMapper`를 위해 Jackson 2 의존성을 따로 추가해 두었다.
 - `MemberDto`를 그대로 저장하기 때문에 저장 요청 본문에 실린 `mpwd`도 함께 직렬화된다. 이 실습은 CRUD 흐름을 익히는 자리이고, 실제 서비스에서는 비밀번호 같은 필드를 뺀 객체를 캐시에 넣는 편이 안전하다.
 
+### 1-8. Refresh 토큰과 RedisService — 토큰 수명을 둘로 나누기 (보강)
+
+액세스 토큰만 쓰면 만료(30분) 때마다 다시 로그인해야 하므로, 수명이 긴 **Refresh 토큰**을 하나 더 발급해 두는 구조를 확인했다. `JwtUtil`에 `createRefreshToken(mno)`가 추가되었고, 액세스 토큰과 같은 방식으로 만들되 `type` 클레임을 `"REFRESH"`로 구분하고 만료를 7일로 길게 잡는다.
+
+```java
+public String createRefreshToken(Long mno) {
+    return Jwts.builder()
+            .claim("type", "REFRESH")
+            .subject(mno + "")
+            .issuedAt(new Date())
+            .expiration(new Date(new Date().getTime() + 1000L * 60 * 60 * 24 * 7)) // 7일
+            .compact();
+}
+```
+
+Refresh 토큰은 서버가 발급 내역을 기억해야 재발급 요청 때 대조할 수 있으므로, 앞 절의 `StringRedisTemplate` 사용법을 `@Service`로 감싼 `RedisService`에 저장해 둔다. 키는 `RT:회원번호` 꼴이다.
+
+| 메소드 | 레디스 호출 | 역할 |
+| --- | --- | --- |
+| `setRefreshToken(mno, token)` | `opsForValue().set("RT:" + mno, token)` | 로그인 시 발급한 토큰 저장 |
+| `getRefreshToken(mno)` | `opsForValue().get("RT:" + mno)` | 재발급 요청 때 대조용 조회 |
+| `deleteRefreshToken(mno)` | `delete("RT:" + mno)` | 로그아웃 시 폐기, 삭제 여부를 `boolean`으로 반환 |
+
+- 컨트롤러가 레디스 템플릿을 직접 쓰던 앞 절과 달리, 저장·조회·삭제를 서비스 메소드로 묶어 두면 키 조합 규칙(`RT:`)이 한 곳에만 남는다.
+- 토큰 기반 흐름은 정리하면 "로그인 → 액세스+Refresh 발급 → Refresh는 레디스에 저장 → 액세스 만료 시 Refresh로 재발급 → 로그아웃 시 레디스에서 삭제"다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 세션에는 최소한의 정보만 얹기
@@ -436,6 +463,10 @@ JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 
 
 레디스에는 테이블이라는 구획이 없어서 키 이름이 곧 구조다. `member:1`, `member:2`처럼 도메인 접두어를 붙여 두면 `keys("member:*")` 한 줄로 그 도메인만 모을 수 있고 다른 자료와 키가 겹치지 않는다. 다만 `keys` 패턴 조회는 키가 많아지면 서버에 부담이 크므로 실습 규모에서만 쓰고, 운영에서는 `scan`을 쓰는 편이 안전하다.
 
+### 2-8. Refresh 토큰은 액세스 토큰보다 길게, 저장은 서버 쪽에도 (보강)
+
+액세스 토큰은 탈취되어도 피해가 짧도록 수명을 짧게(30분), Refresh 토큰은 재로그인 부담을 줄이도록 길게(7일) 두는 것이 일반적인 조합이다. 다만 수명이 긴 만큼 서버가 레디스 같은 저장소에 사본을 두고 대조·삭제할 수 있어야 로그아웃이나 강제 만료가 실제로 의미를 가진다. 레디스에 저장할 때 TTL을 토큰 만료와 맞춰 두면 만료된 키가 알아서 정리된다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 세션 방식의 한계와 대안
@@ -446,7 +477,7 @@ JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 
 
 - `HandlerInterceptor` / 필터 — 로그인 검사를 컨트롤러 앞단에서 공통으로 처리하기
 - Spring Security — 인증·인가를 프레임워크 단에서 표준화하기
-- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식 (이번에 쿠키에 담는 형태로 확인함, 다음은 `Authorization` 헤더 방식과 만료·재발급(refresh token))
+- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식 (이번에 쿠키에 담는 형태로 확인함, Refresh 토큰 발급·레디스 저장까지 확인함, 다음은 `Authorization` 헤더 방식과 재발급 API·검증 필터)
 - 레디스 활용 — 만료시간(TTL) 설정, 분산 세션·캐시·토큰 블랙리스트 저장소로 쓰기
 - `secure(true)` + HTTPS — 배포 환경에서 쿠키 옵션 조이기
 - 쿠키(`JSESSIONID`) — 세션 식별자를 브라우저가 들고 있게 하는 통로
@@ -456,7 +487,8 @@ JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 
 ## 실습 파일
 
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberController.java` — `HttpServletRequest`·`HttpSession` 기본 API(요청 정보·세션 속성 저장/조회·`invalidate`)를 확인하는 컨트롤러, `@CrossOrigin(allowCredentials = "true")`·회원가입/로그인/내정보조회(`/me`)/로그아웃 엔드포인트, 이후 세션에서 JWT 쿠키 방식으로 전환 (보강)
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/JwtUtil.java` — `@Component`·`@Value`·`@PostConstruct`로 비밀키를 준비하고 JWT를 생성·검증하는 유틸 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/JwtUtil.java` — `@Component`·`@Value`·`@PostConstruct`로 비밀키를 준비하고 JWT를 생성·검증하고 Refresh 토큰(7일)도 발급하는 유틸 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/RedisService.java` — `StringRedisTemplate`으로 `RT:회원번호` 키에 Refresh 토큰을 저장·조회·삭제하는 서비스 (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/RedisController.java` — `StringRedisTemplate`·`ObjectMapper`로 레디스에 문자열/DTO를 저장·조회·수정·삭제하는 컨트롤러 (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/DDL.sql` — 실습용 데이터베이스(`mydb0928`)를 새로 만드는 SQL (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberEntity.java` — `member` 표 엔티티, `extends BaseTime`으로 감사 필드 상속, `mid` 유니크 제약과 `role` 기본값 이중 처리(`@Builder.Default` + `@ColumnDefault`)
