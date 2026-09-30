@@ -5,10 +5,11 @@
 tags: [학습, java]
 ---
 <!-- 2026-09-28 보강: AppStart(@EnableJpaAuditing)·CORS 자격증명·/me·/logout·실제 비밀번호 해싱 추가 -->
+<!-- 2026-09-30 보강: 세션 → JWT 쿠키 전환(JwtUtil·ResponseCookie·@CookieValue), Redis 문자열 CRUD(RedisController) 추가 -->
 
 # Spring day12 — 컨트롤러가 받는 HttpServletRequest와 세션
 
-> 실습 파일: `day12/MemberController.java`, `day12/MemberEntity.java`, `day12/MemberDto.java`, `day12/MemberRepository.java`, `day12/MemberService.java`, `day12/BaseTime.java`, `day12/AppStart.java`, `resources/sql/0928.sql`, `build.gradle`
+> 실습 파일: `day12/JwtUtil.java`, `day12/RedisController.java`, `day12/MemberController.java`, `day12/MemberEntity.java`, `day12/MemberDto.java`, `day12/MemberRepository.java`, `day12/MemberService.java`, `day12/BaseTime.java`, `day12/AppStart.java`, `resources/sql/0928.sql`, `build.gradle`
 > 허브: [[Spring MOC]] · 이전: [[Spring day11 리액트 화면에 내줄 게시판 목록 API]] · 다음: (예정)
 
 지금까지 컨트롤러 메소드는 `@RequestParam`·`@PathVariable`·`@RequestBody`로만 값을 받아 왔는데, 이번에는 매개변수에 서블릿 API 타입인 `HttpServletRequest`를 그대로 받는 자리를 확인한다. [[Spring day01 서블릿과 HTTP 메소드]]에서 이론으로만 짚었던 요청 객체·세션이 스프링 컨트롤러 안에서 실제로 어떻게 손에 잡히는지 보는 자리이고, 다음에 올 로그인 기능이 정보를 어디에 담아 둘지에 대한 준비이기도 하다.
@@ -259,6 +260,152 @@ public boolean signup(MemberDto memberDto) {
   2-4에서 "다음에 할 일"로 적어 두었던 해싱이 여기서 실제로 들어간다 — 회원가입 시점에 받은 평문을 `passwordEncoder.encode()`로 감싸 엔티티에 다시 대입한 다음 저장한다. 로그인 쪽의 `passwordEncoder.matches(평문, 암호문)`과 짝을 이루는 자리다.
 - 진입 클래스 `AppStart`에는 `@EnableJpaAuditing`이 붙어 있다. [[Spring day05 엔티티 제약과 감사 필드]]에서 다진 `@CreatedDate`·`@LastModifiedDate`는 이 애노테이션이 앱 어딘가에 하나 있어야 실제로 값을 채워 준다 — 필드에 표시만 해 두고 활성화를 빠뜨리면 두 칸이 계속 `null`로 남는 자리라, 감사 필드를 쓰는 프로젝트에서는 진입 클래스 쪽도 함께 확인하는 편이 안전하다.
 
+### 1-6. 세션 대신 JWT 쿠키로 — JwtUtil과 ResponseCookie (보강)
+
+1-4·1-5에서는 로그인 결과를 `HttpSession`에 얹어 두었는데, 같은 `MemberController`가 세션을 쓰지 않고 JWT를 담은 쿠키로 로그인 상태를 유지하는 쪽으로 바뀌었다. 서버가 회원 정보를 들고 있는 대신, 회원번호를 서명해 담은 토큰을 브라우저 쿠키에 맡겨 두는 방식이다. 이를 위해 토큰을 만들고 검증하는 전용 클래스 `JwtUtil`이 생겼다.
+
+```java
+@Component // MVC 계층(Controller·Service) 어디에도 속하지 않는 일반 빈
+public class JwtUtil {
+    @Value("${jwt.secret}") // application.properties 의 속성값 주입
+    private String key;
+    private SecretKey secretKey;
+
+    @PostConstruct // 의존성 주입이 끝난 뒤 한 번만 호출
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String createToken(Long mno) {
+        return Jwts.builder()
+                .subject(mno + "")          // payload: 회원 식별번호
+                .issuedAt(new Date())       // 발급 시간
+                .expiration(new Date(...))  // 만료 시간
+                .signWith(secretKey)        // 비밀키로 전자서명
+                .compact();                 // 문자열 토큰으로 완성
+    }
+
+    public Long getMnoFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser().verifyWith(secretKey).build()
+                    .parseSignedClaims(token).getPayload();
+            return Long.parseLong(claims.getSubject());
+        } catch (Exception e) {
+            return null; // 서명이 틀렸거나 만료·손상된 토큰
+        }
+    }
+}
+```
+
+- `@Component`는 컨트롤러·서비스·리포지토리 어느 층도 아닌 일반 객체를 빈으로 등록하는 표시이고, 그래서 컨트롤러가 `private final JwtUtil jwtUtil;`로 생성자 주입을 받는다.
+- 비밀키 문자열은 코드에 적지 않고 `application.properties`의 `jwt.secret`에 두었다가 `@Value("${jwt.secret}")`로 읽어 온다. API 인증키 같은 보안 값을 설정 파일 쪽으로 빼 두는 습관과 같은 자리다. (이 리포는 공개라 실제 키 값은 노트에 적지 않는다.)
+- `@PostConstruct`가 붙은 `init()`은 `@Value` 주입이 끝난 다음에 한 번 호출된다. 필드 주입은 생성자가 도는 시점에는 아직 값이 없으므로, 주입값이 필요한 초기화(문자열 키 → `SecretKey`)는 이 시점에 하는 것이 안전하다.
+- `createToken(mno)`는 빌더 체인으로 subject(회원번호)·발급 시각·만료 시각을 채우고 `signWith(secretKey)`로 전자서명한 뒤 `compact()`로 문자열 하나로 뽑는다. 토큰은 `헤더.페이로드.서명` 세 덩어리이며 페이로드는 누구나 디코딩해 읽을 수 있으므로, 비밀번호 같은 값은 넣지 않고 식별번호 정도만 담는다.
+- `getMnoFromToken(token)`은 같은 비밀키로 서명을 검증하면서 파싱한다. 위조·만료·형식 오류이면 예외가 나므로 `try-catch`로 잡아 `null`을 돌려주고, 호출하는 쪽은 `null`이면 비로그인으로 다룬다.
+
+```java
+@PostMapping("/login")
+public MemberDto login(@RequestBody MemberDto memberDto, HttpServletResponse response) {
+    MemberDto result = memberService.login(memberDto);
+    if (result == null) return null; // 로그인 실패
+    String token = jwtUtil.createToken(result.getMno()); // mno → jwt
+    ResponseCookie cookie = ResponseCookie.from("login_member", token)
+            .path("/")
+            .maxAge(Duration.ofDays(1))
+            .httpOnly(true)
+            .secure(false)
+            .sameSite("Lax")
+            .build();
+    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    return result;
+}
+
+@GetMapping("/me")
+public MemberDto getMyInfo(@CookieValue(value = "login_member", required = false) String token) {
+    if (token == null) return null;
+    Long loginMno = jwtUtil.getMnoFromToken(token);
+    return memberService.getMyInfo(loginMno);
+}
+
+@PostMapping("/logout")
+public boolean logout(HttpServletResponse response) {
+    ResponseCookie cookie = ResponseCookie.from("login_member", "")
+            .path("/").maxAge(0).httpOnly(true).secure(false).build();
+    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    return true;
+}
+```
+
+| 자리 | 세션 방식(1-4·1-5) | JWT 쿠키 방식(이번) |
+| --- | --- | --- |
+| 로그인 상태를 들고 있는 곳 | 서버 메모리의 `HttpSession` | 브라우저 쿠키 안의 토큰 |
+| 로그인 성공 처리 | `session.setAttribute("login_member", dto)` | `createToken` → `Set-Cookie` 헤더로 발급 |
+| 내 정보 확인 | `session.getAttribute` | `@CookieValue`로 토큰 → `getMnoFromToken` → 회원번호로 재조회 |
+| 로그아웃 | `session.invalidate()` | 같은 이름 쿠키를 `maxAge(0)`으로 다시 내려 삭제 |
+
+- `ResponseCookie`의 옵션은 각각 역할이 있다. `path("/")`는 도메인 전체에서 쿠키를 쓰게 하고, `maxAge(Duration.ofDays(1))`는 유효기간 하루다. `httpOnly(true)`는 자바스크립트가 쿠키를 읽지 못하게 막아 XSS로 토큰이 탈취되는 것을 줄이고, `sameSite("Lax")`는 다른 사이트에서 유발된 요청에 쿠키가 실려 가는 것을 제한해 CSRF를 막는 쪽이다. `secure(false)`는 HTTP에서도 쿠키를 허용하는 개발 단계용 값이고, 배포에서 HTTPS를 쓰면 `true`로 바꾼다.
+- `@CookieValue(value = "login_member", required = false)`는 요청에 실려 온 쿠키를 매개변수로 바로 받는 표시다. `required = false`로 두면 쿠키가 없을 때 오류 대신 `null`이 들어와 "비로그인" 분기로 자연스럽게 이어진다.
+- 로그아웃은 서버에 지울 것이 없으므로, 같은 이름·같은 path의 쿠키를 `maxAge(0)`으로 내려 브라우저가 스스로 지우게 하는 방식이다. path가 다르면 다른 쿠키로 취급되므로 발급할 때와 맞춰야 한다.
+- 화면 쪽은 `axios`에 `{ withCredentials: true }`를 넣는 부분이 1-5에서 봤던 그대로 필요하다. 세션 쿠키가 토큰 쿠키로 바뀌었을 뿐, 쿠키를 다른 포트로 주고받는 조건은 같다.
+
+### 1-7. 레디스로 문자열 CRUD — StringRedisTemplate과 직렬화 (보강)
+
+`build.gradle`에 `spring-boot-starter-data-redis`가 추가되고, `application.properties`에는 `spring.data.redis.host`·`port`가 들어갔다. 이 설정 위에서 `RedisController`가 MySQL이 아닌 레디스(key-value 저장소)에 자료를 넣고 꺼낸다.
+
+```java
+@RestController
+@RequestMapping("/api/redis")
+@RequiredArgsConstructor
+public class RedisController {
+    private final StringRedisTemplate stringRedisTemplate; // 문자열 기반 레디스 조작 객체
+    private final ObjectMapper objectMapper = new ObjectMapper(); // 직렬화·역직렬화
+
+    @GetMapping("/test1")
+    public Map<String, Object> test1() {
+        stringRedisTemplate.opsForValue().set("유재석", "90");
+        stringRedisTemplate.opsForValue().set("강호동", "100");
+        Set<String> keys = stringRedisTemplate.keys("*"); // 모든 키
+        Map<String, Object> map = new HashMap<>();
+        for (String key : keys) {
+            map.put(key, stringRedisTemplate.opsForValue().get(key));
+        }
+        return map;
+    }
+}
+```
+
+- 레디스는 key-value 구조라 키는 중복되지 않고 값은 중복될 수 있다. `opsForValue().set(키, 값)`은 삽입이자 같은 키에 다시 쓰면 덮어쓰기(수정)이고, `get(키)`은 조회, `keys("*")`는 모든 키를 `Set<String>`으로 돌려준다. 컬렉션 프레임워크의 `Set`·`Map`·`List`를 그대로 활용하는 자리이기도 하다.
+- `StringRedisTemplate`은 키와 값이 모두 문자열이다. 그래서 DTO 같은 자바 객체를 넣으려면 문자열로 바꾸는 과정이 끼어든다.
+
+```java
+// 저장: DTO → 문자열(직렬화)
+String key = "member:" + memberDto.getMno();               // 예: member:3
+String str = objectMapper.writeValueAsString(memberDto);
+stringRedisTemplate.opsForValue().set(key, str);
+
+// 전체 조회: 패턴으로 키 찾기 → 하나씩 역직렬화
+Set<String> keys = stringRedisTemplate.keys("member:*");
+for (String key : keys) {
+    String value = stringRedisTemplate.opsForValue().get(key);
+    list.add(objectMapper.readValue(value, MemberDto.class)); // 문자열 → DTO
+}
+
+// 삭제
+boolean result = stringRedisTemplate.delete("member:" + mno);
+```
+
+| 동작 | 엔드포인트 | 레디스 호출 |
+| --- | --- | --- |
+| 저장 | `POST /api/redis/member` | `set("member:번호", JSON 문자열)` |
+| 전체 조회 | `GET /api/redis/member` | `keys("member:*")` + 키별 `get` |
+| 개별 조회 | `GET /api/redis/member/find?mno=` | `get("member:번호")`, 없으면 `null` |
+| 수정 | `PUT /api/redis/member` | 같은 키로 `set` 덮어쓰기 |
+| 삭제 | `DELETE /api/redis/member?mno=` | `delete("member:번호")` |
+
+- 키는 `도메인명:식별키` 꼴(`member:3`)로 구성하는 것이 관례다. 이렇게 두면 `member:*` 패턴으로 같은 도메인의 키만 골라 조회할 수 있다.
+- `writeValueAsString`(직렬화)과 `readValue(문자열, 타입.class)`(역직렬화)는 둘 다 검사 예외(`JsonProcessingException`)를 던지므로 메소드에 `throws`가 붙는다. `build.gradle`의 주석대로, 스프링 부트 4의 기본 Jackson은 3(`tools.jackson`)이라 여기서 쓰는 `com.fasterxml.jackson.databind.ObjectMapper`를 위해 Jackson 2 의존성을 따로 추가해 두었다.
+- `MemberDto`를 그대로 저장하기 때문에 저장 요청 본문에 실린 `mpwd`도 함께 직렬화된다. 이 실습은 CRUD 흐름을 익히는 자리이고, 실제 서비스에서는 비밀번호 같은 필드를 뺀 객체를 캐시에 넣는 편이 안전하다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 세션에는 최소한의 정보만 얹기
@@ -281,6 +428,14 @@ public boolean signup(MemberDto memberDto) {
 
 세션 쿠키로 로그인 상태를 유지하는 구조에서는 서버의 `allowCredentials = "true"`와 화면의 `axios` 요청 옵션 `{ withCredentials: true }`가 한 짝이다. 둘 중 하나만 빠뜨려도 브라우저가 쿠키를 안 보내거나 서버가 응답에 쿠키 허용 헤더를 안 붙여서, 로그인은 성공한 것처럼 보여도 다음 요청에서 세션이 끊긴 것처럼 동작한다. CORS 오류 없이 요청이 되는데 로그인 유지만 안 될 때 먼저 의심해 볼 자리다.
 
+### 2-6. 토큰에는 식별자만, 비밀키는 설정 파일에 (보강)
+
+JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 수 있다. 그래서 토큰에는 회원번호 같은 식별자만 담고 상세 정보는 `/me`처럼 토큰을 풀어 얻은 번호로 DB에서 다시 조회한다. 서명에 쓰는 비밀키는 소스 코드에 박지 않고 `application.properties`(`@Value`로 주입)나 환경변수로 빼 두어야 하고, 공개 저장소에는 실제 값을 올리지 않는다. 비밀키 길이는 HMAC-SHA 계열에서 충분히 길어야(32바이트 이상) `Keys.hmacShaKeyFor`가 받아 준다.
+
+### 2-7. 레디스 키 이름은 `도메인:식별키`로 통일 (보강)
+
+레디스에는 테이블이라는 구획이 없어서 키 이름이 곧 구조다. `member:1`, `member:2`처럼 도메인 접두어를 붙여 두면 `keys("member:*")` 한 줄로 그 도메인만 모을 수 있고 다른 자료와 키가 겹치지 않는다. 다만 `keys` 패턴 조회는 키가 많아지면 서버에 부담이 크므로 실습 규모에서만 쓰고, 운영에서는 `scan`을 쓰는 편이 안전하다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 ### 3-1. 세션 방식의 한계와 대안
@@ -291,19 +446,24 @@ public boolean signup(MemberDto memberDto) {
 
 - `HandlerInterceptor` / 필터 — 로그인 검사를 컨트롤러 앞단에서 공통으로 처리하기
 - Spring Security — 인증·인가를 프레임워크 단에서 표준화하기
-- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식
+- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식 (이번에 쿠키에 담는 형태로 확인함, 다음은 `Authorization` 헤더 방식과 만료·재발급(refresh token))
+- 레디스 활용 — 만료시간(TTL) 설정, 분산 세션·캐시·토큰 블랙리스트 저장소로 쓰기
+- `secure(true)` + HTTPS — 배포 환경에서 쿠키 옵션 조이기
 - 쿠키(`JSESSIONID`) — 세션 식별자를 브라우저가 들고 있게 하는 통로
 - `role` 기반 접근 제어 — 시드에 심어 둔 admin/user 두 값을 실제 엔드포인트 분기에 쓰기
 - 로그인 실패를 더 세분화하기 — 아이디가 없는 경우와 비밀번호가 틀린 경우를 같은 `null`로 뭉치지 않는 방법
 
 ## 실습 파일
 
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberController.java` — `HttpServletRequest`·`HttpSession` 기본 API(요청 정보·세션 속성 저장/조회·`invalidate`)를 확인하는 컨트롤러, `@CrossOrigin(allowCredentials = "true")`·회원가입/로그인/내정보조회(`/me`)/로그아웃 엔드포인트 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberController.java` — `HttpServletRequest`·`HttpSession` 기본 API(요청 정보·세션 속성 저장/조회·`invalidate`)를 확인하는 컨트롤러, `@CrossOrigin(allowCredentials = "true")`·회원가입/로그인/내정보조회(`/me`)/로그아웃 엔드포인트, 이후 세션에서 JWT 쿠키 방식으로 전환 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/JwtUtil.java` — `@Component`·`@Value`·`@PostConstruct`로 비밀키를 준비하고 JWT를 생성·검증하는 유틸 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/RedisController.java` — `StringRedisTemplate`·`ObjectMapper`로 레디스에 문자열/DTO를 저장·조회·수정·삭제하는 컨트롤러 (보강)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day12/DDL.sql` — 실습용 데이터베이스(`mydb0928`)를 새로 만드는 SQL (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberEntity.java` — `member` 표 엔티티, `extends BaseTime`으로 감사 필드 상속, `mid` 유니크 제약과 `role` 기본값 이중 처리(`@Builder.Default` + `@ColumnDefault`)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberDto.java` — `toEntity()`·`from()` 변환 메소드, 응답에서 비밀번호(`mpwd`)를 걷어내는 자리
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberRepository.java` — `findByMid`·`findByMname` 쿼리 메소드
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/MemberService.java` — `BCryptPasswordEncoder`로 비밀번호를 해싱해 회원가입·로그인을 처리하고, 내정보조회(`getMyInfo`)까지 맡는 서비스 (보강)
-- `KDT_2026/2026B_Spring/springweb/build.gradle` — `spring-security-crypto` 의존성 추가
+- `KDT_2026/2026B_Spring/springweb/build.gradle` — `spring-security-crypto`·`spring-boot-starter-data-redis`·`jjwt`·Jackson 2 의존성 추가
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/BaseTime.java` — 생성·수정 시각 감사 필드(공통 상위 클래스)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/AppStart.java` — `@EnableJpaAuditing`으로 감사 필드 활성화하는 진입 클래스 (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/0928.sql` — 회원 20명 시드 데이터(BCrypt 해시 비밀번호, admin/user 권한 구분)
