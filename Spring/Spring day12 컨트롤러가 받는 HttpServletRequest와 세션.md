@@ -5,6 +5,7 @@
 tags: [학습, java]
 ---
 <!-- 2026-09-28 보강: AppStart(@EnableJpaAuditing)·CORS 자격증명·/me·/logout·실제 비밀번호 해싱 추가 -->
+<!-- 2026-09-30 보강(3차): 로그인 시 액세스·Refresh 쿠키 2개 발급 + 레디스 저장, 로그아웃 시 레디스 삭제 반영 -->
 <!-- 2026-09-30 보강(2차): Refresh 토큰 생성(createRefreshToken)·RedisService(RT:회원번호 저장·조회·삭제) 추가 -->
 <!-- 2026-09-30 보강: 세션 → JWT 쿠키 전환(JwtUtil·ResponseCookie·@CookieValue), Redis 문자열 CRUD(RedisController) 추가 -->
 
@@ -432,6 +433,44 @@ Refresh 토큰은 서버가 발급 내역을 기억해야 재발급 요청 때 �
 
 - 컨트롤러가 레디스 템플릿을 직접 쓰던 앞 절과 달리, 저장·조회·삭제를 서비스 메소드로 묶어 두면 키 조합 규칙(`RT:`)이 한 곳에만 남는다.
 - 토큰 기반 흐름은 정리하면 "로그인 → 액세스+Refresh 발급 → Refresh는 레디스에 저장 → 액세스 만료 시 Refresh로 재발급 → 로그아웃 시 레디스에서 삭제"다.
+
+### 1-9. 로그인·로그아웃에 토큰 2개와 레디스를 엮기 (보강)
+
+1-6에서는 토큰 하나를 쿠키 하나에 담았는데, `MemberController`가 액세스·Refresh 토큰 두 개를 발급하고 Refresh 쪽은 레디스에도 저장하는 흐름으로 다시 바뀌었다. 컨트롤러 필드에 `JwtUtil`과 함께 `RedisService`(`redisTokenService`)가 주입된다.
+
+```java
+@PostMapping("/login")
+public MemberDto login(@RequestBody MemberDto memberDto, HttpServletResponse response) {
+    MemberDto result = memberService.login(memberDto);
+    if (result == null) return null;
+    String accessToken = jwtUtil.createAccessToken(result.getMno());
+    String refreshToken = jwtUtil.createRefreshToken(result.getMno());
+    redisTokenService.setRefreshToken(result.getMno(), refreshToken); // Refresh만 레디스에 저장
+    ResponseCookie cookie1 = ResponseCookie.from("accessToken", accessToken)
+            .path("/").maxAge(Duration.ofMinutes(30)).httpOnly(true).secure(false).sameSite("Lax").build();
+    ResponseCookie cookie2 = ResponseCookie.from("refreshToken", refreshToken)
+            .path("/").maxAge(Duration.ofDays(7)).httpOnly(true).secure(false).sameSite("Lax").build();
+    response.setHeader(HttpHeaders.SET_COOKIE, cookie1.toString());
+    response.setHeader(HttpHeaders.SET_COOKIE, cookie2.toString());
+    return result;
+}
+
+@PostMapping("/logout")
+public boolean logout(@CookieValue(value = "accessToken", required = false) String accessToken,
+                      HttpServletResponse response) {
+    if (accessToken != null) {
+        Long mno = jwtUtil.getMnoFromToken(accessToken);
+        redisTokenService.deleteRefreshToken(mno); // 레디스의 Refresh 폐기
+    }
+    // maxAge(0) 쿠키를 내려 브라우저의 쿠키 삭제
+    ...
+    return true;
+}
+```
+
+- 쿠키 만료는 토큰 만료와 맞추는 것이 권장이라, 액세스 쿠키는 30분·Refresh 쿠키는 7일로 각각 잡는다. 두 쿠키 모두 `httpOnly`라 화면의 자바스크립트는 토큰을 직접 읽지 못한다.
+- 같은 이름의 헤더(`Set-Cookie`)를 `setHeader`로 두 번 부르면 뒤의 호출이 앞의 값을 덮어쓸 수 있어, 응답에 쿠키를 여러 개 실을 때는 `addHeader` 쪽을 쓰는지 응답 헤더를 열어 확인하는 편이 안전하다.
+- 로그아웃은 "쿠키 만료 + 레디스 삭제"의 두 갈래다. 쿠키만 지우면 서버에 Refresh 사본이 남아 있으므로, 액세스 토큰에서 회원번호를 꺼내 `RT:회원번호` 키까지 지워야 서버 쪽에서도 로그아웃이 완결된다.
 
 ## 2. 추가로 알면 좋은 활용법
 
