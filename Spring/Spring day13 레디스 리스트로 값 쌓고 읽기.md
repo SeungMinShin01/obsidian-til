@@ -106,7 +106,7 @@ public List<String> getList(HttpSession session) {
 - 같은 브라우저(같은 세션 ID)에서 `/add`를 여러 번 부르면 그 세션 안에서 리스트가 쌓인다. 다른 브라우저로 `/all`을 부르면 빈 목록이 나온다. 레디스 버전은 누가 부르든 같은 목록이 보인다는 점과 대비된다.
 - 저장 키(`"list"`)는 저장할 때와 읽을 때 같은 문자열로 맞춰야 한다. 키가 어긋나면 읽는 쪽은 항상 `null`이다.
 
-**쿠키 버전 — JSON 문자열로 바꿔 쿠키에 담는 구상**
+**쿠키 버전 — 리스트를 JSON 문자열로 바꿔 쿠키에 담기**
 
 ```java
 private final ObjectMapper objectMapper = new ObjectMapper();
@@ -115,18 +115,48 @@ private final ObjectMapper objectMapper = new ObjectMapper();
 public String save(@RequestParam(name = "data") String data,
         @CookieValue(value = "list", required = false) String value,
         HttpServletResponse response) {
-    // 쿠키 값(JSON 문자열) → List 로 복원
-    // list.add(data)
-    // List → JSON 문자열(writeValueAsString) → URLEncoder 로 인코딩
-    // ResponseCookie 로 만들어 응답에 실어 보내기
+    try {
+        List<String> list = new ArrayList<>();
+        if (value != null) {
+            list = objectMapper.readValue(value, List.class); // 쿠키 문자열 → List
+        }
+        list.add(data);
+        String str = objectMapper.writeValueAsString(list);   // List → JSON 문자열
+        String encoded = URLEncoder.encode(str, "UTF-8");     // 쿠키에 넣을 수 있게 인코딩
+        ResponseCookie cookie = ResponseCookie.from("list", encoded)
+                .path("/").maxAge(Duration.ofDays(1))
+                .httpOnly(true).secure(false)
+                .sameSite("Lax").build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return "쿠키저장성공";
+    } catch (Exception e) {
+        return "쿠키저장실패";
+    }
+}
+
+@GetMapping("/all")
+public List<String> getList(@CookieValue(value = "list", required = false) String value) {
+    // value 가 null 이면 빈 리스트, 아니면 readValue 로 복원해서 반환
 }
 ```
 
-- 쿠키에는 문자열만 담기므로 리스트를 `ObjectMapper`로 JSON 문자열로 바꿔 넣고, 읽을 때 `TypeReference<List<String>>`로 다시 리스트로 복원한다.
-- 쿠키 값에는 따옴표·대괄호 같은 문자가 그대로 들어가기 어렵기 때문에 `URLEncoder.encode(..., "UTF-8")`로 인코딩한 뒤 담는 단계가 끼어든다. 꺼낼 때는 디코딩이 필요하다.
-- `@CookieValue(value = "list", required = false)`는 쿠키가 아직 없는 첫 요청에서도 오류 없이 `null`을 받기 위한 설정이다. `ResponseCookie.from(이름, 값)`에 `path`·`httpOnly`·`maxAge` 등을 붙여 만들고, 응답 헤더에 `Set-Cookie`로 실어 보낸다.
-- `ObjectMapper`의 JSON 변환·복원은 검사 예외(`JsonProcessingException`)를 던지므로 `try-catch`나 `throws`가 함께 필요하다.
-- 쿠키 컨트롤러는 아직 작성 중인 상태라, 이 구상을 완성해 가는 과정으로 읽는다. 완성되면 이 부분을 다시 보강한다.
+- 쿠키에는 문자열만 담기므로 리스트를 `ObjectMapper`의 `writeValueAsString`으로 JSON 문자열로 바꿔 넣고, 읽을 때 `readValue(value, List.class)`로 다시 리스트로 복원한다.
+- 쿠키 값에는 따옴표·대괄호 같은 문자가 그대로 들어가기 어렵기 때문에 `URLEncoder.encode(..., "UTF-8")`로 인코딩한 뒤 담는다. 스프링이 `@CookieValue`로 값을 넘겨줄 때 디코딩된 상태로 받는 점과 짝을 이룬다.
+- `@CookieValue(value = "list", required = false)`는 쿠키가 아직 없는 첫 요청에서도 오류 없이 `null`을 받기 위한 설정이다. 그래서 `/add`는 `null`이면 빈 리스트로 시작하고, `/all`은 `null`이면 빈 리스트를 그대로 돌려준다.
+- `ResponseCookie.from(이름, 값)`에 속성을 이어 붙여 쿠키를 만든다.
+
+| 속성 | 실습에서의 값 | 뜻 |
+| --- | --- | --- |
+| `path("/")` | 사이트 전체 | 모든 경로 요청에 쿠키가 따라간다 |
+| `maxAge(Duration.ofDays(1))` | 1일 | 브라우저를 닫아도 하루 동안 유지된다 |
+| `httpOnly(true)` | 켬 | 자바스크립트에서 `document.cookie`로 읽지 못한다 |
+| `secure(false)` | 끔 | HTTPS가 아니어도 전송된다(로컬 실습용) |
+| `sameSite("Lax")` | Lax | 다른 사이트에서 오는 일부 요청에는 쿠키를 보내지 않는다 |
+
+- 만든 쿠키는 `response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString())`으로 응답 헤더에 실어 보낸다.
+- `ObjectMapper`의 JSON 변환·복원은 검사 예외를 던지므로 전체를 `try-catch`로 감싸 성공·실패 문구(또는 빈 리스트)를 돌려주는 형태다.
+- `readValue(value, List.class)`는 요소 타입 정보가 없는 원시 `List`로 복원한다. 요소 타입까지 지정하려면 `TypeReference<List<String>>`를 쓰는 방법이 있다.
+- 세 저장소를 비교하면, 쿠키는 값이 브라우저에 남아 서버가 없어도 유지되지만 크기 제한이 작고 사용자가 직접 볼 수 있는 곳이라 민감한 값을 넣기에는 맞지 않다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -162,7 +192,7 @@ public String save(@RequestParam(name = "data") String data,
 
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day13/RedisService2.java` — `opsForList()`의 `rightPush`·`range`로 리스트에 쌓고 전체 조회하는 서비스
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day13/RedisController2.java` — `/api/redis/add`, `/api/redis/all` 엔드포인트
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/CookieController.java` — `@CookieValue`·`ObjectMapper`로 리스트를 쿠키에 담는 컨트롤러(작성 중)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/CookieController.java` — `@CookieValue`·`ObjectMapper`·`ResponseCookie`로 리스트를 쿠키에 담고 읽는 `/api/cookie` 엔드포인트
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day13/SessionController.java` — `HttpSession`에 리스트를 쌓고 읽는 `/api/session` 엔드포인트
 
 ## 관련 노트
