@@ -472,6 +472,38 @@ public boolean logout(@CookieValue(value = "accessToken", required = false) Stri
 - 같은 이름의 헤더(`Set-Cookie`)를 `setHeader`로 두 번 부르면 뒤의 호출이 앞의 값을 덮어쓸 수 있어, 응답에 쿠키를 여러 개 실을 때는 `addHeader` 쪽을 쓰는지 응답 헤더를 열어 확인하는 편이 안전하다.
 - 로그아웃은 "쿠키 만료 + 레디스 삭제"의 두 갈래다. 쿠키만 지우면 서버에 Refresh 사본이 남아 있으므로, 액세스 토큰에서 회원번호를 꺼내 `RT:회원번호` 키까지 지워야 서버 쪽에서도 로그아웃이 완결된다.
 
+### 1-10. 재발급 엔드포인트 `/reissue` (보강)
+
+액세스 토큰이 만료됐을 때 Refresh 토큰으로 새 토큰을 받는 `POST /api/member/reissue`가 `MemberController`에 추가됐다. 순서는 아래와 같다.
+
+1. `@CookieValue("refreshToken")`으로 Refresh 쿠키를 받고, 없으면 `null`을 돌려준다.
+2. 토큰에서 회원번호(`mno`)를 꺼낸다.
+3. 레디스의 `RT:회원번호` 값을 조회해 쿠키로 받은 토큰과 대조한다.
+4. 레디스에 없거나 값이 다르면 탈취·중복 사용을 의심해 레디스의 Refresh를 지워 사실상 로그아웃시킨다.
+5. 정상이면 액세스·Refresh를 새로 만들어 레디스에 다시 저장하고, 쿠키를 응답에 담아 회원 정보를 돌려준다.
+
+```java
+@PostMapping("/reissue")
+public MemberDto reissue(@CookieValue(value = "refreshToken", required = false) String refreshToken,
+                         HttpServletResponse response) {
+    if (refreshToken == null) return null;
+    Long mno = jwtUtil.getMnoFromToken(refreshToken);
+    String saved = redisTokenService.getRefreshToken(mno);
+    if (saved == null || !refreshToken.equals(saved)) {
+        redisTokenService.deleteRefreshToken(mno); // 불일치 → 폐기
+    }
+    String newAccessToken = jwtUtil.createAccessToken(mno);
+    String newRefreshToken = jwtUtil.createRefreshToken(mno);
+    redisTokenService.setRefreshToken(mno, newRefreshToken);
+    // 쿠키 2개 생성 후 response.addHeader(HttpHeaders.SET_COOKIE, ...)
+    return memberService.getMyInfo(mno);
+}
+```
+
+- 쿠키가 둘 이상일 때는 주석에도 적혀 있듯 `addHeader`를 써야 `Set-Cookie`가 겹쳐 쓰이지 않는다.
+- Refresh를 쓸 때마다 새로 발급해 갈아 끼우는 방식(로테이션)이라, 한 번 쓴 Refresh는 레디스 값과 달라져 재사용이 막힌다.
+- 로그인·재발급 때 쿠키 이름·만료를 같은 규칙(액세스 30분, Refresh 7일)으로 맞춰야 로그아웃·재발급과 어긋나지 않는다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 세션에는 최소한의 정보만 얹기
@@ -516,7 +548,7 @@ JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 
 
 - `HandlerInterceptor` / 필터 — 로그인 검사를 컨트롤러 앞단에서 공통으로 처리하기
 - Spring Security — 인증·인가를 프레임워크 단에서 표준화하기
-- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식 (이번에 쿠키에 담는 형태로 확인함, Refresh 토큰 발급·레디스 저장까지 확인함, 다음은 `Authorization` 헤더 방식과 재발급 API·검증 필터)
+- JWT — 세션 없이 요청마다 신원을 증명하는 토큰 방식 (이번에 쿠키에 담는 형태로 확인함, Refresh 토큰 발급·레디스 저장까지 확인함, 재발급 API(`/reissue`)의 대조·로테이션 흐름까지 확인함, 다음은 `Authorization` 헤더 방식과 검증 필터)
 - 레디스 활용 — 만료시간(TTL) 설정, 분산 세션·캐시·토큰 블랙리스트 저장소로 쓰기
 - `secure(true)` + HTTPS — 배포 환경에서 쿠키 옵션 조이기
 - 쿠키(`JSESSIONID`) — 세션 식별자를 브라우저가 들고 있게 하는 통로
