@@ -7,7 +7,7 @@ tags: [학습, java]
 
 # Spring day13 — 레디스 리스트로 값 쌓고 읽기
 
-> 실습 파일: `day13/RedisService2.java`, `day13/RedisController2.java`
+> 실습 파일: `day13/RedisService2.java`, `day13/RedisController2.java`, `day13/SessionController.java`, `day13/CookieController.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · 다음: (아직 없음)
 
 day12에서는 레디스에 `opsForValue()`로 문자열 하나를 키에 묶어 넣었다. day13은 같은 `StringRedisTemplate`을 쓰되 값을 한 개가 아니라 **여러 개 순서대로 쌓는 리스트 구조**로 바꿔 보는 첫 걸음이다.
@@ -72,9 +72,61 @@ public class RedisController2 {
 - `@RequestParam(name = "data")`는 쿼리스트링의 `data` 값을 매개변수로 받는 방식이다. 컨트롤러는 받아서 서비스에 넘기기만 하고, 레디스 호출은 서비스에 모아 두는 계층 분리를 이번에도 지킨다.
 - 컨트롤러·서비스 이름 끝에 `2`가 붙어 있는 것은 day12의 `RedisController`·`RedisService`와 클래스 이름이 겹치지 않게 두기 위한 구분으로 보인다. 스프링은 같은 이름의 빈이 두 개면 충돌을 내기 때문이다.
 
-### 1-3. 같은 날 만들어 둔 빈 틀 — 쿠키·세션 컨트롤러
+### 1-3. 같은 리스트를 세션과 쿠키에 쌓아 보기
 
-`day13/CookieController.java`, `day13/SessionController.java`는 파일만 만들어 둔 상태(내용 없음)다. day12에서 쿠키(`@CookieValue`, `ResponseCookie`)와 세션(`HttpSession`)을 각각 다룬 흐름을 day13에서 컨트롤러 단위로 다시 정리하려는 자리로 읽힌다. 내용이 채워지면 이 노트를 보강한다.
+같은 `/add`·`/all` 모양의 API를 저장 위치만 바꿔서 세 벌 만든다. 값이 어디에 남느냐가 달라지는 점이 핵심이다.
+
+| 저장 위치 | 컨트롤러 | 값이 사는 곳 |
+| --- | --- | --- |
+| 레디스 | `RedisController2` (`/api/redis`) | 서버 밖 레디스 서버 |
+| 세션 | `SessionController` (`/api/session`) | 서버 메모리, 브라우저에는 세션 ID 쿠키만 |
+| 쿠키 | `CookieController` (`/api/cookie`) | 브라우저 자체 |
+
+**세션 버전 — `HttpSession`에 리스트 통째로 넣기**
+
+```java
+@GetMapping("/add")
+public String save(@RequestParam(name = "data") String data, HttpSession session) {
+    List<String> list = (List<String>) session.getAttribute("list");
+    if (list == null) list = new ArrayList<>();
+    list.add(data);
+    session.setAttribute("list", list);
+    return "세션저장성공";
+}
+
+@GetMapping("/all")
+public List<String> getList(HttpSession session) {
+    List<String> list = (List<String>) session.getAttribute("list");
+    if (list == null) list = new ArrayList<>();
+    return list;
+}
+```
+
+- 세션에는 문자열뿐 아니라 `List` 같은 객체도 그대로 넣을 수 있다. 꺼낼 때는 `Object`로 나오므로 형변환이 필요하고, 처음 호출이라 값이 없으면 `null`이니 빈 리스트로 시작하는 분기가 따라붙는다.
+- 같은 브라우저(같은 세션 ID)에서 `/add`를 여러 번 부르면 그 세션 안에서 리스트가 쌓인다. 다른 브라우저로 `/all`을 부르면 빈 목록이 나온다. 레디스 버전은 누가 부르든 같은 목록이 보인다는 점과 대비된다.
+- 저장 키(`"list"`)는 저장할 때와 읽을 때 같은 문자열로 맞춰야 한다. 키가 어긋나면 읽는 쪽은 항상 `null`이다.
+
+**쿠키 버전 — JSON 문자열로 바꿔 쿠키에 담는 구상**
+
+```java
+private final ObjectMapper objectMapper = new ObjectMapper();
+
+@GetMapping("/add")
+public String save(@RequestParam(name = "data") String data,
+        @CookieValue(value = "list", required = false) String value,
+        HttpServletResponse response) {
+    // 쿠키 값(JSON 문자열) → List 로 복원
+    // list.add(data)
+    // List → JSON 문자열(writeValueAsString) → URLEncoder 로 인코딩
+    // ResponseCookie 로 만들어 응답에 실어 보내기
+}
+```
+
+- 쿠키에는 문자열만 담기므로 리스트를 `ObjectMapper`로 JSON 문자열로 바꿔 넣고, 읽을 때 `TypeReference<List<String>>`로 다시 리스트로 복원한다.
+- 쿠키 값에는 따옴표·대괄호 같은 문자가 그대로 들어가기 어렵기 때문에 `URLEncoder.encode(..., "UTF-8")`로 인코딩한 뒤 담는 단계가 끼어든다. 꺼낼 때는 디코딩이 필요하다.
+- `@CookieValue(value = "list", required = false)`는 쿠키가 아직 없는 첫 요청에서도 오류 없이 `null`을 받기 위한 설정이다. `ResponseCookie.from(이름, 값)`에 `path`·`httpOnly`·`maxAge` 등을 붙여 만들고, 응답 헤더에 `Set-Cookie`로 실어 보낸다.
+- `ObjectMapper`의 JSON 변환·복원은 검사 예외(`JsonProcessingException`)를 던지므로 `try-catch`나 `throws`가 함께 필요하다.
+- 쿠키 컨트롤러는 아직 작성 중인 상태라, 이 구상을 완성해 가는 과정으로 읽는다. 완성되면 이 부분을 다시 보강한다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -103,14 +155,15 @@ public class RedisController2 {
 - `opsForSet` / `opsForHash` / `opsForZSet` — 리스트 외의 레디스 자료구조(중복 없는 집합, 필드 묶음, 점수 정렬)
 - `leftPop` / `rightPop` / `size` / `trim` — 리스트의 꺼내기·길이·자르기
 - 레디스 TTL(`expire`) — 쌓은 데이터의 수명 두기
-- 쿠키·세션 컨트롤러 — day13에서 내용이 채워질 예정인 부분
+- `HttpSession` 만료 시간(`setMaxInactiveInterval`)과 스프링 세션 + 레디스 — 세션을 서버 밖 저장소로 옮기는 방법
+- 쿠키 속성(`httpOnly`·`secure`·`sameSite`·`maxAge`) — 쿠키에 담는 값의 보안과 수명
 
 ## 실습 파일
 
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day13/RedisService2.java` — `opsForList()`의 `rightPush`·`range`로 리스트에 쌓고 전체 조회하는 서비스
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day13/RedisController2.java` — `/api/redis/add`, `/api/redis/all` 엔드포인트
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/CookieController.java` — 빈 파일(작성 예정)
-- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/SessionController.java` — 빈 파일(작성 예정)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/CookieController.java` — `@CookieValue`·`ObjectMapper`로 리스트를 쿠키에 담는 컨트롤러(작성 중)
+- `KDT_2026/2026B_Spring/springweb/src/main/java/day13/SessionController.java` — `HttpSession`에 리스트를 쌓고 읽는 `/api/session` 엔드포인트
 
 ## 관련 노트
 
