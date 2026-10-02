@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day13 — 레디스 리스트로 값 쌓고 읽기
 
 > 실습 파일: `day13/RedisService2.java`, `day13/RedisController2.java`, `day13/SessionController.java`, `day13/CookieController.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · 다음: (아직 없음)
+> 허브: [[Spring MOC]] · 이전: [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · 다음: [[Spring day14 파일 업로드·다운로드 게시판]]
 
 day12에서는 레디스에 `opsForValue()`로 문자열 하나를 키에 묶어 넣었다. day13은 같은 `StringRedisTemplate`을 쓰되 값을 한 개가 아니라 **여러 개 순서대로 쌓는 리스트 구조**로 바꿔 보는 첫 걸음이다.
 
@@ -197,4 +197,4 @@ public List<String> getList(@CookieValue(value = "list", required = false) Strin
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · [[Spring day14 파일 업로드·다운로드 게시판]] · [[KDT_2026 학습 지도]]
