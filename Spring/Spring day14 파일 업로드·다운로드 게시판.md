@@ -202,6 +202,27 @@ return false;
 
 `build` 폴더는 빌드를 다시 하면 비워질 수 있어 업로드 파일이 사라질 수 있다. 개발 중에는 편하지만, 보관이 필요한 파일은 프로젝트 밖의 고정 폴더나 클라우드 저장소에 두는 편이 안전하다.
 
+### 2-5. 목록·페이징 확인용 샘플 데이터 넣기
+
+게시물이 몇 건 없으면 목록 화면이나 페이징 동작을 눈으로 확인하기 어렵다. 그래서 `board` 테이블에 `INSERT`를 한 번에 30건 넣어 두고 확인하는 방식을 썼다.
+
+```sql
+DROP DATABASE IF EXISTS mydb1002;
+CREATE DATABASE mydb1002;
+USE mydb1002;
+
+INSERT INTO board (title, content, file_name, create_date, update_date) VALUES
+('첫 번째 공지사항', '게시판 서비스 오픈을 환영합니다.', NULL, NOW(), NOW()),
+('스프링 부트 파일 업로드 가이드', 'MultipartFile을 활용한 첨부파일 업로드 안내입니다.', NULL, NOW(), NOW()),
+-- ... 같은 모양으로 30건까지
+('30번째 게시물 테스트', '게시판 30개 샘플 데이터 삽입 및 목록 페이징 검증용 레코드입니다.', NULL, NOW(), NOW());
+```
+
+- `VALUES` 뒤에 행을 쉼표로 이어 붙이면 한 문장으로 여러 건이 들어간다. 건마다 `INSERT`를 따로 쓰는 것보다 짧고 빠르다.
+- `file_name`은 첨부 없는 글이므로 `NULL`로 둔다. 엔티티의 `fileName`이 비어 있어도 되는 컬럼이라는 점과 맞는다.
+- `create_date`·`update_date`는 `BaseTime`이 자동으로 채우던 컬럼이다. SQL로 직접 넣을 때는 JPA 감사 기능이 개입하지 않으므로 `NOW()`로 직접 채워야 한다.
+- 실습 때마다 `DROP DATABASE IF EXISTS` → `CREATE DATABASE` → `USE`로 새 스키마를 만들고 시작하면 이전 데이터와 섞이지 않는다. 이 세 줄만 따로 모아 두면 새 실습을 시작할 때 바로 쓸 수 있다.
+
 ## 3. 더 나아가 알면 좋은 것
 
 - 여러 파일 첨부 — `List<MultipartFile>`과 첨부파일 전용 테이블(게시물 1 : 파일 N 관계, [[Spring day06 연관관계 매핑과 외래키]]에서 다룬 매핑 활용)
@@ -220,6 +241,8 @@ return false;
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day14/BoardService.java` — 업로드 후 저장하는 등록, 조회, 파일명 조회
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day14/BoardController.java` — `/api/board` 등록·목록·상세·다운로드 엔드포인트
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day14/FileService.java` — 업로드(UUID 접두)·다운로드·삭제 서비스
+- `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/1002.sql` — 게시물 샘플 30건 `INSERT`
+- `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/useDB.sql` — 실습용 스키마를 새로 만들고 선택하는 세 줄
 
 ## 관련 노트
 
