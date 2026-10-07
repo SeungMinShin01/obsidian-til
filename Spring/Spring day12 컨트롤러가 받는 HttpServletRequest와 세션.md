@@ -4,6 +4,7 @@
 작성일: 2026-09-28
 tags: [학습, java]
 ---
+<!-- 2026-10-07 보강: day12/session·day12/cookie 하위 패키지(세션 방식·단일 쿠키 방식 스냅샷) 반영 -->
 <!-- 2026-09-28 보강: AppStart(@EnableJpaAuditing)·CORS 자격증명·/me·/logout·실제 비밀번호 해싱 추가 -->
 <!-- 2026-09-30 보강(3차): 로그인 시 액세스·Refresh 쿠키 2개 발급 + 레디스 저장, 로그아웃 시 레디스 삭제 반영 -->
 <!-- 2026-09-30 보강(2차): Refresh 토큰 생성(createRefreshToken)·RedisService(RT:회원번호 저장·조회·삭제) 추가 -->
@@ -570,6 +571,23 @@ JWT의 페이로드는 암호화가 아니라 서명이라 누구나 열어 볼 
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/BaseTime.java` — 생성·수정 시각 감사 필드(공통 상위 클래스)
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day12/AppStart.java` — `@EnableJpaAuditing`으로 감사 필드 활성화하는 진입 클래스 (보강)
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/sql/0928.sql` — 회원 20명 시드 데이터(BCrypt 해시 비밀번호, admin/user 권한 구분)
+
+## 보강 — session·cookie 하위 패키지로 갈라 둔 단계별 사본
+
+day12 폴더 안에 `session/`과 `cookie/` 두 하위 패키지가 새로 생겼다. 위에서 따라온 인증 방식의 중간 단계를 각각 따로 보존해 둔 사본이고, 패키지 선언만 `day12.session` · `day12.cookie`로 바뀌었다. 파일 구성은 두 쪽 모두 `AppStart`·`BaseTime`·`MemberController`·`MemberDto`·`MemberEntity`·`MemberRepository`·`MemberService`이고, `cookie/`에는 `JwtUtil`이 더 있다.
+
+| 패키지 | 로그인 성공 시 정보를 두는 곳 | 컨트롤러 매개변수 | 특징 |
+| --- | --- | --- | --- |
+| `day12.session` | 서버 `HttpSession`의 `login_member` 속성 | `HttpSession session` | 세션 방식 그대로 — 회원 정보를 서버 메모리에 보관 |
+| `day12.cookie` | 클라이언트 쿠키 `login_member`에 JWT 문자열 | `HttpServletResponse` · `@CookieValue` | `JwtUtil.createToken(mno)` 하나로 토큰 발급, 쿠키 1개, 레디스 없음 |
+| `day12` (본체) | 액세스·Refresh 쿠키 2개 + 레디스에 Refresh 보관 | `HttpServletResponse` · `@CookieValue` | `createAccessToken`·`createRefreshToken`, 로그아웃 때 레디스 삭제 |
+
+- 세 단계를 나란히 두면 "세션 → 쿠키(JWT) → 토큰 2개 + 레디스"로 저장 위치와 책임이 옮겨 가는 흐름이 한눈에 보인다
+- 같은 패키지에 `AppStart`가 각각 있으므로 실행할 때는 어느 패키지의 `AppStart`를 띄우는지가 곧 어느 방식을 시험하는지가 된다
+- 쿠키 사본의 `JwtUtil`은 토큰 종류 구분(`type` 클레임)이 없는 단일 토큰 버전이고, 본체의 `JwtUtil`은 액세스(30분)·Refresh(7일)를 나눠 발급한다
+- 쿠키 속성(`httpOnly`·`secure(false)`·`sameSite("Lax")`·`path("/")`)은 두 쿠키 방식에서 같다
+
+보강 파일: `day12/session/*.java`, `day12/cookie/*.java`
 
 ## 관련 노트
 
