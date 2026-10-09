@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day14 — 파일 업로드·다운로드 게시판
 
 > 실습 파일: `day14/BaseTime.java`, `BoardEntity.java`, `BoardRepository.java`, `BoardDto.java`, `BoardService.java`, `BoardController.java`, `FileService.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day13 레디스 리스트로 값 쌓고 읽기]] · 다음: (아직 없음)
+> 허브: [[Spring MOC]] · 이전: [[Spring day13 레디스 리스트로 값 쌓고 읽기]] · 다음: [[Spring day15 웹소켓 설정 클래스 뼈대]]
 
 day14는 게시판 CRUD에 **첨부파일**을 얹는 날이다. 글 등록 요청에 파일이 함께 들어오면 서버 폴더에 저장하고, 저장된 파일 이름만 DB에 남기고, 나중에 그 이름으로 다운로드해 준다. 엔티티·리포지토리·서비스·컨트롤러의 계층 흐름은 이전 게시판 실습과 같고, 파일을 다루는 `FileService`가 새로 끼어든다.
 
