@@ -54,4 +54,4 @@ Spring Boot 학습노트의 허브입니다. 상위 지도는 [[KDT_2026 학습 
 | [[Spring day13 레디스 리스트로 값 쌓고 읽기]] | **레디스 리스트로 값 쌓고 읽기** — `StringRedisTemplate`의 `opsForList()`로 `rightPush` 저장·`range(0, -1)` 전체 조회, 쿼리스트링으로 받는 `/api/redis/add`·`/all`. 같은 리스트를 `HttpSession`·쿠키(`@CookieValue`·`ObjectMapper`)에 쌓는 `/api/session`·`/api/cookie` 비교 |
 | [[Spring day14 파일 업로드·다운로드 게시판]] | **게시판에 첨부파일 얹기** — `MultipartFile`을 `@ModelAttribute`로 받는 등록, `FileService`의 UUID 접두 업로드(`transferTo`)·`FileInputStream`→서블릿 출력 스트림 다운로드(`Content-Disposition`)·삭제, DB에는 파일명만 저장. 감사 필드를 `@MappedSuperclass`인 `BaseTime`으로 분리 |
 | [[Spring day15 웹소켓 설정 클래스 뼈대]] | **웹소켓으로 넘어가는 첫걸음** — `spring-boot-starter-websocket` 의존성, `@Configuration`+`@EnableWebSocketMessageBroker`로 메시지 브로커 방식 웹소켓 켜기, 이후 채울 엔드포인트·브로커 설정(`/ws`·`/topic`·`/app`)과 STOMP 키워드 |
-| [[Spring day16 제미나이 API 키 서비스 뼈대]] | **LLM API 키를 받는 서비스 뼈대** — day16 진입점, `@Service`+`@RequiredArgsConstructor`, `@Value`로 설정 파일의 API 키 주입, 키를 코드 밖에 두기 |
+| [[Spring day16 제미나이 API 키 서비스 뼈대]] | **LLM API 호출 서비스** — `@Value`로 API 키 주입, `WebClient` POST로 Gemini 호출·응답 경로 추출, DB 로그를 프롬프트에 붙인 분석(`Chat2`), `LLMController`, 키를 코드 밖에 두기 |
