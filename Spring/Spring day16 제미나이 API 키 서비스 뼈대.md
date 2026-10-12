@@ -10,7 +10,7 @@ tags: [학습, java]
 > 실습 파일: `day16/AppStart.java`, `day16/LLMService.java`
 > 허브: [[Spring MOC]] · 이전: [[Spring day15 웹소켓 설정 클래스 뼈대]] · 다음: (아직 없음)
 
-day16은 새 패키지에 진입점을 두고, LLM(대규모 언어 모델) API를 부르는 서비스의 첫 칸을 만든 시점이다. 이 시점에는 서비스 클래스에 API 키를 설정 파일에서 받아 오는 필드까지만 있고, 실제 호출 코드는 이후 수업에서 채워진다.
+day16은 새 패키지에 진입점을 두고, LLM(대규모 언어 모델) API를 부르는 서비스의 첫 칸을 만든 시점이다. 서비스 클래스에는 API 키를 설정 파일에서 받아 오는 필드와, 프롬프트를 요청 본문으로 감싸는 `ChatAi` 메서드의 첫 줄까지 있고, 실제 호출과 응답 처리는 이후 수업에서 채워진다.
 
 ## 1. 배운 내용
 
@@ -49,6 +49,22 @@ public class LLMService {
 | `@Value("${...}")` | `application.properties`에 적어 둔 값을 필드에 넣는다. [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]]에서 공공데이터 서비스키를 받던 방식과 같다 |
 
 키를 코드에 직접 적지 않고 설정 파일에서 읽어 오면, 코드를 공개 저장소에 올려도 키가 새지 않는다.
+
+### 1-3. 프롬프트를 요청 본문(Map)으로 구성하기
+
+```java
+/*
+    LLM : 대규모 언어 모델 => AI 모델
+    LLM API : 각 LLM 회사에서 API 제공 , API(유료/무료)
+*/
+public String ChatAi(String prompt) {
+    // 1) 프롬프트 구성
+    Map<String, Object> RequestBody = Map.of("contents", List.of(Map.of("parts",
+            List.of(Map.of("text", prompt)))));
+}
+```
+
+Gemini API는 `contents` 배열 안에 `parts` 배열을 두고, 그 안에 `text`로 질문을 담는 JSON을 받는다. `Map.of`와 `List.of`를 겹쳐서 이 JSON 모양을 그대로 자바 객체로 만든 것이다. 별도 DTO 없이 `Map`만으로 요청 본문을 만들 수 있고, `WebClient`의 `bodyValue`로 넘기면 JSON으로 직렬화된다. 메서드 본문은 아직 반환문이 없는 중간 단계다.
 
 ## 2. 추가로 알면 좋은 활용법
 

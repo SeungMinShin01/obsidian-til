@@ -32,6 +32,8 @@ React + Spring Boot + MySQL. 입고 → 재고 → FEFO 할당 → 피킹 → �
 |---|---|---|
 | 1 | [[WMS 코드리뷰 - ED-10 ED-21 정렬 비교]] | 입고 목록·재고 조회 정렬: 안정/불안정 정렬, isBefore vs compareTo, Comparator 조합 (comparing·nullsLast·thenComparing) |
 | 2 | [[WMS 코드리뷰 - ED-16 적치]] | 적치 1건: 검증 유무, 가드 절 vs if 중첩, break, 더티 체킹 vs save |
+| 3 | [[WMS 코드리뷰 - 생각해 볼 것 답변]] | 검수 등록·ED-10·ED-21·ED-16의 "생각해 볼 것" 질문 답: 없는 ID 에러, A안 상태 충돌, null 반환, 동점 순서, FEFO 규칙, 변경 감지, findAll 측정 |
+| 4 | [[WMS 코드리뷰 - 출고 생각해 볼 것 답변]] | 출고(김지환) 5~10번 답: 쿼리 메서드와 측정 계획, 할당 순서와 트랜잭션, CHECK 제약과 갱신 분실, 칸 코드 문자열 정렬, 중복 출고확정, 컨트롤러 나누는 기준, @Transactional 두 종류 |
 
 ## 읽는 순서
 

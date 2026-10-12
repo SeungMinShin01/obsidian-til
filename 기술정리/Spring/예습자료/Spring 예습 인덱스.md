@@ -25,3 +25,5 @@ tags: [허브]
 | B11 | [[Spring 예습 - B11 캐싱·REST 클라이언트·검증]] | IO 챕터에서 고른 세 페이지 — 캐시 추상에 부트가 붙이는 제공자 탐색·`CacheManager` 자동설정, 남의 API를 부르는 세 갈래 클라이언트(`WebClient`·`RestClient`·`RestTemplate`)와 그 아래 HTTP 구현 선택·전역 설정·SSRF 방어·선언형 HTTP 인터페이스, 그리고 켜짐 조건만 말하는 짧은 메서드 검증 |
 | B12 | [[Spring 예습 - B12 Actuator 엔드포인트·메트릭]] | 애플리케이션을 띄운 뒤 밖에서 들여다보는 층 — 엔드포인트의 접근·노출 두 축과 건강·커스텀 엔드포인트, 별도 관리 서버, 그리고 Micrometer Observation 하나로 메트릭·트레이스를 함께 만드는 관측 가능성 층(자동 계측 목록·샘플링·로그 상관 ID)과 감사·HTTP 교환 기록 같은 운영 장치 |
 | B13 | [[Spring 예습 - B13 컨테이너 이미지와 배포]] | 만든 뒤의 이야기 — 실행 가능한 jar를 풀어 놓기·AOT 캐시·CRaC·네이티브 이미지로 모양을 바꾸는 패키징 갈래와, 변경 빈도로 나눈 레이어(`layers.idx`)를 Dockerfile 또는 버일드팩으로 굽는 컨테이너 이미지, 그리고 WAR·클라우드 플랫폼·OS 서비스로 얹는 배포 |
+| B14 | [[Spring 예습 - B14 메시징·리액티브·GraphQL]] | 선택 모듈 — B07이 전제한 "동기 요청–응답 HTTP"에서 각자 다른 방향으로 벗어난 세 갈래: 브로커가 끼는 메시징 7페이지(JMS·AMQP·Kafka·Pulsar·RSocket·Spring Integration·WebSocket, 전부 보내기/받기 두 절), 서블릿 웹과 절 이름이 1:1로 겹치는 WebFlux, 엔드포인트 하나에 클라이언트가 응답 모양을 정하는 GraphQL |
+| B15 | [[Spring 예습 - B15 How-to Guides 지도]] | 마지막 모듈 — Reference와 나란한 How-to Guides 23페이지의 색인. 절 제목이 곧 질문인 섹션이고, 페이지 길이가 극단적으로 불균등하다(웹서버 28절 : NoSQL 1절). 정독이 아니라 "나중에 막혔을 때 어디를 펼칠지"를 위한 지도 |
