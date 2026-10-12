@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day15 — 웹소켓 설정 클래스 뼈대
 
 > 실습 파일: `day15/WebSocketConfig.java`
-> 허브: [[Spring MOC]] · 이전: [[Spring day14 파일 업로드·다운로드 게시판]] · 다음: (아직 없음)
+> 허브: [[Spring MOC]] · 이전: [[Spring day14 파일 업로드·다운로드 게시판]] · 다음: [[Spring day16 제미나이 API 키 서비스 뼈대]]
 
 day15는 지금까지의 요청-응답 방식과 다른 **웹소켓(WebSocket)** 으로 넘어가는 첫걸음이다. 이 시점에는 설정 클래스 하나가 뼈대만 만들어져 있고, 메시지를 주고받는 컨트롤러와 화면은 이후 수업에서 채워진다.
 
@@ -86,4 +86,4 @@ public void configureMessageBroker(MessageBrokerRegistry registry) {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day14 파일 업로드·다운로드 게시판]] · [[Spring day13 레디스 리스트로 값 쌓고 읽기]] · [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day14 파일 업로드·다운로드 게시판]] · [[Spring day13 레디스 리스트로 값 쌓고 읽기]] · [[Spring day12 컨트롤러가 받는 HttpServletRequest와 세션]] · [[Spring day16 제미나이 API 키 서비스 뼈대]] · [[KDT_2026 학습 지도]]
