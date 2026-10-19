@@ -143,7 +143,41 @@ public class LLMController {
 
 ### 1-8. 분석용 데이터 — `1012.sql`
 
-`delivery_log` 테이블에 주문번호, 배송사, 출발 허브, 배송 일수, 반품 여부, 반품 사유, 일자를 담은 200행짜리 `INSERT` 문이다. 허브·배송사별로 파손 집중, 단순 변심, 신선식품 변질, 정시 배송처럼 성격이 다른 묶음으로 나뉘어 있어, LLM이 패턴을 찾아내기 좋은 자료가 된다. 설정 파일에서는 `spring.sql.init.data-locations`로 이 SQL을 서버 실행 때 적재하도록 잡아 둔다. 엔티티 `DeliveryLog.java`는 파일만 만들어 둔 상태다.
+`delivery_log` 테이블에 주문번호, 배송사, 출발 허브, 배송 일수, 반품 여부, 반품 사유, 일자를 담은 200행짜리 `INSERT` 문이다. 허브·배송사별로 파손 집중, 단순 변심, 신선식품 변질, 정시 배송처럼 성격이 다른 묶음으로 나뉘어 있어, LLM이 패턴을 찾아내기 좋은 자료가 된다. 설정 파일에서는 `spring.sql.init.data-locations`로 이 SQL을 서버 실행 때 적재하도록 잡아 둔다.
+
+### 1-9. `delivery_log` 테이블에 맞춘 엔티티 — `DeliveryLog.java`
+
+```java
+@Entity
+@Table(name = "delivery_log")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
+public class DeliveryLog {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "order_id")      private String orderId;       // 주문번호
+    private String courier;                                       // 배송사
+    @Column(name = "origin_hub")    private String originHub;     // 출발 허브
+    @Column(name = "delivery_days") private Integer deliveryDays; // 배송 일수
+    @Column(name = "is_returned")   private Boolean isReturned;   // 반품 여부
+    @Column(name = "return_reason") private String returnReason;  // 반품/배송 사유
+    @Column(name = "log_date")      private LocalDate logDate;    // 로그 날짜
+}
+```
+
+| 항목 | 설명 |
+| --- | --- |
+| `@Table(name = "delivery_log")` | 클래스 이름(`DeliveryLog`)과 테이블 이름이 다르므로 직접 지정한다. SQL 파일이 먼저 정해 둔 이름에 엔티티를 맞추는 방향이다 |
+| `@Column(name = "order_id")` | 자바는 카멜 케이스(`orderId`), 테이블은 스네이크 케이스(`order_id`)라 컬럼마다 이름을 매핑한다. `courier`처럼 두 쪽 이름이 같은 필드는 애노테이션이 없어도 된다 |
+| `Boolean isReturned` | SQL의 `TRUE`/`FALSE`를 그대로 받는다. 래퍼 타입이라 값이 없으면 `null`이 된다 |
+| `LocalDate logDate` | 시각 없이 날짜만 담는 컬럼은 `LocalDateTime` 대신 `LocalDate`로 받는다. SQL의 `'2026-01-02'` 문자열이 그대로 변환된다 |
+| `GenerationType.IDENTITY` | `INSERT` 문에 `id`가 없어도 DB가 자동 증가로 채운다 |
+
+이 엔티티가 채워지면서 `Chat2`의 `findAll()` → `writeValueAsString` 흐름이 실제로 돈다. `ObjectMapper`는 getter 이름을 기준으로 JSON 키를 만들기 때문에, 프롬프트에 붙는 JSON에는 `orderId`·`originHub`처럼 자바 쪽 이름이 들어간다. 테이블 컬럼명과 JSON 키가 다른 것이 정상이다.
+
+`day14`에서 본 `BaseTime`을 상속하지 않은 점도 적어 둔다. 로그 날짜는 "기록이 만들어진 시각"이 아니라 자료 자체의 날짜라서 감사 필드로 자동 채우면 안 되고, SQL 값을 그대로 보관해야 하기 때문이다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -177,7 +211,7 @@ public class LLMController {
 - `.../day16/LLMService.java` — API 키 주입, `LLMCall`, `chat1`, `Chat2`
 - `.../day16/LLMController.java` — `/api/chat1`, `/api/chat2`
 - `.../day16/DeliveryLogRepository.java` — 배송 로그 JPA 리포지토리
-- `.../day16/DeliveryLog.java` — 엔티티 (파일만 생성된 상태)
+- `.../day16/DeliveryLog.java` — `delivery_log` 테이블 매핑 엔티티 (`@Table`·`@Column` 이름 매핑, `Boolean`·`LocalDate` 필드)
 - `.../day16/1012.sql` — 배송·반품 로그 200행 초기 데이터
 - `KDT_2026/2026B_Spring/springweb/src/main/resources/application.properties` — DB 연동, SQL 적재, 키 설정 (키 값은 노트에 적지 않음)
 
