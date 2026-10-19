@@ -8,7 +8,7 @@ tags: [학습, react]
 # React day10 — 게시판 첨부파일 등록과 이미지 미리보기
 
 > 실습 파일: `src/example/day09/List.jsx` · `View.jsx` · `Write.jsx`
-> 허브: [[React MOC]] · 이전: [[React day09 로그인·회원가입 폼과 세션 인증 상태]] · 다음: (예정)
+> 허브: [[React MOC]] · 이전: [[React day09 로그인·회원가입 폼과 세션 인증 상태]] · 다음: [[React day11 STOMP 웹소켓 채팅방]]
 
 이번에는 목록·상세·글쓰기 세 화면을 `async / await` 로 서버 `/api/board` 에 붙이고, 글에 파일을 첨부하는 자리가 추가된다. 서버 쪽 짝은 Spring day14 수업(파일 업로드·다운로드 게시판)이고, 화면은 그 API 세 개를 부르는 쪽이다. 정리하면 "JSON 대신 `FormData` 로 보내기", "첨부 여부를 화면에 표시하기", "다운로드 주소를 `<img src>` 로 그대로 쓰기" 세 가지가 새로 나온 내용이다.
 
@@ -175,4 +175,4 @@ const handleSubmit = async (e) => {
 
 ## 관련 노트
 
-[[React MOC]] · [[React day09 로그인·회원가입 폼과 세션 인증 상태]] · [[React day08 와일드카드 라우트와 서버 게시판 목록]] · [[React day03 폼 제출과 입력값 읽기]] · [[KDT_2026 학습 지도]]
+[[React MOC]] · [[React day09 로그인·회원가입 폼과 세션 인증 상태]] · [[React day11 STOMP 웹소켓 채팅방]] · [[React day08 와일드카드 라우트와 서버 게시판 목록]] · [[React day03 폼 제출과 입력값 읽기]] · [[KDT_2026 학습 지도]]
