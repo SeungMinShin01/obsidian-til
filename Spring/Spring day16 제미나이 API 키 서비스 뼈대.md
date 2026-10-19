@@ -8,7 +8,7 @@ tags: [학습, java]
 # Spring day16 제미나이 API 키 서비스 뼈대
 
 > 실습 파일: `day16/AppStart.java`, `LLMService.java`, `LLMController.java`, `DeliveryLogRepository.java`, `DeliveryLog.java`, `1012.sql`
-> 허브: [[Spring MOC]] · 이전: [[Spring day15 웹소켓 설정 클래스 뼈대]] · 다음: (아직 없음)
+> 허브: [[Spring MOC]] · 이전: [[Spring day15 웹소켓 설정 클래스 뼈대]] · 다음: [[Spring day17 Jsoup으로 정적 페이지 크롤링]]
 
 day16은 새 패키지에 진입점을 두고, LLM(대규모 언어 모델) API를 부르는 서비스를 끝까지 만든 시점이다. 설정 파일에서 API 키를 받아 오고, `WebClient`로 Gemini를 호출해 응답에서 본문 텍스트만 뽑는 `LLMCall`이 완성됐다. 그 위에 프롬프트를 그대로 넘기는 `chat1`, DB의 배송 로그를 프롬프트에 붙여 분석 보고서를 받는 `Chat2`가 얹히고, 컨트롤러가 두 경로로 열어 준다.
 
@@ -183,4 +183,4 @@ public class LLMController {
 
 ## 관련 노트
 
-[[Spring MOC]] · [[Spring day15 웹소켓 설정 클래스 뼈대]] · [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · [[KDT_2026 학습 지도]]
+[[Spring MOC]] · [[Spring day15 웹소켓 설정 클래스 뼈대]] · [[Spring day17 Jsoup으로 정적 페이지 크롤링]] · [[Spring day10 WebClient로 공공데이터 API 대신 호출하기]] · [[KDT_2026 학습 지도]]
