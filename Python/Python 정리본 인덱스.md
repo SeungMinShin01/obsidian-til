@@ -22,7 +22,8 @@ Python 정리본이 모이는 폴더입니다. 상위 지도는 [[KDT_2026 학�
 
 | day | 주제 | 노트 |
 | --- | --- | --- |
-| day01 | **파이썬 시작과 키워드 확인** — VS Code 한 줄 실행(`Shift+Enter`)·전체 실행, `print`, `#` 주석, `import keyword`·`keyword.kwlist`로 예약어 목록 보기, `type()`으로 자료형 확인, 따옴표 세 종류와 제어문자, 문자열 연산(연결·반복·인덱싱·슬라이싱·`len`), 숫자 연산자(`/`·`//`·`%`·`**`)와 우선순위, 변수와 복합대입연산자, `input()`과 `int()`·`float()`·`str()` 형변환, `format()`으로 값 끼워 넣기, 문자열 메소드(`upper`·`find`·`rfind`·`in`·`split`) | [[Python day01 파이썬 시작과 키워드 확인]] |
+| day01 | **파이썬 시작과 키워드 확인** — VS Code 한 줄 실행(`Shift+Enter`)·전체 실행, `print`, `#` 주석, `import keyword`·`keyword.kwlist`로 예약어 목록 보기, `type()`으로 자료형 확인, 따옴표 세 종류와 제어문자, 문자열 연산(연결·반복·인덱싱·슬라이싱·`len`), 숫자 연산자(`/`·`//`·`%`·`**`)와 우선순위, 변수와 복합대입연산자, `input()`과 `int()`·`float()`·`str()` 형변환, `format()`으로 값 끼워 넣기, 문자열 메소드(`upper`·`lower`·`strip`·`isalpha`·`isdigit`·`find`·`rfind`·`in`·`split`), f-문자열 vs `format()` | [[Python day01 파이썬 시작과 키워드 확인]] |
+| day01 | **비교·논리 연산자와 if 조건문** — `==`·`!=`·`<`·`>=` 비교, `10 < x < 30` 범위 비교, `not`·`and`·`or`, `if`·`else`와 콜론·들여쓰기 블록, `if`·`elif`·`else`로 등급 나누기(좁은 조건부터), 참·거짓 판정(빈 값은 거짓)·`in`·`is None`·조건부 표현식·`pass` | [[Python day01 비교·논리 연산자와 if 조건문]] |
 
 ## 이관된 내용
 
@@ -41,6 +42,6 @@ Python 정리본이 모이는 폴더입니다. 상위 지도는 [[KDT_2026 학�
 
 ## 관련 노트
 
-[[KDT_2026 학습 지도]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[Python 코드 해석 문제(이관)]]
+[[KDT_2026 학습 지도]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[Python day01 비교·논리 연산자와 if 조건문]] · [[Python 코드 해석 문제(이관)]]
 
 
