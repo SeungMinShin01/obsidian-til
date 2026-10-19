@@ -22,7 +22,7 @@ Python 정리본이 모이는 폴더입니다. 상위 지도는 [[KDT_2026 학�
 
 | day | 주제 | 노트 |
 | --- | --- | --- |
-| day01 | **파이썬 시작과 키워드 확인** — VS Code 한 줄 실행(`Shift+Enter`)·전체 실행, `print`, `#` 주석, `import keyword`·`keyword.kwlist`로 예약어 목록 보기, `type()`으로 자료형 확인, 따옴표 세 종류와 제어문자 | [[Python day01 파이썬 시작과 키워드 확인]] |
+| day01 | **파이썬 시작과 키워드 확인** — VS Code 한 줄 실행(`Shift+Enter`)·전체 실행, `print`, `#` 주석, `import keyword`·`keyword.kwlist`로 예약어 목록 보기, `type()`으로 자료형 확인, 따옴표 세 종류와 제어문자, 문자열 연산(연결·반복·인덱싱·슬라이싱·`len`) | [[Python day01 파이썬 시작과 키워드 확인]] |
 
 ## 이관된 내용
 
