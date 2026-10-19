@@ -28,10 +28,12 @@ public class AppStart {
 ```
 
 ```groovy
-implementation 'org.jsoup:jsoup:1.23.2' // 정적페이지 용도
+// 12. 웹크롤링
+implementation 'org.jsoup:jsoup:1.23.2'                    // 정적페이지 용도
+implementation 'com.microsoft.playwright:playwright:1.63.0' // 동적페이지 용도
 ```
 
-day16까지와 같이 패키지마다 진입점을 두고, `build.gradle`에 Jsoup 의존성 한 줄을 더했다. 주석에도 적혀 있듯 이 라이브러리는 정적 페이지 용도다.
+day16까지와 같이 패키지마다 진입점을 두고, `build.gradle`에 크롤링 의존성을 더했다. 이번 코드에서 실제로 쓰는 것은 Jsoup 한 가지이고, 주석에도 적혀 있듯 정적 페이지 용도다. Playwright는 동적 페이지용으로 같이 올려 두기만 한 상태라, 아래 3-1에서 다루듯 다음 단계에서 쓰게 된다.
 
 ### 1-2. 크롤링 전에 정하는 네 가지
 
@@ -133,7 +135,7 @@ for (int index = 0; index < nameList.size(); index++) {
 
 ### 3-1. 동적 페이지는 도구가 다르다
 
-스크롤하거나 버튼을 눌러야 내용이 나타나는 페이지는 Jsoup이 받은 HTML에 값이 아직 없다. 이럴 때는 브라우저를 실제로 띄워 자바스크립트까지 실행시키는 Playwright·Selenium이 필요하다.
+스크롤하거나 버튼을 눌러야 내용이 나타나는 페이지는 Jsoup이 받은 HTML에 값이 아직 없다. 이럴 때는 브라우저를 실제로 띄워 자바스크립트까지 실행시키는 Playwright·Selenium이 필요하다. `build.gradle`에 이미 올라간 `com.microsoft.playwright:playwright`가 그 자리다. Jsoup과 달리 크로미움 같은 브라우저 실행 파일을 처음 한 번 내려받아야 하고, `page.navigate(주소)` → 요소가 나타날 때까지 대기 → `page.locator(선택자)`로 값을 꺼내는 흐름이라 선택자를 찾는 감각은 그대로 이어진다.
 
 ### 3-2. 크롤링과 공식 API
 
@@ -151,7 +153,7 @@ for (int index = 0; index < nameList.size(); index++) {
 
 - `KDT_2026/2026B_Spring/springweb/src/main/java/day17/AppStart.java` — day17 진입점
 - `.../day17/CrawService.java` — 크롤링 순서 주석, `craw1`(제목 목록), `craw2`(도서명·가격·이미지 묶음)
-- `KDT_2026/2026B_Spring/springweb/build.gradle` — Jsoup 의존성
+- `KDT_2026/2026B_Spring/springweb/build.gradle` — Jsoup·Playwright 의존성
 
 ## 관련 노트
 

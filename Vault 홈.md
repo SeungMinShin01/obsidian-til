@@ -17,7 +17,7 @@ tags: [허브]
 | HTML | [[HTML MOC]] | day02·04·15 정리 완료 |
 | CSS | [[CSS MOC]] | day05~15 정리 완료 |
 | CS 이론 | [[CS 이론 MOC]] | SQL day01~03 정리 완료 |
-| Python | [[Python 정리본 인덱스]] | 이관본만 있음 |
+| Python | [[Python 정리본 인덱스]] | 2026_Python day01~ (2026-10-19 시작) + 이관본 |
 | RPA | [[RPA 정리본 인덱스]] | 비어 있음 |
 | AI | [[AI 정리본 인덱스]] | 이관본만 있음 |
 
