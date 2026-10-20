@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day02 — 집계 함수와 reversed·enumerate 이터레이터
 
 > 실습 파일: `day02/c4-4.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day02 range 함수와 for·while 반복문]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day02 range 함수와 for·while 반복문]] · 다음: [[Python day02 딕셔너리 연습문제 풀이]]
 
 `range` 노트까지가 "무엇을 돌 것인가"였다면, 이 파일은 **리스트를 돌지 않고도 답을 얻는 내장 함수**와 **돌 때 번호·키를 같이 받는 법**이다. 교재 4-4 "문자열, 리스트, 딕셔너리와 관련된 기본 함수"에 해당하는 내용으로, `min`·`max`·`sum`으로 한 줄에 집계하기, `reversed()`가 리스트가 아니라 **이터레이터**를 돌려준다는 것과 `next()`로 하나씩 꺼내기, 이터러블·이터레이터라는 용어, `enumerate()`로 인덱스와 값을 짝지어 돌기, `dict.items()`로 키와 값을 함께 받기까지가 전부다. `range` 노트 끝에서 "필요할 때 하나씩 내놓는 자료"를 잠깐 언급했는데, 이번에 그 정체를 `reversed()`로 직접 눈에 담는다. 결국 `for`가 **무엇이든 돌 수 있는 이유**가 이 노트의 축이다.
 
@@ -235,4 +235,4 @@ print(next(squares))                  # 0
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day02 range 함수와 for·while 반복문]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day02 range 함수와 for·while 반복문]] · [[Python day02 딕셔너리 연습문제 풀이]] · [[KDT_2026 학습 지도]]
