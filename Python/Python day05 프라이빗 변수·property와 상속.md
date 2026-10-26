@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day05 — 프라이빗 변수·property와 상속
 
 > 실습 파일: `day05/c8-2.py` (뒷부분 — `Circle`·`Parent`/`Child`)
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day05 클래스 변수와 특수 메소드 재정의]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day05 클래스 변수와 특수 메소드 재정의]] · 다음: [[Python day06 넘파이 시작과 배열 생성]]
 
 같은 파일의 뒷부분으로, 클래스 수업의 나머지 두 주제를 다룬다. 하나는 **캡슐화** — 멤버변수 이름 앞에 밑줄 두 개를 붙여 밖에서 직접 못 건드리게 숨기고(`__radius`), 대신 읽고 쓰는 통로를 getter·setter 메소드로 열어 주는 것, 그리고 그 통로를 `@property`로 감싸 **메소드인데 변수처럼** 쓰게 만드는 것. 다른 하나는 **상속** — `class Child(Parent):`로 부모의 멤버변수와 메소드를 물려받고, `super().__init__()`으로 부모 생성자를 먼저 돌린 뒤 자식 것을 덧붙이며, 같은 이름의 메소드를 자식이 다시 정의하면(오버라이딩) 자식 것이 실행된다는 것. `print()`가 몇 번 찍히는지 번호를 매겨 가며 확인한 순서 `(1) (3) (4) (1) (2) (4)`가 상속에서 생성자와 메소드가 어떻게 겹치고 가려지는지를 한눈에 보여 준다.
 
@@ -228,4 +228,4 @@ print(type(child) is Parent)        # False — type은 정확히 그 클래스�
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day05 클래스 변수와 특수 메소드 재정의]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[Python day04 예외 처리 try·except·else·finally]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day05 클래스 변수와 특수 메소드 재정의]] · [[Python day06 넘파이 시작과 배열 생성]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[Python day04 예외 처리 try·except·else·finally]] · [[KDT_2026 학습 지도]]
