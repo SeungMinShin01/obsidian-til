@@ -1,14 +1,14 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/day04/c6-1.py, day04/c62-.py, practice/p397-381.py
+원본: KDT_2026/2026_Python/day04/c6-1.py, day04/c6-2.py, practice/p397-381.py
 작성일: 2026-10-22
 tags: [학습, python]
 ---
 
 # Python day04 — 예외 처리 try·except·else·finally
 
-> 실습 파일: `day04/c6-1.py`, `day04/c62-.py`, `practice/p397-381.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day03 함수·재귀·람다 연습문제 풀이]] · 다음: (아직 없음)
+> 실습 파일: `day04/c6-1.py`, `day04/c6-2.py`, `practice/p397-381.py`
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day03 함수·재귀·람다 연습문제 풀이]] · 다음: [[Python day05 클래스 정의와 생성자·메소드]]
 
 day04는 **오류**를 다루는 날이다. 지금까지는 `int("안녕")`을 치면 빨간 글자가 쏟아지고 프로그램이 그 자리에서 죽는 걸 그냥 보고 넘어갔는데, 이번에는 그 빨간 글자가 무엇이고(구문 오류와 런타임 오류), 죽지 않게 하려면 어떻게 하는지(조건문으로 미리 피하기, `try`로 받아내기)를 배웠다. `try` 한 덩어리에 `except`·`else`·`finally`가 어떻게 붙고 각 블록이 언제 실행되는지를 네 번 고쳐 쓰며 확인했고, 마지막에는 파일을 열어 둔 채 예외가 터지면 어떻게 되는지 `file.closed`로 눈으로 봤다. 자바에서 `try`·`catch`·`finally`를 썼던 것과 모양이 거의 같은데, 파이썬에는 `else` 블록이 하나 더 있고 예외를 꼭 잡으라고 강제하지 않는다는 점이 다르다.
 
@@ -248,10 +248,10 @@ except ValueError as e:
 ## 실습 파일
 
 - `KDT_2026/2026_Python/day04/c6-1.py` — 구문 오류·런타임 오류·예외 처리 정의. `input()` 값을 `isdigit()` 조건문으로 걸러 `int()` 변환(예1), 같은 변환을 `try`/`except`로(예2), `except: pass`로 넘기기(예3), `try`/`except`/`else`/`finally` 네 블록(예4), `open("info.txt", "w")` 뒤 일부러 예외를 일으켜 `file.close()`가 건너뛰어지고 `file.closed`가 `False`로 남는 것 확인(`finally` 활용 예)
-- `KDT_2026/2026_Python/day04/c62-.py` — 정수를 입력받아 `list_number`의 인덱스로 쓰는 코드를 `try`로 감싸고, `except Exception as e: print(e)`로 예외 객체의 메시지를 그대로 출력. 범위를 벗어난 숫자(`IndexError`)와 숫자가 아닌 문자열(`ValueError`)이 서로 다른 메시지로 찍히는 것 확인
+- `KDT_2026/2026_Python/day04/c6-2.py` — 정수를 입력받아 `list_number`의 인덱스로 쓰는 코드를 `try`로 감싸고, `except Exception as e: print(e)`로 예외 객체의 메시지를 그대로 출력. 범위를 벗어난 숫자(`IndexError`)와 숫자가 아닌 문자열(`ValueError`)이 서로 다른 메시지로 찍히는 것 확인
 - `KDT_2026/2026_Python/practice/p397-381.py` — 오류 종류 메모(`10 + "개"`·`int("안녕하세요")`·`cursor.close)`·`[1, 2, 3, 4, 5][10]`)와 확인문제 (1): `numbers` 리스트에 `number in numbers`를 `try`로 감싸 "성공"/"실패" 출력 — 거짓 값은 예외가 아니라 `try`가 잡지 않는 것 확인
 - `KDT_2026/2026_Python/info.txt` — 위 실습이 `open(..., "w")`로 만든 빈 결과 파일 (수업 내용 없음)
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day03 함수·재귀·람다 연습문제 풀이]] · [[Python day01 비교·논리 연산자와 if 조건문]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day03 함수·재귀·람다 연습문제 풀이]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[Python day01 비교·논리 연산자와 if 조건문]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[KDT_2026 학습 지도]]
