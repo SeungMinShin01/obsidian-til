@@ -90,7 +90,57 @@ ratio = rent / ret         # 불균형 지수 (Step 3에서 만드는 값)
 
 `station[:, 1]`·`station[:, 2]`로 열을 1차원으로 뽑아 이름을 붙여 두면 뒤 코드가 `station[:, 1]` 대신 `rent`로 읽힌다. `ratio`는 두 배열의 같은 위치끼리 나눈 **파생 변수**다. 1이면 대여와 반납이 같고, 1보다 크면 **빌려 가는 사람이 돌려놓는 사람보다 많아 자전거가 빠져나가는 유출형**, 1보다 작으면 쌓이는 유입형 대여소다. 지난 실습의 "구매 금액 ÷ 방문 횟수"와 같은 모양이고, 나누는 쪽(반납)이 0인 대여소가 있으면 `inf`가 나온다는 주의점도 같다(이 데이터에서는 반납 0인 곳이 없어 무사했다).
 
-### 1-5. Step 4 — 복합 위험군: 유출형이면서 이용도 많은 대여소
+### 1-5. Step 1~3 — 기술 통계, 분위 기준선, 가장 불균형한 대여소
+
+Step 4·5의 복합 조건과 정규화에 들어가기 전에, 기본 통계로 데이터의 윤곽을 잡고 단순 조건으로 "관리 대상"을 먼저 걸러 보는 세 단계가 앞에 붙어 있다. 지난 실습에서 `max`·`argmax`·`sort`를 하나씩 썼던 것을 이 데이터 위에서 다시 꺼내 쓰는 과정이다.
+
+**Step 1 — 평균·최대·최소와 그 자리의 이름**
+
+```python
+print(f"1년 평균 대여수: {np.mean(rent):,.1f}")                                 # 13,290.6
+print(f"1년 최대 대여수: {np.max(rent):,.1f} 대여소명: {names[np.argmax(rent), 1]}")  # 162,990.0 마곡나루역 2번 출구
+print(f"1년 최소 대여수: {np.min(rent)} 대여소명: {names[np.argmin(rent), 1]}")      # 0.0 고덕역 4번출구
+print(f"1년 평균 반납수: {np.mean(ret):,.1f}")                                  # 13,219.9
+```
+
+`np.max`는 **값**을, `np.argmax`는 **그 값이 있는 위치(행 번호)**를 돌려준다. 값만으로는 "어느 대여소인지"를 알 수 없으니, `argmax`로 얻은 행 번호를 이름표 `names`의 같은 행에 넣어 `names[np.argmax(rent), 1]`로 이름을 꺼낸다. 이것이 가능한 이유는 1-3에서 확인한 대로 `station`과 `names`의 행 순서가 같기 때문이다 — 숫자 표에서 찾은 위치를 문자열 표에 그대로 꽂는 패턴이고, 1-7의 "같은 `order`를 세 배열에" 쓰는 것과 같은 원리다. 최소 대여수가 0인 대여소가 있다는 것도 여기서 드러나는데, 뒤의 `ratio = rent / ret`에서 분자가 0이면 지수가 0이 될 뿐 오류는 나지 않는다(분모 `ret`가 0인 경우와는 다르다). 평균 대여 13,290건과 평균 반납 13,220건은 거의 같다 — 전체로 보면 빌린 만큼 돌려놓는 것이 당연하고, 문제는 대여소 **사이**의 쏠림이라는 점을 이 두 숫자가 미리 말해 준다.
+
+**Step 2 — 정렬한 배열의 위치로 상위 10%·하위 10% 기준선 잡기**
+
+```python
+n = len(station)                           # 2812
+rent_sorted = np.sort(rent)                # 오름차순 복사본
+ret_sorted  = np.sort(ret)
+
+top10 = rent_sorted[int(n * 0.9)]          # 대여 상위 10% 기준: 27938.0
+low10 = ret_sorted[int(n * 0.1)]           # 반납 하위 10% 기준: 2017.0
+
+group = (rent >= top10) | (ret <= low10)
+print("관리가 필요한 대여소: ", station[group].shape[0], "곳")   # 564곳
+```
+
+"상위 10%"를 `np.percentile` 없이 손으로 구하는 방법이다. 오름차순으로 정렬한 배열에서 **90% 지점의 위치** `int(n * 0.9)`(= 2,530번째)에 있는 값이 곧 상위 10%가 시작되는 기준값이고, 10% 지점 `int(n * 0.1)`(= 281번째)의 값이 하위 10%의 끝 기준값이다. `np.sort`는 원본을 건드리지 않는 정렬된 복사본을 주므로 `rent` 자체의 순서(= `names`와의 행 대응)는 그대로 남는다 — 정렬본은 기준값을 읽는 데만 쓰고, 조건은 원래 순서의 `rent`·`ret`에 건다.
+
+| 조각 | 뜻 |
+| --- | --- |
+| `int(n * 0.9)` | 2812 × 0.9 = 2530.8 → 2530. 정수 인덱스가 필요하니 `int`로 자른다 |
+| `rent_sorted[2530]` | 정렬본에서 그 위치의 값. 이 값 이상이면 "대여 상위 10%" |
+| `(rent >= top10) \| (ret <= low10)` | **또는** — 많이 빌려 가는 곳이거나, 거의 돌려놓지 않는 곳이거나 |
+
+Step 4가 `&`로 두 조건을 **모두** 만족하는 좁은 집합(75곳)을 만든다면, Step 2는 `\|`로 **둘 중 하나**라도 걸리는 넓은 집합(564곳)을 만든다. 상위 10%가 약 282곳, 하위 10%가 약 282곳인데 합이 정확히 564인 것은 두 집합이 겹치지 않았다는 뜻이다 — 대여가 많은 곳은 반납도 많아서 "반납 하위 10%"에 들지 않는 것이 자연스럽다. 같은 데이터에서 `|`와 `&` 중 무엇을 고르느냐로 "관리 대상"의 뜻이 완전히 달라진다.
+
+**Step 3 — 불균형 지수의 최댓값 자리**
+
+```python
+ratio = rent / ret
+worst = np.argmax(ratio)
+print("대여 반납이 가장 불균형한 대여소: ", names[worst, 1])   # 길음뉴타운푸르지오아파트 3단지
+print(f"불균형 지수: {ratio[worst]:,.1f} 배")                   # 21.6 배
+```
+
+Step 1의 `argmax` 패턴을 파생 변수에 적용한 것이다. 대여가 반납의 21.6배인 대여소가 1위인데, 이 숫자는 이용량이 적은 곳에서 분모가 작아 튀어 오른 값일 가능성이 크다. 바로 이 한계 때문에 Step 4에서 `rent >= np.median(rent)`라는 이용량 조건을 **추가로** 거는 것이고, Step 5에서는 비율 대신 대수 차이 `rent - ret`로 지표를 바꾼다. 단계가 앞으로 갈수록 "가장 극단적인 하나"에서 "실제로 조치할 만한 집단"으로 질문이 옮겨 가는 흐름이다.
+
+### 1-6. Step 4 — 복합 위험군: 유출형이면서 이용도 많은 대여소
 
 ```python
 cond = (ratio >= 1.2) & (rent >= np.median(rent))
@@ -104,7 +154,7 @@ print(f"전체 대비 비율: {risk.shape[0] / station.shape[0] * 100:.1f}%")   
 
 중앙값을 쓴 이유도 적어 둘 만하다. 대여 건수 평균은 13,290건인데 중앙값은 9,957건이다 — 몇몇 대형 대여소가 평균을 끌어올리는 **오른쪽으로 치우친 분포**라, "절반 지점"을 뜻하려면 평균이 아니라 중앙값이 맞다. `station[cond]`로 행 전체를 꺼내고 `shape[0]`으로 세는 것, 전체 대비 비율을 `shape[0]`끼리 나누는 것은 지난 실습과 같다. `:,.0f`는 천 단위 쉼표에 소수 0자리, `:.1f`는 소수 1자리 서식이다.
 
-### 1-6. Step 5 — 순유출 Min-Max 정규화로 재배치 최우선 대여소
+### 1-7. Step 5 — 순유출 Min-Max 정규화로 재배치 최우선 대여소
 
 ```python
 net  = rent - ret                                          # 순유출 대수
@@ -132,7 +182,7 @@ Step 4의 `ratio`가 비율이었다면 `net = rent - ret`은 **대수 그 자�
 
 `mask`는 길이 2,812의 참·거짓이라 `station`에도 `names`에도 `net`에도 똑같이 걸 수 있고(세 배열의 행이 같은 대여소를 가리키니까), `order`는 길이 5의 순번이라 걸러진 5개짜리 배열 어디에나 똑같이 걸 수 있다. 결과는 상왕십리역 1번출구(10,637대), 아차산역 4번출구(9,978대), 신일해피트리아파트 앞(9,888대) 순이다. 지난 노트에서 "정렬 위치 순번으로 **다른 배열**을 같은 순서로 재배열한다"고 적어 둔 `argsort`의 용도가 여기서 숫자 표·이름표·지표 세 곳에 동시에 쓰였다 — `np.sort`로 `net`만 정렬했다면 어느 대여소인지 알 길이 없었을 것이다.
 
-### 1-7. 단계별로 다시 보기 — 지난 실습과 달라진 점
+### 1-8. 단계별로 다시 보기 — 지난 실습과 달라진 점
 
 | 단계 | 질문 | 꺼낸 도구 | 지난 실습 대비 |
 | --- | --- | --- | --- |
@@ -140,6 +190,9 @@ Step 4의 `ratio`가 비율이었다면 `net = rent - ret`은 **대수 그 자�
 | 준비 2 | 월별 행을 대여소별 한 행으로 | `np.unique` → `for`+마스크 → `np.sum` → `np.array(rows)` | **새로움** — group by를 손으로 |
 | 준비 3 | 번호에 이름 붙이기 | `genfromtxt(dtype=str)` + 행 순서 맞추기 | **새로움** — 문자열 배열 |
 | 지표 | 유출형인가 | `rent / ret` | 같음 (파생 변수) |
+| Step 1 | 평균·최대·최소는, 그곳은 어디인가 | `mean`·`max`·`min` + `argmax`/`argmin` → `names[idx, 1]` | 같음 + **위치를 이름표에 꽂기** |
+| Step 2 | 상위 10%·하위 10%에 드는 곳 | `np.sort` 복사본의 `int(n * 0.9)` 위치값 → `\|` 조건 | 같음 (분위 기준·`\|`) |
+| Step 3 | 가장 불균형한 한 곳 | `np.argmax(ratio)` → `names[worst, 1]` | 같음 (`argmax`) |
 | Step 4 | 유출형 **그리고** 많이 쓰는 곳 | `&` + `np.median` → `station[cond]` → `shape[0]` | 같음 (`&` 행 추출) |
 | Step 5 | 가장 급한 곳 N개를 순서대로 | 정규화 → `mask` → `argsort[::-1]` → 세 배열에 같은 `order` | 같음 + **여러 배열 동기 정렬** |
 
@@ -190,7 +243,7 @@ np.savetxt('./practice/ReportPractice/rebalance_top.csv', result, delimiter=',',
            fmt='%d', header='ID,대여,반납,순유출', comments='', encoding='utf-8-sig')
 ```
 
-1-6에서 따로 찍은 세 출력을 열로 붙이면 보고서에 넣을 표가 된다. `column_stack`은 1차원 배열을 열로 세워 가로로 붙이고, `savetxt`의 `encoding='utf-8-sig'`를 주면 엑셀에서 한글 헤더가 깨지지 않는다. 문자열 이름 열까지 같이 쓰려면 배열 자료형이 하나여야 하는 넘파이의 한계에 걸리므로, 그때는 `zip`으로 줄을 만들어 `csv` 모듈로 쓰거나 판다스로 넘어간다.
+1-7에서 따로 찍은 세 출력을 열로 붙이면 보고서에 넣을 표가 된다. `column_stack`은 1차원 배열을 열로 세워 가로로 붙이고, `savetxt`의 `encoding='utf-8-sig'`를 주면 엑셀에서 한글 헤더가 깨지지 않는다. 문자열 이름 열까지 같이 쓰려면 배열 자료형이 하나여야 하는 넘파이의 한계에 걸리므로, 그때는 `zip`으로 줄을 만들어 `csv` 모듈로 쓰거나 판다스로 넘어간다.
 
 ### 2-5. 임계값을 숫자가 아니라 분위수로
 
@@ -199,7 +252,7 @@ top = net >= np.percentile(net, 99)      # 순유출 상위 1%
 print(top.sum())
 ```
 
-`norm >= 0.9`는 최댓값에 상대적인 기준이라, 한 대여소가 유난히 튀면 나머지가 전부 0.9 아래로 깔려 몇 곳 안 남는다(이번 데이터가 그 경우로 5곳). "상위 몇 %"가 필요하면 `np.percentile`로 분위수를 잘라 쓰는 편이 분포 모양에 덜 흔들린다. Step 4의 `np.median`이 바로 50번째 백분위수다.
+`norm >= 0.9`는 최댓값에 상대적인 기준이라, 한 대여소가 유난히 튀면 나머지가 전부 0.9 아래로 깔려 몇 곳 안 남는다(이번 데이터가 그 경우로 5곳). "상위 몇 %"가 필요하면 `np.percentile`로 분위수를 잘라 쓰는 편이 분포 모양에 덜 흔들린다. Step 4의 `np.median`이 바로 50번째 백분위수다. Step 2의 `rent_sorted[int(n * 0.9)]`도 같은 일을 손으로 한 것이라 `np.percentile(rent, 90)`으로 바꿔 쓸 수 있다 — 다만 `percentile`은 기본적으로 두 값 사이를 보간하므로 정렬본의 위치값과 소수점이 조금 다를 수 있다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -228,6 +281,7 @@ st.nlargest(5, '순유출')                                                 # St
 
 - `encoding='utf-8-sig'`·BOM·`dtype=str`·`<U41`·구조화 배열
 - `np.vstack`으로 파일 병합·`np.unique`(`return_counts`)·마스크 반복으로 group by·`np.array(rows)`
+- `argmax`/`argmin` 위치를 이름표에 꽂기 `names[np.argmax(rent), 1]`·`np.sort` 복사본의 `int(n * 0.9)` 위치값으로 분위 기준선·`|` vs `&`
 - `np.median` vs 평균(치우친 분포)·파생 변수 `rent / ret`·순유출 `rent - ret`
 - 같은 `mask`·같은 `order`를 여러 배열에 — `names[mask, 1][order]`
 - `searchsorted`·`bincount(weights=)`·`np.add.at`·`column_stack`·`percentile`
@@ -235,7 +289,7 @@ st.nlargest(5, '순유출')                                                 # St
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/practice/ReportPractice/Report.py` — `np.genfromtxt(delimiter=',', skip_header=1, encoding='utf-8-sig')`로 상반기 `(16403, 4)`·하반기 `(16567, 4)` CSV 읽기 → `np.vstack`으로 `(32970, 4)` 병합, `np.unique(data[:, 0])`로 대여소 번호 2,812개 → `for i in ids`·`m = data[:, 0] == i`·`np.sum(data[m, 2])`·`np.sum(data[m, 3])`로 대여소별 합계 `rows` → `np.array(rows)` `(2812, 3)` `station`, 이름표 `genfromtxt(dtype=str)` `(2812, 2)`와 `station[:3]`·`names[:3, 1]` 순서 확인, `rent`·`ret` 열 추출과 `ratio = rent / ret` 불균형 지수, Step 4 `(ratio >= 1.2) & (rent >= np.median(rent))` → `station[cond]`·`shape[0]`(중앙값 9,957건·75곳·2.7%), Step 5 `net = rent - ret` → Min-Max 정규화 → `mask = norm >= 0.9`(5곳) → `np.argsort(net[mask])[::-1]`을 `vip[order]`·`names[mask, 1][order]`·`net[mask][order]` 세 배열에 동일 적용
+- `KDT_2026/2026_Python/practice/ReportPractice/Report.py` — `np.genfromtxt(delimiter=',', skip_header=1, encoding='utf-8-sig')`로 상반기 `(16403, 4)`·하반기 `(16567, 4)` CSV 읽기 → `np.vstack`으로 `(32970, 4)` 병합, `np.unique(data[:, 0])`로 대여소 번호 2,812개 → `for i in ids`·`m = data[:, 0] == i`·`np.sum(data[m, 2])`·`np.sum(data[m, 3])`로 대여소별 합계 `rows` → `np.array(rows)` `(2812, 3)` `station`, 이름표 `genfromtxt(dtype=str)` `(2812, 2)`와 `station[:3]`·`names[:3, 1]` 순서 확인, `rent`·`ret` 열 추출과 `ratio = rent / ret` 불균형 지수, Step 1 `np.mean`·`np.max`·`np.min`과 `names[np.argmax(rent), 1]`·`names[np.argmin(rent), 1]`(평균 13,290.6·최대 162,990 마곡나루역 2번 출구·최소 0), Step 2 `np.sort` 정렬본의 `int(n * 0.9)`·`int(n * 0.1)` 위치값으로 대여 상위 10% 기준 27,938·반납 하위 10% 기준 2,017 → `(rent >= top10) | (ret <= low10)` 564곳, Step 3 `np.argmax(ratio)` → `names[worst, 1]`(길음뉴타운푸르지오아파트 3단지·21.6배), Step 4 `(ratio >= 1.2) & (rent >= np.median(rent))` → `station[cond]`·`shape[0]`(중앙값 9,957건·75곳·2.7%), Step 5 `net = rent - ret` → Min-Max 정규화 → `mask = norm >= 0.9`(5곳) → `np.argsort(net[mask])[::-1]`을 `vip[order]`·`names[mask, 1][order]`·`net[mask][order]` 세 배열에 동일 적용
 - `KDT_2026/2026_Python/practice/ReportPractice/ddareungi_1-6.csv` — 헤더 `ID,기준년월,대여건수,반납건수`(BOM 포함), 2025년 1~6월 대여소×월 16,403행
 - `KDT_2026/2026_Python/practice/ReportPractice/ddareungi_7-12.csv` — 같은 구조, 2025년 7~12월 16,567행
 - `KDT_2026/2026_Python/practice/ReportPractice/ddareungi_names.csv` — 헤더 `ID,이름`, 대여소 2,812행 (ID 오름차순)
