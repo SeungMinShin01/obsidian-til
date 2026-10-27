@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day07 — 넘파이로 고객 구매 데이터 분석 실습
 
 > 실습 파일: `practice/practice2.py`, `practice/customer_purchase_data.csv`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day07 넘파이 통계 함수와 axis]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day07 넘파이 통계 함수와 axis]] · 다음: [[Python day07 넘파이로 따릉이 대여소 재배치 분석 실습]]
 
 day06~07에서 익힌 넘파이 도구를 **실제 데이터 파일 하나에 처음으로 전부 꺼내 쓴** 실습이다. 고객 1,000명의 방문·체류·장바구니·구매 금액이 든 CSV를 `genfromtxt`로 읽어 2차원 배열로 만들고, 다섯 단계 미션을 반복문 없이 풀었다. 열 하나 뽑아 통계 내기(Step 1), `|`로 충성 고객 걸러 ID만 꺼내기(Step 2), 열끼리 나눠 새 지표를 만들고 `argmax`로 1등 찾기(Step 3), `&`로 이탈 위험군 행 전체 추출하고 세기(Step 4), Min-Max 정규화로 VVIP를 고른 뒤 `argsort`로 금액순 상위 5명 뽑기(Step 5). 한 단계마다 "어떤 도구를 꺼내는가"를 정리해 두면 넘파이 문법이 어디에 쓰이는 것인지 한눈에 들어온다.
 
