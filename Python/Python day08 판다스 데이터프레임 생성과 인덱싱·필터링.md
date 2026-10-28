@@ -10,7 +10,7 @@ tags: [학습, python]
 > 실습 파일: `day08/p-01.py`
 > 허브: [[Python 정리본 인덱스]] · 이전: [[Python day07 넘파이로 따릉이 대여소 재배치 분석 실습]] · 다음: (아직 없음)
 
-넘파이로 두 번의 분석 실습까지 마치고 드디어 **판다스**다. 넘파이 배열은 숫자가 한 가지 자료형으로만 담기고 열에 이름도 없어서, 따릉이 실습에서는 대여소 번호 표와 이름 표를 따로 들고 다녀야 했다. 판다스의 `DataFrame`은 그 불편을 그대로 해결한다 — **열마다 이름과 자료형이 따로 있고, 행에도 이름(인덱스)이 붙은 표**다. 이번 시간은 데이터프레임을 리스트·딕셔너리·넘파이 배열 세 가지 재료로 만들어 보고, `shape`·`columns`·`info()` 같은 속성으로 모양을 확인한 뒤, `iloc`/`loc`로 칸을 집고 열을 추가·수정하고 조건으로 행을 거르는 기본 동작을 한 바퀴 돌았다. 이어서 조건으로 새 열을 채우고(`loc[조건, 열] = 값`), `rename`으로 열 이름을 바꾸고, `describe()`로 기초 통계를 한 표에 모으는 데까지 나갔고, 끝에는 병합 실습용 표 두 장이 준비되어 있다. 넘파이에서 익힌 인덱싱·슬라이싱·불리언 필터가 거의 그대로 이어진다.
+넘파이로 두 번의 분석 실습까지 마치고 드디어 **판다스**다. 넘파이 배열은 숫자가 한 가지 자료형으로만 담기고 열에 이름도 없어서, 따릉이 실습에서는 대여소 번호 표와 이름 표를 따로 들고 다녀야 했다. 판다스의 `DataFrame`은 그 불편을 그대로 해결한다 — **열마다 이름과 자료형이 따로 있고, 행에도 이름(인덱스)이 붙은 표**다. 이번 시간은 데이터프레임을 리스트·딕셔너리·넘파이 배열 세 가지 재료로 만들어 보고, `shape`·`columns`·`info()` 같은 속성으로 모양을 확인한 뒤, `iloc`/`loc`로 칸을 집고 열을 추가·수정하고 조건으로 행을 거르는 기본 동작을 한 바퀴 돌았다. 이어서 조건으로 새 열을 채우고(`loc[조건, 열] = 값`), `rename`으로 열 이름을 바꾸고, `describe()`로 기초 통계를 한 표에 모은 다음, 표 두 장을 `concat`으로 잇고 `merge`로 키 기준 병합하고 `sort_values`·`sort_index`로 정렬하는 데까지 나갔다. 넘파이에서 익힌 인덱싱·슬라이싱·불리언 필터가 거의 그대로 이어진다.
 
 ## 1. 배운 내용
 
@@ -310,16 +310,90 @@ max    70.000000  95.000000
 
 한 가지 짚어 둘 것은 `std`의 기준이다. `np.std`는 기본이 모표준편차(`ddof=0`)인데 판다스의 `describe()`·`df.std()`는 **표본표준편차(`ddof=1`)**가 기본이라, 같은 자료를 넣어도 값이 조금 다르게 나온다. 위 표의 `나이` 표준편차 20.42는 편차 제곱합 834를 `n-1 = 2`로 나눈 뒤 제곱근을 취한 값이다. 둘을 맞추려면 `df.std(ddof=0)` 또는 `np.std(arr, ddof=1)`로 한쪽을 맞춘다. 열이 많아 표가 옆으로 길어지면 `df.describe().T`로 뒤집어 열을 세로로 놓고 읽는 편이 편하다.
 
-### 1-13. 합치기·병합의 준비 — 표 두 장
+### 1-13. 연결 — `pd.concat`
 
 ```python
 df1 = pd.DataFrame({'ID': [1, 2, 3], 'Score': [90, 80, 85]})
 df2 = pd.DataFrame({'ID': [4, 5, 6], 'Score': [75, 95, 88]})
+
+new_df = pd.concat([df1, df2], axis=0, ignore_index=True)   # 세로 연결
+print(new_df)
+new_df = pd.concat([df1, df2], axis=1)                       # 가로 연결
+print(new_df)
+```
+```
+   ID  Score
+0   1     90
+1   2     80
+2   3     85
+3   4     75
+4   5     95
+5   6     88
+
+   ID  Score  ID  Score
+0   1     90   4     75
+1   2     80   5     95
+2   3     85   6     88
 ```
 
-파일 끝에는 열 구성이 같고(`ID`·`Score`) 행만 다른 표 두 장이 준비되어 있다. 같은 열을 가진 표를 세로로 이어 붙이는 상황 — 넘파이의 `np.vstack`에 해당하는 `pd.concat([df1, df2])` — 을 다음 시간에 다루기 위한 재료다. 이어 붙이면 인덱스가 `0, 1, 2, 0, 1, 2`로 겹치므로 `ignore_index=True`로 새로 매기거나, `ID`를 `set_index`로 올려 두는 처리가 함께 따라온다. 열은 같고 행이 다른 두 표를 붙이는 `concat`과, 키 열을 기준으로 옆으로 맞붙이는 `merge`의 갈림은 3-2에 미리 적어 두었다.
+`concat`은 표를 **그대로 이어 붙이는** 함수다. 리스트로 여러 표를 넘기고 `axis`로 방향을 고른다 — `axis=0`이면 행을 아래로 쌓고(넘파이의 `np.vstack`), `axis=1`이면 열을 옆으로 붙인다(`np.hstack`). 세로로 쌓을 때 주의할 것은 인덱스다. 각 표의 인덱스 `0, 1, 2`가 그대로 따라와 `0, 1, 2, 0, 1, 2`로 겹치므로, `ignore_index=True`를 주어 `0~5`로 새로 매긴다. 이 옵션을 빼면 `loc[0]`이 행 두 개를 돌려주는 상황이 생긴다. 가로 연결은 **인덱스가 같은 행끼리** 나란히 붙으므로 `ID`·`Score` 열이 두 번 나타나고, 열 이름이 겹친 채로 남는다 — 같은 모양의 표를 옆으로 붙일 일은 드물고, 열을 옆으로 맞붙이는 일은 보통 아래 `merge`가 맡는다.
 
-### 1-14. 수업 메모 — 매크로에서 RPA로
+### 1-14. 병합 — `pd.merge`
+
+```python
+df_info  = pd.DataFrame({'ID': [1, 2, 3], 'Name': ['Ant', 'Bee', 'Cat']})
+df_score = pd.DataFrame({'ID': [2, 3, 4], 'Score': [88, 92, 85]})
+
+new_df = pd.merge(df_info, df_score, on='ID', how='inner')   # 교집합
+print(new_df)
+new_df = pd.merge(df_info, df_score, on='ID', how='outer')   # 합집합
+print(new_df)
+```
+```
+   ID Name  Score
+0   2  Bee     88
+1   3  Cat     92
+
+   ID Name  Score
+0   1  Ant    NaN
+1   2  Bee   88.0
+2   3  Cat   92.0
+3   4  NaN   85.0
+```
+
+`merge`는 `concat`과 달리 **공통 열(키)을 기준으로 행을 맞춰 붙인다.** SQL의 `JOIN`과 같은 개념이다. `on='ID'`가 기준 열, `how`가 결합 방식이다.
+
+| `how` | 남는 행 | SQL |
+| --- | --- | --- |
+| `inner` (기본) | 양쪽에 다 있는 키만 — `ID` 2·3 | `INNER JOIN` |
+| `outer` | 한쪽에라도 있으면 전부 — `ID` 1·2·3·4 | `FULL OUTER JOIN` |
+| `left` | 왼쪽(`df_info`) 키는 전부, 오른쪽은 맞는 것만 | `LEFT JOIN` |
+| `right` | 오른쪽(`df_score`) 키는 전부, 왼쪽은 맞는 것만 | `RIGHT JOIN` |
+
+`outer`에서 짝이 없는 칸은 **`NaN`(Not a Number)**으로 채워진다. 수업에서 "정의가 없는 자료, 숫자가 아니다"라고 적어 둔 그 값이다. 한 가지 따라오는 변화가 있다 — `Score` 열이 `88`이 아니라 `88.0`으로 찍힌다. 정수 열에는 `NaN`을 담을 수 없어서 판다스가 열 전체를 `float64`로 올리기 때문이다. `info()`로 확인하면 `Score`가 `float64`로 바뀌어 있고, 다시 정수로 쓰려면 `NaN`을 `fillna`로 채운 뒤 `astype(int)`로 되돌려야 한다(3-3). 따릉이 실습에서 대여소 번호 표와 이름 표의 행 순서를 눈으로 맞춰 가며 나란히 썼던 작업이, `merge(on='대여소번호')` 한 줄로 순서와 무관하게 키로 맞춰진다.
+
+### 1-15. 정렬 — `sort_values`와 `sort_index`
+
+```python
+df = pd.DataFrame({'name': ['Ant', 'Bee', 'Cat', 'Dog'],
+                   'age': [27, 27, 22, 32], 'score': [88, 95, 85, 90]})
+
+new_df = df.sort_values(by='age', ascending=False)                     # 단일 기준 내림차순
+new_df = df.sort_values(by=['age', 'score'], ascending=[True, False])  # 다중 기준
+new_df = df.sort_index(axis=1, ascending=True)                         # 열 이름 정렬
+```
+```
+  name  age  score          name  age  score          age name  score
+3  Dog   32     90       2  Cat   22     85       0   27  Ant     88
+0  Ant   27     88       1  Bee   27     95       1   27  Bee     95
+1  Bee   27     95       0  Ant   27     88       2   22  Cat     85
+2  Cat   22     85       3  Dog   32     90       3   32  Dog     90
+(age 내림차순)           (age 오름 → score 내림)   (열 이름 알파벳순)
+```
+
+`sort_values(by='열')`은 그 열의 값 순서로 **행을 통째로** 옮긴다. `ascending=True`가 오름차순(기본), `False`가 내림차순이다. 왼쪽 인덱스가 `3, 0, 1, 2`로 따라 움직이는 것이 보인다 — 넘파이에서 `np.argsort`로 순번을 얻어 다른 배열에 다시 끼우던 일이 한 줄이 된 셈이고, 원래 자리가 인덱스에 남아 있어 `sort_index()`로 되돌리기도 쉽다. 다중 정렬은 `by`에 리스트를 주고, `ascending`에도 같은 길이의 리스트를 주어 기준마다 방향을 따로 정한다. `age`가 같은 Ant·Bee(27)는 `score` 내림차순으로 Bee(95)가 먼저 온다 — 1차 기준이 같을 때만 2차 기준이 작동한다. `sort_index(axis=1)`은 값이 아니라 **열 이름**을 정렬한다. `axis=0`이면 행 인덱스, `axis=1`이면 열 이름이 기준이라, `age·name·score`가 알파벳순으로 자리를 바꾼다. 세 함수 모두 원본을 바꾸지 않고 새 표를 돌려주므로 `new_df = …`로 받아야 한다.
+
+### 1-16. 수업 메모 — 매크로에서 RPA로
 
 파일 중간에 "매크로(C 프로그램) → RPA(사무 업무/파이썬)"라는 한 줄이 있다. 옛날에 C로 짜던 매크로 자동화가 지금은 파이썬 기반 RPA로 넘어왔고, 그 RPA가 엑셀·CSV 같은 표 자료를 다룰 때 쓰는 도구가 바로 판다스라는 맥락이다. 넘파이 → 판다스로 이어지는 이 커리큘럼이 뒤의 RPA 과정과 맞닿는 지점이기도 하다.
 
@@ -356,17 +430,18 @@ df2.reset_index()              # 인덱스를 다시 보통 열로 내리고 0,1
 
 `index=['A', 'B', 'C']`처럼 만들 때 주는 대신, 있는 열을 인덱스로 올리는 것이 더 흔하다. 대여소 번호나 고객 ID를 인덱스로 올려 두면 `loc[ID]`로 바로 행을 찾을 수 있다. 판다스의 대부분 메소드는 **원본을 바꾸지 않고 새 데이터프레임을 돌려주므로** 결과를 변수에 받아야 한다(`inplace=True` 옵션도 있지만 새 변수에 받는 쪽이 추적하기 쉽다).
 
-### 2-4. 정렬·행 삭제·조건 수정
+### 2-4. 행 삭제·조건 수정·정렬 응용
 
 ```python
-df.sort_values('score', ascending=False)        # score 내림차순 — 새 표 반환
-df.sort_values(['city', 'age'])                 # 여러 기준
-df.drop(columns=['score'])                      # 열 삭제
-df.drop(index=['A'])                            # 행 삭제
-df.loc[df['age'] >= 40, 'score'] = 0            # 조건에 맞는 행의 특정 열만 수정
+df.drop(columns=['score'])                        # 열 삭제
+df.drop(index=['A'])                              # 행 삭제
+df.loc[df['age'] >= 40, 'score'] = 0              # 조건에 맞는 행의 특정 열만 수정
+df.sort_values('score', ascending=False).head(3)  # 정렬 + 상위 3개 = nlargest(3, 'score')
+df.sort_values('age', na_position='first')        # NaN을 앞으로 (기본은 맨 뒤)
+df.sort_values('age').reset_index(drop=True)      # 정렬 뒤 인덱스를 0부터 다시
 ```
 
-`np.argsort`로 순번을 얻어 다른 배열에 다시 끼우던 정렬이 `sort_values('열')` 한 줄이 된다. 행이 통째로 따라 움직이고 인덱스도 함께 간다. 마지막 줄은 1-10에서 본 `loc[조건, 열] = 값` 꼴 그대로다. 필터링한 결과에 바로 대입하는 `df[df['age'] >= 40]['score'] = 0`은 복사본에 쓰게 되어 원본이 안 바뀌는 경우가 있으니(`SettingWithCopyWarning`), 수정은 `loc` 한 번으로 하는 편이 안전하다.
+`drop`은 `columns=`/`index=`로 지울 쪽을 고르고, 역시 새 표를 돌려준다. 세 번째 줄은 1-10에서 본 `loc[조건, 열] = 값` 꼴 그대로다. 필터링한 결과에 바로 대입하는 `df[df['age'] >= 40]['score'] = 0`은 복사본에 쓰게 되어 원본이 안 바뀌는 경우가 있으니(`SettingWithCopyWarning`), 수정은 `loc` 한 번으로 하는 편이 안전하다. 정렬은 1-15에서 본 것에 두 가지를 얹을 수 있다 — `NaN`은 `ascending`과 무관하게 맨 뒤로 가는 것이 기본이라 `na_position='first'`로 앞에 둘 수 있고, 정렬 뒤 흩어진 인덱스는 `reset_index(drop=True)`로 다시 0부터 매긴다(`drop=True`를 빼면 옛 인덱스가 `index`라는 열로 남는다). "정렬해서 위 몇 개"는 `nlargest(3, 'score')`·`nsmallest`가 더 짧다.
 
 ### 2-5. 조건 필터의 다른 표현
 
@@ -390,14 +465,24 @@ df.groupby('city').agg(합계=('score', 'sum'), 평균=('age', 'mean'), 개수=(
 
 따릉이 실습에서 `np.unique`로 대여소 번호를 뽑고 `for i in ids`·`m = data[:, 0] == i`·`np.sum(data[m, 2])`로 돌리던 **마스크 반복 group by**가 `groupby('열').sum()` 한 줄이다. 결과는 그룹 값이 인덱스로 올라간 `Series`/`DataFrame`이라 이름표를 따로 맞출 필요도 없다. `agg`로 열마다 다른 집계를 한 번에 걸 수 있고, SQL의 `GROUP BY`와 1:1로 대응하는 개념이다.
 
-### 3-2. `merge`·`concat` — 표 두 장 붙이기
+### 3-2. `merge`의 더 많은 옵션 — 키 이름이 다를 때·겹치는 열·결합 결과 확인
 
 ```python
-pd.concat([df_a, df_b])                          # 세로로 이어 붙이기 (np.vstack)
-pd.merge(station, names, on='대여소번호')        # 키 기준 결합 (SQL JOIN)
+pd.merge(a, b, left_on='회원ID', right_on='ID')          # 양쪽 키 열 이름이 다를 때
+pd.merge(a, b, on='ID', suffixes=('_정보', '_성적'))      # 키 외의 같은 열 이름 구분 (기본 _x, _y)
+pd.merge(a, b, on='ID', how='outer', indicator=True)      # _merge 열로 어느 쪽에서 왔는지 표시
+pd.merge(a, b, on=['연도', '월'])                         # 복합 키
+a.join(b, how='left')                                     # 인덱스 기준 결합
+```
+```
+   ID Name  Score      _merge
+0   1  Ant    NaN   left_only
+1   2  Bee   88.0        both
+2   3  Cat   92.0        both
+3   4  NaN   85.0  right_only
 ```
 
-`concat`은 `np.vstack`에, `merge`는 SQL `JOIN`에 대응한다. 따릉이 실습에서 대여소 번호 표와 이름 표의 행 순서가 같다고 확인해 가며 나란히 썼던 작업이, `merge(on='대여소번호')`로 하면 순서가 달라도 키로 맞춰 붙는다. `how='left'/'inner'/'outer'`로 결합 방식을 고른다.
+1-14에서 본 `on`·`how`로 대부분 해결되지만, 실제 자료는 양쪽 키 열 이름이 다르고(`left_on`/`right_on`), 키 외에도 같은 이름의 열이 겹친다(`suffixes`). `indicator=True`는 결과에 `_merge` 열을 붙여 각 행이 `left_only`·`right_only`·`both` 중 어디서 왔는지 보여 주므로, 병합 뒤 `NaN`이 왜 생겼는지 추적할 때 유용하다. `validate='one_to_one'`을 주면 키가 한쪽에서 중복될 때 오류를 내 주어, 행 수가 의도치 않게 불어나는 것을 미리 막는다. `join`은 열이 아니라 **인덱스**로 맞붙이는 `merge`의 축약형으로, `set_index('ID')`로 키를 인덱스에 올려 둔 표끼리 쓴다.
 
 ### 3-3. 결측치와 자료형 — `isna`·`fillna`·`astype`
 
@@ -430,12 +515,14 @@ df['age'] = df['age'].astype(int)    # 문자열로 들어온 숫자를 정수�
 - `df[새열] = …`·`loc[조건, 열] = 값`(기본값 깔고 조건별 채우기)·`SettingWithCopyWarning`
 - `rename(columns={옛: 새})`·`df.columns = […]`·`describe()`(표본 std `ddof=1`)·`describe(include='all')`·`.T`
 - 불리언 필터·`&`/`|`/`~`+소괄호·`isin`·`between`·`query`
-- `read_csv`·`set_index`·`sort_values`·`drop`
-- `groupby`·`agg`·`merge`·`concat`·`isna`/`fillna`·`astype`·`idxmax`·`nlargest`
+- `pd.concat([…], axis=0/1, ignore_index=True)`·`pd.merge(on=, how='inner/outer/left/right')`·`NaN`과 `float64` 승격
+- `sort_values(by=, ascending=)`·다중 정렬 리스트·`sort_index(axis=1)`·`na_position`·`reset_index(drop=True)`
+- `read_csv`·`set_index`·`drop`
+- `groupby`·`agg`·`left_on`/`right_on`·`suffixes`·`indicator`·`join`·`isna`/`fillna`·`astype`·`idxmax`·`nlargest`
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day08/p-01.py` — `import pandas as pd`, 2차원 리스트 `[['ant', 25, 'seoul'], …]`로 `pd.DataFrame(data_list)`(열 이름 `0, 1, 2` 자동)와 `columns=['name', 'age', 'city']` 지정, 딕셔너리 `{'name': […], 'age': […], 'city': […]}`로 만들기(키 = 열 이름), `df['age']`로 열 하나 꺼내 `type` 확인(`Series`·`.values`는 `numpy.ndarray`), `np.array(data_list)` 넘파이 배열 + `index=['A', 'B', 'C']`로 행 이름 붙이기, 주요 속성 `shape`·`columns`·`index`·`values`·`head(2)`·`tail(2)`·`info()`, `iloc[1]`·`iloc[1, 2]`·`loc['B']`·`loc['B', 'city']` 번호·이름 인덱싱, `iloc[0:2, 0:1]`·`loc['A':'C', 'name':'age']` 슬라이싱, `df['score'] = [100, 80, 95]` 열 추가, `df['age'] = [31, 52, 40]`·`iloc[0, 0] = 'apple'`·`loc[['A', 'B'], 'score'] = [50, 60]` 값 수정, `df['score'] > 70` 불리언 `Series`와 `df[df['score'] > 70]` 필터링, `cont = df['age'] >= 40` 조건 변수와 `&`·`|` 복합 조건, 필터링으로 새 열 만들기 `df['passed'] = False` → `df.loc[df['score'] > 70, 'passed'] = True`, 컬럼명 변경 `df = df.rename(columns={'city': '도시', 'age': '나이'})`, 집계 `df.describe()`, 합치기·병합용 `df1`·`df2`(`ID`·`Score`) 준비, 매크로 → RPA 메모
+- `KDT_2026/2026_Python/day08/p-01.py` — `import pandas as pd`, 2차원 리스트 `[['ant', 25, 'seoul'], …]`로 `pd.DataFrame(data_list)`(열 이름 `0, 1, 2` 자동)와 `columns=['name', 'age', 'city']` 지정, 딕셔너리 `{'name': […], 'age': […], 'city': […]}`로 만들기(키 = 열 이름), `df['age']`로 열 하나 꺼내 `type` 확인(`Series`·`.values`는 `numpy.ndarray`), `np.array(data_list)` 넘파이 배열 + `index=['A', 'B', 'C']`로 행 이름 붙이기, 주요 속성 `shape`·`columns`·`index`·`values`·`head(2)`·`tail(2)`·`info()`, `iloc[1]`·`iloc[1, 2]`·`loc['B']`·`loc['B', 'city']` 번호·이름 인덱싱, `iloc[0:2, 0:1]`·`loc['A':'C', 'name':'age']` 슬라이싱, `df['score'] = [100, 80, 95]` 열 추가, `df['age'] = [31, 52, 40]`·`iloc[0, 0] = 'apple'`·`loc[['A', 'B'], 'score'] = [50, 60]` 값 수정, `df['score'] > 70` 불리언 `Series`와 `df[df['score'] > 70]` 필터링, `cont = df['age'] >= 40` 조건 변수와 `&`·`|` 복합 조건, 필터링으로 새 열 만들기 `df['passed'] = False` → `df.loc[df['score'] > 70, 'passed'] = True`, 컬럼명 변경 `df = df.rename(columns={'city': '도시', 'age': '나이'})`, 집계 `df.describe()`, 합치기 `pd.concat([df1, df2], axis=0, ignore_index=True)` 세로 연결·`axis=1` 가로 연결, 병합 `pd.merge(df_info, df_score, on='ID', how='inner')` 교집합·`how='outer'` 합집합과 `NaN`, 정렬 `df.sort_values(by='age', ascending=False)`·다중 정렬 `by=['age', 'score'], ascending=[True, False]`·`df.sort_index(axis=1, ascending=True)` 열 이름 정렬, 매크로 → RPA 메모
 
 ## 관련 노트
 
