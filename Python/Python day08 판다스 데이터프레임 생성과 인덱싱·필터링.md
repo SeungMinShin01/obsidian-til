@@ -10,7 +10,7 @@ tags: [학습, python]
 > 실습 파일: `day08/p-01.py`
 > 허브: [[Python 정리본 인덱스]] · 이전: [[Python day07 넘파이로 따릉이 대여소 재배치 분석 실습]] · 다음: (아직 없음)
 
-넘파이로 두 번의 분석 실습까지 마치고 드디어 **판다스**다. 넘파이 배열은 숫자가 한 가지 자료형으로만 담기고 열에 이름도 없어서, 따릉이 실습에서는 대여소 번호 표와 이름 표를 따로 들고 다녀야 했다. 판다스의 `DataFrame`은 그 불편을 그대로 해결한다 — **열마다 이름과 자료형이 따로 있고, 행에도 이름(인덱스)이 붙은 표**다. 이번 시간은 데이터프레임을 리스트·딕셔너리·넘파이 배열 세 가지 재료로 만들어 보고, `shape`·`columns`·`info()` 같은 속성으로 모양을 확인한 뒤, `iloc`/`loc`로 칸을 집고 열을 추가·수정하고 조건으로 행을 거르는 기본 동작을 한 바퀴 돌았다. 넘파이에서 익힌 인덱싱·슬라이싱·불리언 필터가 거의 그대로 이어진다.
+넘파이로 두 번의 분석 실습까지 마치고 드디어 **판다스**다. 넘파이 배열은 숫자가 한 가지 자료형으로만 담기고 열에 이름도 없어서, 따릉이 실습에서는 대여소 번호 표와 이름 표를 따로 들고 다녀야 했다. 판다스의 `DataFrame`은 그 불편을 그대로 해결한다 — **열마다 이름과 자료형이 따로 있고, 행에도 이름(인덱스)이 붙은 표**다. 이번 시간은 데이터프레임을 리스트·딕셔너리·넘파이 배열 세 가지 재료로 만들어 보고, `shape`·`columns`·`info()` 같은 속성으로 모양을 확인한 뒤, `iloc`/`loc`로 칸을 집고 열을 추가·수정하고 조건으로 행을 거르는 기본 동작을 한 바퀴 돌았다. 이어서 조건으로 새 열을 채우고(`loc[조건, 열] = 값`), `rename`으로 열 이름을 바꾸고, `describe()`로 기초 통계를 한 표에 모으는 데까지 나갔고, 끝에는 병합 실습용 표 두 장이 준비되어 있다. 넘파이에서 익힌 인덱싱·슬라이싱·불리언 필터가 거의 그대로 이어진다.
 
 ## 1. 배운 내용
 
@@ -248,7 +248,78 @@ print(df[(df['score'] > 70) | cont])    # score 70 초과 이거나 age 40 이�
 
 `and`·`or`가 아니라 `&`·`|`를 쓰고, **비교식마다 소괄호**를 두른다. `&`·`|`가 `>`·`>=`보다 먼저 계산되기 때문에 괄호가 없으면 `70 & cont`가 먼저 묶여 의도와 다른 결과가 나오거나 오류가 난다. 지난 넘파이 노트에서 `ambiguous` 오류와 함께 정리한 내용 그대로다. 조건을 `cont`처럼 변수에 담아 두면 식이 짧아지고 재사용도 된다.
 
-### 1-10. 수업 메모 — 매크로에서 RPA로
+### 1-10. 필터링으로 새 열 만들기 — `loc[조건, 열] = 값`
+
+```python
+df['passed'] = False                        # 1) 일단 전부 False인 열을 하나 추가
+df.loc[df['score'] > 70, 'passed'] = True   # 2) 조건에 맞는 행만 True로 바꾼다
+print(df)
+```
+```
+    name  나이     city  score  passed
+A  apple  31    seoul     50   False
+B    bee  70    busan     60   False
+C    cat  40  incheon     95    True
+```
+
+1-8의 열 추가와 1-9의 필터링을 한 번에 쓰는 관용구다. 먼저 `df['passed'] = False`로 기본값이 깔린 열을 만들고, `loc`의 **행 자리에 불리언 `Series`**, 열 자리에 `'passed'`를 넣어 조건이 `True`인 행의 그 칸만 고쳐 쓴다. 1-6에서 `loc['B', 'city']`처럼 이름을 넣던 행 자리에 조건식이 들어간 것뿐이라 새 문법은 아니다. 넘파이에서 `scores[scores < 60] = 60`으로 조건 대입을 하던 것에 "어느 열인지"가 하나 더 붙은 모양이다.
+
+참·거짓만 필요하면 `df['passed'] = df['score'] > 70` 한 줄로도 같은 결과가 나온다. 그래도 두 단계로 나누는 쪽을 익혀 두는 이유는, 기본값과 조건별 값을 자유롭게 바꿀 수 있어서다 — 예를 들어 `df['등급'] = 'C'`를 깔고 `loc[score >= 90, '등급'] = 'A'`, `loc[(score >= 70) & (score < 90), '등급'] = 'B'`처럼 조건을 겹쳐 가며 채울 수 있다. 필터링한 결과 뒤에 바로 대괄호를 이어 대입하는 모양(`df[조건]['열'] = 값`)은 복사본에 쓰게 되어 원본이 안 바뀔 수 있으니, 수정은 언제나 `loc` 한 번으로 하는 편이 안전하다(→ 2-4).
+
+### 1-11. 컬럼명 변경 — `rename`
+
+```python
+df = df.rename(columns={'city': '도시', 'age': '나이'})
+df.info()
+```
+```
+<class 'pandas.core.frame.DataFrame'>
+Index: 3 entries, A to C
+Data columns (total 5 columns):
+ #   Column  Non-Null Count  Dtype
+---  ------  --------------  -----
+ 0   name    3 non-null      object
+ 1   나이      3 non-null      int64
+ 2   도시      3 non-null      object
+ 3   score   3 non-null      int64
+ 4   passed  3 non-null      bool
+```
+
+`rename(columns={옛이름: 새이름})`은 딕셔너리에 적은 열만 이름을 바꾸고 나머지는 그대로 둔다. 행 이름을 바꾸려면 같은 모양으로 `index={'A': '가'}`를 준다. 중요한 것은 **원본을 고치지 않고 새 데이터프레임을 돌려준다**는 점 — 그래서 `df = df.rename(...)`처럼 다시 받아야 바뀐 표를 쓸 수 있다. 바꾸고 나면 `df['age']`는 더 이상 없는 열이라 `KeyError`가 나고 `df['나이']`로 읽어야 한다. 열 이름을 통째로 갈아 끼울 때는 `df.columns = ['이름', '나이', '도시', '점수', '합격']`처럼 목록을 직접 대입하는 방법도 있는데, 열 개수가 정확히 맞아야 한다.
+
+한 가지 일반 주의사항으로, 1-5에서 정리한 **속성(괄호 없음) vs 메소드(괄호 있음)** 구분은 여기서도 그대로다. `df.info`처럼 괄호 없이 적으면 메소드가 실행되는 것이 아니라 메소드 객체 자체가 식의 값이 되어 화면에 아무 정보도 찍히지 않는다. `info()`·`head()`·`describe()`처럼 "무언가를 해 주는 것"은 괄호를 붙여야 돈다.
+
+### 1-12. 집계 — `describe()`
+
+```python
+print(df.describe())
+```
+```
+              나이      score
+count   3.000000   3.000000
+mean   47.000000  68.333333
+std    20.420578  23.629078
+min    31.000000  50.000000
+25%    35.500000  55.000000
+50%    40.000000  60.000000
+75%    55.000000  77.500000
+max    70.000000  95.000000
+```
+
+`describe()`는 **숫자 열만 골라** 개수·평균·표준편차·최소·사분위(25%·50%·75%)·최대 여덟 줄을 열마다 한 표로 보여 준다. 지난 넘파이 노트에서 `np.mean`·`np.std`·`np.median`·`np.percentile`을 따로따로 불러 모으던 기초 통계가 한 번에 나오는 셈이다. 문자열 열(`name`·`도시`)과 `bool` 열(`passed`)은 기본으로 빠지고, `describe(include='all')`을 주면 문자열 열에 대해 `unique`(고유값 수)·`top`(최빈값)·`freq`(그 빈도)를 함께 보여 준다.
+
+한 가지 짚어 둘 것은 `std`의 기준이다. `np.std`는 기본이 모표준편차(`ddof=0`)인데 판다스의 `describe()`·`df.std()`는 **표본표준편차(`ddof=1`)**가 기본이라, 같은 자료를 넣어도 값이 조금 다르게 나온다. 위 표의 `나이` 표준편차 20.42는 편차 제곱합 834를 `n-1 = 2`로 나눈 뒤 제곱근을 취한 값이다. 둘을 맞추려면 `df.std(ddof=0)` 또는 `np.std(arr, ddof=1)`로 한쪽을 맞춘다. 열이 많아 표가 옆으로 길어지면 `df.describe().T`로 뒤집어 열을 세로로 놓고 읽는 편이 편하다.
+
+### 1-13. 합치기·병합의 준비 — 표 두 장
+
+```python
+df1 = pd.DataFrame({'ID': [1, 2, 3], 'Score': [90, 80, 85]})
+df2 = pd.DataFrame({'ID': [4, 5, 6], 'Score': [75, 95, 88]})
+```
+
+파일 끝에는 열 구성이 같고(`ID`·`Score`) 행만 다른 표 두 장이 준비되어 있다. 같은 열을 가진 표를 세로로 이어 붙이는 상황 — 넘파이의 `np.vstack`에 해당하는 `pd.concat([df1, df2])` — 을 다음 시간에 다루기 위한 재료다. 이어 붙이면 인덱스가 `0, 1, 2, 0, 1, 2`로 겹치므로 `ignore_index=True`로 새로 매기거나, `ID`를 `set_index`로 올려 두는 처리가 함께 따라온다. 열은 같고 행이 다른 두 표를 붙이는 `concat`과, 키 열을 기준으로 옆으로 맞붙이는 `merge`의 갈림은 3-2에 미리 적어 두었다.
+
+### 1-14. 수업 메모 — 매크로에서 RPA로
 
 파일 중간에 "매크로(C 프로그램) → RPA(사무 업무/파이썬)"라는 한 줄이 있다. 옛날에 C로 짜던 매크로 자동화가 지금은 파이썬 기반 RPA로 넘어왔고, 그 RPA가 엑셀·CSV 같은 표 자료를 다룰 때 쓰는 도구가 바로 판다스라는 맥락이다. 넘파이 → 판다스로 이어지는 이 커리큘럼이 뒤의 RPA 과정과 맞닿는 지점이기도 하다.
 
@@ -273,7 +344,7 @@ df.info()
 df.describe()   # 숫자 열의 개수·평균·표준편차·최소·사분위·최대 한 번에
 ```
 
-이번 시간은 손으로 만든 세 줄짜리 표지만, 실제 시작점은 거의 `pd.read_csv`다. 따릉이 실습에서 `np.genfromtxt(delimiter=',', skip_header=1, encoding='utf-8-sig')`에 `dtype=str`을 따로 줘서 이름표를 별도로 읽어야 했던 일이, `read_csv` 한 줄이면 첫 줄을 열 이름으로 쓰고 열마다 자료형을 알아서 잡아 준다. 읽은 직후 `head()`·`info()`·`describe()` 세 개를 습관처럼 찍는 것이 분석의 첫 동작이다. `describe()`는 지난 노트의 `min`·`max`·`mean`·`std`·`median`(50%)을 열마다 한 표로 보여 준다.
+이번 시간은 손으로 만든 세 줄짜리 표지만, 실제 시작점은 거의 `pd.read_csv`다. 따릉이 실습에서 `np.genfromtxt(delimiter=',', skip_header=1, encoding='utf-8-sig')`에 `dtype=str`을 따로 줘서 이름표를 별도로 읽어야 했던 일이, `read_csv` 한 줄이면 첫 줄을 열 이름으로 쓰고 열마다 자료형을 알아서 잡아 준다. 읽은 직후 `head()`·`info()`·`describe()` 세 개를 습관처럼 찍는 것이 분석의 첫 동작이다. `describe()`가 보여 주는 여덟 줄은 1-12에 정리해 두었다.
 
 ### 2-3. 인덱스 다루기 — `set_index`·`reset_index`
 
@@ -295,7 +366,7 @@ df.drop(index=['A'])                            # 행 삭제
 df.loc[df['age'] >= 40, 'score'] = 0            # 조건에 맞는 행의 특정 열만 수정
 ```
 
-`np.argsort`로 순번을 얻어 다른 배열에 다시 끼우던 정렬이 `sort_values('열')` 한 줄이 된다. 행이 통째로 따라 움직이고 인덱스도 함께 간다. 마지막 줄은 `loc[조건, 열] = 값` 꼴로, 넘파이의 `scores[scores < 60] = 60` 조건 대입에 열 지정이 더해진 모양이다. 필터링한 결과에 바로 대입하는 `df[df['age'] >= 40]['score'] = 0`은 복사본에 쓰게 되어 원본이 안 바뀌는 경우가 있으니(`SettingWithCopyWarning`), 수정은 `loc` 한 번으로 하는 편이 안전하다.
+`np.argsort`로 순번을 얻어 다른 배열에 다시 끼우던 정렬이 `sort_values('열')` 한 줄이 된다. 행이 통째로 따라 움직이고 인덱스도 함께 간다. 마지막 줄은 1-10에서 본 `loc[조건, 열] = 값` 꼴 그대로다. 필터링한 결과에 바로 대입하는 `df[df['age'] >= 40]['score'] = 0`은 복사본에 쓰게 되어 원본이 안 바뀌는 경우가 있으니(`SettingWithCopyWarning`), 수정은 `loc` 한 번으로 하는 편이 안전하다.
 
 ### 2-5. 조건 필터의 다른 표현
 
@@ -356,14 +427,15 @@ df['age'] = df['age'].astype(int)    # 문자열로 들어온 숫자를 정수�
 - `pd.DataFrame(리스트 / 딕셔너리 / ndarray, columns=, index=)`·`Series`·`.values`
 - `shape`·`columns`·`index`·`head`/`tail`·`info`·`describe`
 - `iloc`(번호·끝 미포함) vs `loc`(이름·끝 포함)·이중 대괄호로 열 여러 개
-- `df[새열] = …`·`loc[조건, 열] = 값`·`SettingWithCopyWarning`
+- `df[새열] = …`·`loc[조건, 열] = 값`(기본값 깔고 조건별 채우기)·`SettingWithCopyWarning`
+- `rename(columns={옛: 새})`·`df.columns = […]`·`describe()`(표본 std `ddof=1`)·`describe(include='all')`·`.T`
 - 불리언 필터·`&`/`|`/`~`+소괄호·`isin`·`between`·`query`
 - `read_csv`·`set_index`·`sort_values`·`drop`
 - `groupby`·`agg`·`merge`·`concat`·`isna`/`fillna`·`astype`·`idxmax`·`nlargest`
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day08/p-01.py` — `import pandas as pd`, 2차원 리스트 `[['ant', 25, 'seoul'], …]`로 `pd.DataFrame(data_list)`(열 이름 `0, 1, 2` 자동)와 `columns=['name', 'age', 'city']` 지정, 딕셔너리 `{'name': […], 'age': […], 'city': […]}`로 만들기(키 = 열 이름), `df['age']`로 열 하나 꺼내 `type` 확인(`Series`·`.values`는 `numpy.ndarray`), `np.array(data_list)` 넘파이 배열 + `index=['A', 'B', 'C']`로 행 이름 붙이기, 주요 속성 `shape`·`columns`·`index`·`values`·`head(2)`·`tail(2)`·`info()`, `iloc[1]`·`iloc[1, 2]`·`loc['B']`·`loc['B', 'city']` 번호·이름 인덱싱, `iloc[0:2, 0:1]`·`loc['A':'C', 'name':'age']` 슬라이싱, `df['score'] = [100, 80, 95]` 열 추가, `df['age'] = [31, 52, 40]`·`iloc[0, 0] = 'apple'`·`loc[['A', 'B'], 'score'] = [50, 60]` 값 수정, `df['score'] > 70` 불리언 `Series`와 `df[df['score'] > 70]` 필터링, `cont = df['age'] >= 40` 조건 변수와 `&`·`|` 복합 조건, 매크로 → RPA 메모
+- `KDT_2026/2026_Python/day08/p-01.py` — `import pandas as pd`, 2차원 리스트 `[['ant', 25, 'seoul'], …]`로 `pd.DataFrame(data_list)`(열 이름 `0, 1, 2` 자동)와 `columns=['name', 'age', 'city']` 지정, 딕셔너리 `{'name': […], 'age': […], 'city': […]}`로 만들기(키 = 열 이름), `df['age']`로 열 하나 꺼내 `type` 확인(`Series`·`.values`는 `numpy.ndarray`), `np.array(data_list)` 넘파이 배열 + `index=['A', 'B', 'C']`로 행 이름 붙이기, 주요 속성 `shape`·`columns`·`index`·`values`·`head(2)`·`tail(2)`·`info()`, `iloc[1]`·`iloc[1, 2]`·`loc['B']`·`loc['B', 'city']` 번호·이름 인덱싱, `iloc[0:2, 0:1]`·`loc['A':'C', 'name':'age']` 슬라이싱, `df['score'] = [100, 80, 95]` 열 추가, `df['age'] = [31, 52, 40]`·`iloc[0, 0] = 'apple'`·`loc[['A', 'B'], 'score'] = [50, 60]` 값 수정, `df['score'] > 70` 불리언 `Series`와 `df[df['score'] > 70]` 필터링, `cont = df['age'] >= 40` 조건 변수와 `&`·`|` 복합 조건, 필터링으로 새 열 만들기 `df['passed'] = False` → `df.loc[df['score'] > 70, 'passed'] = True`, 컬럼명 변경 `df = df.rename(columns={'city': '도시', 'age': '나이'})`, 집계 `df.describe()`, 합치기·병합용 `df1`·`df2`(`ID`·`Score`) 준비, 매크로 → RPA 메모
 
 ## 관련 노트
 
