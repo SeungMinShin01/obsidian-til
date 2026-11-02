@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day10 — 페이징 반복으로 베스트셀러 목록 크롤링
 
 > 실습 파일: `day10/c-02.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · 다음: [[Python day10 Playwright 비동기로 동적 페이지 크롤링]]
 
 첫 예제가 값 하나를 뽑는 것이었다면, 두 번째 예제는 **여러 페이지에 걸친 목록**을 긁어 모은다. 예스24 일간 베스트셀러를 1~3페이지까지 돌며 책마다 제목·가격·저자를 딕셔너리로 묶어 리스트에 쌓는다. 요청 → 파싱 → 추출의 뼈대는 그대로이고, 거기에 **페이지 반복**과 **묶음 안에서 다시 추출**이라는 두 층이 얹힌다.
 
@@ -191,8 +191,7 @@ with requests.Session() as s:
 ## 실습 파일
 
 - `KDT_2026/2026_Python/day10/c-02.py` — 예스24 일간 베스트셀러(`categoryNumber=001` 국내도서) 페이징 크롤링: `book_list = []` 바깥 선언, `for page in range(1, 4)`로 f-문자열 주소 조립, `requests.get` → `BeautifulSoup(…, "html.parser")`, `soup.select(".item_info")` 카드 목록, 카드마다 `select_one('.gd_name')`·`('.yes_b')`·`('.info_auth')`의 `get_text()`와 `.strip().replace("\n","").replace("\r","")` 정리, `{"제목", "가격", "저자"}` 딕셔너리 `append`, `print(book_list)`
-- `KDT_2026/2026_Python/day10/c-03.py` — 빈 파일 (다음 수업에서 채워질 자리)
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[Python day02 range 함수와 for·while 반복문]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day10 Playwright 비동기로 동적 페이지 크롤링]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[Python day02 range 함수와 for·while 반복문]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[KDT_2026 학습 지도]]
