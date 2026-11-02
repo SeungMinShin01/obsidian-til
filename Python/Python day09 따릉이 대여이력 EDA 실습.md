@@ -126,7 +126,7 @@ sns.barplot(x=top10.values, y=top10.index)
 ### 1-8. 이용시간·거리·시간대 상관 히트맵
 
 ```python
-numeric_df = df[['이용시간(분)', '이용거리(M)', '대여 시간대']]
+numeric_df = df[ ['이용시간(분)', '이용거리(M)', '대여 시간대'] ]
 corr_matrix = numeric_df.corr()
 sns.heatmap(corr_matrix, cmap='coolwarm', fmt='.2f', annot=True)
 ```
@@ -190,8 +190,8 @@ sns.lineplot(x=hour_counts.index, y=hour_counts.values / days, marker='o')
 ```python
 q1, q3 = df['이용시간(분)'].quantile([0.25, 0.75]);  iqr = q3 - q1
 clean = df[(df['이용시간(분)'] <= q3 + 1.5 * iqr) & (df['이용거리(M)'] > 0)]
-clean[['이용시간(분)', '이용거리(M)']].corr()                     # 피어슨 — 꼬리 제거 후
-df[['이용시간(분)', '이용거리(M)']].corr(method='spearman')     # 순위 상관 — 극단값에 둔감
+clean[ ['이용시간(분)', '이용거리(M)'] ].corr()                     # 피어슨 — 꼬리 제거 후
+df[ ['이용시간(분)', '이용거리(M)'] ].corr(method='spearman')     # 순위 상관 — 극단값에 둔감
 ```
 
 1-8의 0.53이 극단값 때문에 눌린 것인지 확인하는 두 길이다. 거리 0인 기록(대여 직후 반납)을 빼고 42분(≈ Q3 + 1.5·IQR) 넘는 장시간 대여를 걷어낸 뒤 다시 재면 평소 이용의 시간–거리 관계가 더 또렷해진다.

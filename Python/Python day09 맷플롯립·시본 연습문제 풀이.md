@@ -119,7 +119,7 @@ sns.boxplot(data=df, x='주요결제수단', y='월이용금액')               
 ### 1-7. 문제 8 — 수치 네 열의 상관 히트맵
 
 ```python
-numeric_df = df[['연령', '월이용금액', '구매건수', '만족도점수']]
+numeric_df = df[ ['연령', '월이용금액', '구매건수', '만족도점수'] ]
 corr_matrix = numeric_df.corr()
 sns.heatmap(corr_matrix, cmap='coolwarm', fmt='.2f', annot=True)
 ```
@@ -137,7 +137,7 @@ sns.heatmap(corr_matrix, cmap='coolwarm', fmt='.2f', annot=True)
 
 ```python
 sns.scatterplot(data=df, x='구매건수', y='만족도점수', hue='회원등급')              # 문제 9
-sns.pairplot(df[['연령', '월이용금액', '만족도점수', '재구매여부']], hue='재구매여부')  # 문제 10
+sns.pairplot(df[ ['연령', '월이용금액', '만족도점수', '재구매여부'] ], hue='재구매여부')  # 문제 10
 ```
 
 | 문제 | 그리는 것 | 격자 크기 | 읽는 법 |
@@ -252,7 +252,7 @@ plt.tight_layout()
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/practice/practice5.py` — `np.random.seed(42)`로 고객 200명 데이터프레임 생성(`randint`·`normal`·`poisson`·`clip`·`choice(p=)`·`f'USER_{i:03d}'`), 문제 1 `plt.plot` 두 번으로 상위 10명 월이용금액·만족도점수 선 그래프, 문제 2 `value_counts().index/.values`를 `plt.bar`+`bar_label`로, 문제 3 `plt.scatter(연령, 월이용금액, alpha=0.6)`, 문제 4 `plt.hist(만족도점수, bins=10, edgecolor)`, 문제 5 `sns.boxplot(y='월이용금액')`, 문제 6 `sns.countplot(x='회원등급', hue='재구매여부', palette='Set2')`, 문제 7 `sns.boxplot(x='주요결제수단', y='월이용금액')`, 문제 8 수치 네 열 `corr()` → `sns.heatmap(cmap='coolwarm', fmt='.2f', annot=True)`, 문제 9 `sns.scatterplot(x='구매건수', y='만족도점수', hue='회원등급')`, 문제 10 `sns.pairplot(df[[연령, 월이용금액, 만족도점수, 재구매여부]], hue='재구매여부')`
+- `KDT_2026/2026_Python/practice/practice5.py` — `np.random.seed(42)`로 고객 200명 데이터프레임 생성(`randint`·`normal`·`poisson`·`clip`·`choice(p=)`·`f'USER_{i:03d}'`), 문제 1 `plt.plot` 두 번으로 상위 10명 월이용금액·만족도점수 선 그래프, 문제 2 `value_counts().index/.values`를 `plt.bar`+`bar_label`로, 문제 3 `plt.scatter(연령, 월이용금액, alpha=0.6)`, 문제 4 `plt.hist(만족도점수, bins=10, edgecolor)`, 문제 5 `sns.boxplot(y='월이용금액')`, 문제 6 `sns.countplot(x='회원등급', hue='재구매여부', palette='Set2')`, 문제 7 `sns.boxplot(x='주요결제수단', y='월이용금액')`, 문제 8 수치 네 열 `corr()` → `sns.heatmap(cmap='coolwarm', fmt='.2f', annot=True)`, 문제 9 `sns.scatterplot(x='구매건수', y='만족도점수', hue='회원등급')`, 문제 10 `sns.pairplot(df[ [연령, 월이용금액, 만족도점수, 재구매여부] ], hue='재구매여부')`
 
 ## 관련 노트
 
