@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day07 — 넘파이 배열 병합·정렬과 조건 필터링
 
 > 실습 파일: `day07/n-03.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day06 넘파이 인덱싱·슬라이싱과 배열 연산]] · 다음: [[Python day07 넘파이 통계 함수와 axis]]
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day06 넘파이 연습문제 풀이]] · 다음: [[Python day07 넘파이 통계 함수와 axis]]
 
 배열을 만들고 자르는 법까지 봤으니 이번에는 **배열 여러 개를 하나로 붙이고, 줄 세우고, 조건으로 골라내는** 도구들이다. 붙이기는 `vstack`·`hstack`·`concatenate` 세 함수, 정렬은 `np.sort`와 `배열.sort()`에 `argsort`까지, 필터링은 지난 시간에 맛본 불리언 인덱싱을 `np.where`와 `&`·`|`·`~`로 넓힌다. 주석에 적어 둔 한 줄 — *개발자가 `for`를 쓰지 않는다는 것이 넘파이의 장점* — 이 이 시간을 관통하는 생각이다. 반복문으로 돌릴 일을 전부 식 하나로 끝낸다.
 
@@ -238,4 +238,4 @@ np.nonzero(mask)[0]        # [3 4]
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day06 넘파이 인덱싱·슬라이싱과 배열 연산]] · [[Python day07 넘파이 통계 함수와 axis]] · [[Python day02 리스트 선언과 인덱싱·슬라이싱]] · [[Python day03 콜백 함수와 map·filter·람다]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day06 넘파이 연습문제 풀이]] · [[Python day07 넘파이 통계 함수와 axis]] · [[Python day02 리스트 선언과 인덱싱·슬라이싱]] · [[Python day03 콜백 함수와 map·filter·람다]] · [[KDT_2026 학습 지도]]
