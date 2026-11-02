@@ -152,6 +152,48 @@ sns.heatmap(corr_matrix, cmap='coolwarm', fmt='.2f', annot=True)
 
 작은 데이터에서는 전처리가 두 줄이고 해석이 길었지만, 큰 원천 로그에서는 **전처리가 본문**이고 그림은 집계 결과를 보여 주는 끝단이다. 두 실습을 붙여 보면 EDA의 틀은 같되 데이터가 더러울수록 4단계에 시간이 쏠린다는 것이 드러난다.
 
+### 1-10. 수업 정리판 — 전처리를 더 짧게 쓰는 방법
+
+수업에서 다시 정리한 판(`practice6.py` 갱신분)은 결론은 같되 **전처리 코드가 눈에 띄게 짧아졌다**. 한글 폰트·테마 설정은 타이타닉 노트의 1-8과 같고, 달라진 줄만 모아 본다.
+
+```python
+df = df.replace({'\\N': None, '': None})                        # 결측 표기 두 가지를 한 번에
+df['성별'] = df['성별'].str.upper().fillna('U')                  # m/f → M/F, 결측 → U
+df['이용시간(분)'] = pd.to_numeric(df['이용시간(분)'], errors='coerce').fillna(0)
+df['이용거리(M)'] = pd.to_numeric(df['이용거리(M)'], errors='coerce').fillna(0)
+df['대여일시'] = pd.to_datetime(df['대여일시'])
+df['반납일시'] = pd.to_datetime(df['반납일시'])                   # 반납 시각도 날짜형으로
+df['대여 시간대'] = df['대여일시'].dt.hour
+
+sns.countplot(data=df, x='성별')                                 # 5-1
+sns.countplot(data=df, x='대여 시간대')                           # 5-2 — value_counts 없이 바로
+인기대여소 = df['대여 대여소명'].value_counts().head(10)
+sns.barplot(x=인기대여소.values, y=인기대여소.index)               # 5-3 가로 막대
+수치형자료들 = df.select_dtypes(include='number')                 # 5-4 숫자 열 자동 선택
+sns.heatmap(수치형자료들.corr(), fmt='.2f', annot=True)
+```
+
+| 단계 | 앞의 방식 | 정리판 | 차이 |
+| --- | --- | --- | --- |
+| 결측 표기 | `replace('\\N', None)` | `replace({'\\N': None, '': None})` | 딕셔너리로 여러 표기를 한 번에 |
+| 성별 통일 | `.replace('m','M').replace('f','F')` | `.str.upper()` | 문자열 접근자 한 번으로 소문자 전부 |
+| 수치 변환 | `to_numeric(열)` | `to_numeric(열, errors='coerce').fillna(0)` | 못 읽는 값은 NaN → 0 |
+| 날짜 변환 | `대여일시`만 | `반납일시`도 | 두 시각의 차이를 구할 준비 |
+| 시간대 막대 | `value_counts().sort_index()` → `barplot` | `countplot(x='대여 시간대')` | 세기와 정렬을 시본에 맡김 |
+| 히트맵 열 | 세 열을 이중 대괄호로 지정 | `select_dtypes(include='number')` | 숫자형 열을 자동으로 전부 |
+
+**`replace`에 딕셔너리를 주면** `{기존값: 새값}` 쌍을 여러 개 넣어 표 전체에서 한 번에 바꾼다. `'\\N'`과 빈 문자열 `''`을 함께 결측으로 보낸 것인데, `read_csv`가 빈칸은 이미 `NaN`으로 읽어 두므로 둘째 쌍은 안전장치에 가깝다 — 공백만 든 칸처럼 다른 표기가 더 있으면 쌍을 하나 더 추가하면 된다.
+
+**`.str.upper()`**는 시리즈의 문자열 접근자 `.str`로 열 전체를 대문자로 바꾼다. `m`·`f`를 하나씩 찍어 바꾸지 않아도 어떤 소문자 표기가 섞여 있든 한 줄로 끝나고, 결측(`None`)은 그대로 결측으로 남아 뒤의 `fillna('U')`가 받는다. 결과 분포는 앞 방식과 같다(M 169만 · U 86만 · F 78만).
+
+**`errors='coerce'`**가 이 판의 핵심이다. `to_numeric`의 기본값은 `errors='raise'`라 숫자로 못 읽는 글자가 **한 칸이라도** 있으면 거기서 멈춘다(1-4에서 `'\\N'`을 먼저 치환해야 했던 이유). `coerce`는 못 읽는 칸을 `NaN`으로 바꾸고 계속 진행하므로, 치환 순서에 덜 묶이고 원본에 어떤 잡음 표기가 있어도 변환 자체는 통과한다. 그다음 `fillna(0)`은 그 결측을 "0분·0m"로 채우는 선택인데, 이 선택은 결과에 흔적을 남긴다 — `mean()`·`corr()`는 `NaN`을 자동으로 빼고 계산하지만 `0`은 실제 값으로 들어가므로 평균이 내려가고 시간–거리 상관도 달라진다. **결측을 0으로 채울지 비워 둘지는 "그 열의 0이 실제로 있을 수 있는 값인가"**로 정하는 편이 안전하다. 이용거리 0m(대여 직후 반납)은 실제로 존재하는 값이라, 결측을 0으로 채우면 진짜 0과 섞여 구분이 사라진다는 점을 적어 둔다.
+
+**`반납일시`까지 날짜형으로** 바꿔 두면 `(df['반납일시'] - df['대여일시'])`가 `Timedelta`가 되어 `.dt.total_seconds() / 60`으로 **분 단위 이용시간을 직접 계산**할 수 있다. 이것을 `이용시간(분)` 열과 나란히 놓으면 제공된 값과 실측이 어긋나는 행(자정을 넘긴 대여 등)을 찾는 검증 수단이 된다.
+
+**`countplot(x='대여 시간대')`**는 1-6의 `value_counts().sort_index()` → `barplot` 두 줄을 한 줄로 줄인다. x가 정수면 시본이 값 순서(0 → 23)로 정렬해 주므로 많은 순으로 섞이는 문제가 없다. 다만 시본이 333만 행을 그림 안에서 직접 세기 때문에 큰 데이터에서는 미리 `value_counts()`로 24개 숫자만 만들어 `barplot`에 넘기는 쪽이 훨씬 빠르다 — 작은 데이터에서는 `countplot`, 수백만 행에서는 집계 후 `barplot`이라는 기준을 두면 된다.
+
+**`select_dtypes(include='number')`**는 `int`·`float` 열을 자동으로 전부 고른다. 열 이름을 적지 않아도 되는 대신 대여소번호·거치대 번호처럼 **숫자로 저장된 식별자 열**도 함께 들어와 히트맵이 커진다. 식별자끼리의 상관계수는 의미가 없으므로 그 칸은 읽지 않거나, 1-8처럼 보고 싶은 열만 이중 대괄호로 고르는 쪽이 그림이 깔끔하다. 반대로 열이 수십 개인 데이터를 처음 훑을 때는 자동 선택이 빠르다. `exclude='object'`처럼 빼는 쪽으로도 쓸 수 있다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 큰 CSV를 가볍게 읽기 — `usecols`·`dtype`·`na_values`
@@ -237,10 +279,11 @@ df.loc[df['성별'] != 'U', '성별'].value_counts(normalize=True).round(3)   # 
 - `value_counts().sort_index()`·`head(10)`·`barplot` 가로 막대·`lineplot`·`unstack` 히트맵
 - `corr(method='spearman')`·IQR 필터·긴 꼬리 분포·순환 변수(`sin`/`cos`)
 - `nunique`·누적 비율·`merge`로 좌표 붙이기·`folium`·Polars/DuckDB
+- `replace({…})` 딕셔너리·`.str.upper()`·`to_numeric(errors='coerce')`·`fillna(0)` vs 결측 유지·`Timedelta.dt.total_seconds()`·`select_dtypes(include/exclude)`
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/practice/practice6.py` (문제 2) — 가설 세 개 주석, `pd.read_csv(…_2501.csv / …_2502.csv, encoding='cp949')`, `pd.concat([data1, data2], axis=0, ignore_index=True)` → `(3333662, 17)`, `df.replace('\\N', None)`, `성별.replace('m','M').replace('f','F').fillna('U')`, `to_numeric(이용시간(분)/이용거리(M))`·`to_datetime(대여일시)`·`.dt.hour` → `대여 시간대`, `sns.countplot(x='성별', hue='성별', palette='Set2')`, `value_counts().sort_index()`를 `sns.barplot(x=index, y=values)`로 시간대별 대여량, `value_counts().head(10)`을 `sns.barplot(x=values, y=index)` 가로 막대로 상위 10 대여소, 수치 세 열 `corr()` → `sns.heatmap(cmap='coolwarm', fmt='.2f', annot=True)`
+- `KDT_2026/2026_Python/practice/practice6.py` (문제 2) — 가설 세 개 주석, `pd.read_csv(…_2501.csv / …_2502.csv, encoding='cp949')`, `pd.concat([data1, data2], axis=0, ignore_index=True)` → `(3333662, 17)`, `df.replace('\\N', None)`, `성별.replace('m','M').replace('f','F').fillna('U')`, `to_numeric(이용시간(분)/이용거리(M))`·`to_datetime(대여일시)`·`.dt.hour` → `대여 시간대`, `sns.countplot(x='성별', hue='성별', palette='Set2')`, `value_counts().sort_index()`를 `sns.barplot(x=index, y=values)`로 시간대별 대여량, `value_counts().head(10)`을 `sns.barplot(x=values, y=index)` 가로 막대로 상위 10 대여소, 수치 세 열 `corr()` → `sns.heatmap(cmap='coolwarm', fmt='.2f', annot=True)` · 수업 정리판(2026-11-02 갱신분): `df.replace({'\\N': None, '': None})`, `성별.str.upper().fillna('U')`, `to_numeric(…, errors='coerce').fillna(0)`, `to_datetime(대여일시/반납일시)`, `sns.countplot(x='성별')`·`sns.countplot(x='대여 시간대')`, `value_counts().head(10)` 가로 `barplot`, `select_dtypes(include='number').corr()` → `sns.heatmap(fmt='.2f', annot=True)`, 가설 세 개 주석은 파일 끝에
 - `KDT_2026/2026_Python/practice/서울특별시 공공자전거 대여이력 정보_2501.csv`, `…_2502.csv` — 서울 열린데이터 광장 공공자전거 대여이력 2025년 1월(1,704,188행)·2월(1,629,474행), 17열(자전거번호·대여일시·대여 대여소번호·대여 대여소명·대여거치대·반납일시·반납대여소번호·반납대여소명·반납거치대·이용시간(분)·이용거리(M)·생년·성별·이용자종류·대여대여소ID·반납대여소ID·자전거구분), cp949
 
 ## 관련 노트

@@ -120,6 +120,38 @@ print(df.groupby('Embarked')['Survived'].mean())  # C 0.554, Q 0.390, S 0.339
 
 가설 하나에 그림 하나와 숫자 하나가 대응하는 구조다. 보고서를 쓸 때 "그림 5-4는 가설 1을, 표의 `groupby('Sex')`는 그 비율을" 식으로 번호를 맞추면 읽는 사람이 따라오기 쉽다.
 
+### 1-8. 수업 정리판 — 시본만으로 같은 그림 그리기
+
+수업에서 다시 정리한 판(`practice6.py` 갱신분)은 앞의 흐름을 그대로 두고 **도구를 시본으로 통일**했다. 그림마다 달라진 부분만 적어 둔다.
+
+```python
+plt.rc('font', family='Malgun Gothic')                  # 윈도우 한글 폰트
+plt.rcParams['axes.unicode_minus'] = False              # 마이너스 부호 깨짐 방지
+sns.set_theme(font='Malgun Gothic', rc={'axes.unicode_minus': False}, style='whitegrid')
+
+sns.countplot(data=df, x='Survived')                    # 5-1 생존 분포 — 세면서 그린다
+plt.xticks([0, 1], ['사망', '생존'])                      # 눈금 0/1 자리의 글자만 바꾼다
+
+사망자나이 = df[df['Survived'] == 0]['Age']              # 불리언 인덱싱으로 두 시리즈
+생존자나이 = df[df['Survived'] == 1]['Age']
+sns.histplot(data=사망자나이, label='사망자', kde=True)    # 5-2 같은 축에 두 번 겹쳐 그린다
+sns.histplot(data=생존자나이, label='생존자', kde=True)
+plt.legend()
+
+sns.countplot(data=df, x='Sex', hue='Survived')         # 5-3 ~ 5-5 팔레트 없이 기본 색
+```
+
+| 그림 | 앞의 방식 | 정리판 | 차이 |
+| --- | --- | --- | --- |
+| 생존 분포 | `value_counts().sort_index()` → `plt.bar` | `sns.countplot(x='Survived')` + `plt.xticks` | 세는 일을 시본에 맡기고, 0/1 눈금만 글자로 |
+| 나이 × 생존 | `histplot(x='Age', hue='Survived')` 한 줄 | 두 시리즈를 뽑아 `histplot` 두 번 + `label` + `plt.legend()` | 결과는 같은 겹친 히스토그램, 범례는 직접 |
+| 범주 × 생존 | `palette=` 지정 | 기본 색 | 의미 차이 없음 |
+| 공통 | — | `plt.rc` + `sns.set_theme(font=…)` | 한글 라벨이 □로 깨지지 않게 |
+
+`countplot`은 범주별 개수를 **세면서 그리는** 함수라, `value_counts()`로 미리 세어 `plt.bar`에 넘기던 두 단계가 한 줄로 준다. 정수 범주는 값 순서(0 → 1)로 정렬되므로 `sort_index()`도 필요 없다. 대신 x축 눈금에 데이터 값 `0`·`1`이 그대로 찍히기 때문에 `plt.xticks([0, 1], ['사망', '생존'])`으로 **눈금 위치는 두고 글자만** 바꾼다 — 첫 인자가 위치, 둘째 인자가 그 자리에 쓸 라벨이다.
+
+히스토그램을 두 번 겹쳐 그리는 방식은 `hue` 한 줄보다 길지만, 그룹마다 `bins`·색·투명도를 따로 줄 수 있고 `label`을 직접 적으므로 범례 글자를 한글로 바로 쓸 수 있다. 그래서 한글 폰트 설정이 같은 파일에 함께 들어온 것이다. 폰트는 두 군데에 적는다 — `plt.rc('font', family=…)`는 맷플롯립 전역 설정이고, `sns.set_theme()`는 폰트를 포함한 rc 값을 **테마로 통째로 덮어쓰기** 때문에 `plt.rc`만 해 두고 나중에 `set_theme()`를 부르면 한글이 다시 깨진다. 그래서 `set_theme(font='Malgun Gothic', rc={…})`처럼 테마 안에 폰트와 `unicode_minus`를 같이 넣는다. 맥에서는 `'AppleGothic'`, 리눅스에서는 `'NanumGothic'`으로 폰트 이름만 바꾸면 된다. `style='whitegrid'`는 흰 배경에 옅은 격자선을 깔아 막대 높이를 눈으로 비교하기 쉽게 하는 테마다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 비율 막대 — 카운트플롯의 한계를 넘는 `barplot`
@@ -206,10 +238,11 @@ plt.tight_layout()
 - `subplots`+`zip(axes, …)`·`ax=`·`tight_layout`
 - 교란 변수·심슨의 역설·`chi2_contingency`·p-값
 - feature·`get_dummies`·로지스틱 회귀·결정 트리·`train_test_split`
+- `plt.rc('font')`·`axes.unicode_minus`·`sns.set_theme(font=, rc=, style=)`·`plt.xticks(위치, 라벨)`·`histplot` 겹쳐 그리기 + `label`/`plt.legend()`
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/practice/practice6.py` (문제 1) — 가설 세 개 주석, `pd.read_csv('./practice/train.csv')`·`info()`·`isnull().sum()`(Age 177·Cabin 687·Embarked 2), `Age.fillna(median())` 28.0·`Embarked.fillna(mode()[0])` 'S', `value_counts().sort_index()`를 `plt.bar(['사망','생존'], …, color=['gray','skyblue'])`+`bar_label`로, `sns.histplot(x='Age', hue='Survived', kde=True, bins=30)`, `sns.countplot(x='Sex'/'Pclass'/'Embarked', hue='Survived', palette=…)` 세 장, `groupby('Sex'/'Pclass'/'Embarked')['Survived'].mean()`
+- `KDT_2026/2026_Python/practice/practice6.py` (문제 1) — 가설 세 개 주석, `pd.read_csv('./practice/train.csv')`·`info()`·`isnull().sum()`(Age 177·Cabin 687·Embarked 2), `Age.fillna(median())` 28.0·`Embarked.fillna(mode()[0])` 'S', `value_counts().sort_index()`를 `plt.bar(['사망','생존'], …, color=['gray','skyblue'])`+`bar_label`로, `sns.histplot(x='Age', hue='Survived', kde=True, bins=30)`, `sns.countplot(x='Sex'/'Pclass'/'Embarked', hue='Survived', palette=…)` 세 장, `groupby('Sex'/'Pclass'/'Embarked')['Survived'].mean()` · 수업 정리판(2026-11-02 갱신분): `plt.rc('font', family='Malgun Gothic')`·`plt.rcParams['axes.unicode_minus']=False`·`sns.set_theme(font='Malgun Gothic', rc={…}, style='whitegrid')`, `sns.countplot(x='Survived')`+`plt.xticks([0,1], ['사망','생존'])`, 불리언 인덱싱으로 뽑은 사망자·생존자 `Age`를 `sns.histplot(data=…, label=…, kde=True)` 두 번 + `plt.legend()`, `sns.countplot(x='Sex'/'Pclass'/'Embarked', hue='Survived')` 세 장
 - `KDT_2026/2026_Python/practice/train.csv` — 캐글 Titanic 학습 데이터 891행 × 12열(`PassengerId`·`Survived`·`Pclass`·`Name`·`Sex`·`Age`·`SibSp`·`Parch`·`Ticket`·`Fare`·`Cabin`·`Embarked`)
 
 ## 관련 노트
