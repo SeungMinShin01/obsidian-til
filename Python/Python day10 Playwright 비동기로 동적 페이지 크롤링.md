@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day10 — Playwright 비동기로 동적 페이지 크롤링
 
 > 실습 파일: `day10/c-03.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · 다음: [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]]
 
 앞의 두 예제는 `requests`로 HTML을 한 번 받아 오면 끝이었다. 세 번째 예제는 그 방식이 통하지 않는 페이지를 다룬다. 네이버 이미지 검색 결과는 처음 받은 HTML에 사진이 거의 없고, **스크롤을 내릴 때마다 자바스크립트가 사진을 더 불러온다**. 그래서 진짜 브라우저(크로미움)를 코드로 띄워 놓고, 사람이 하듯 페이지를 열고 → 기다리고 → 스크롤하고 → 그려진 결과를 집는다. 이 일을 맡는 것이 `Playwright`이고, 브라우저와 주고받는 동작이 전부 비동기라 `asyncio`·`async`·`await`가 함께 들어온다.
 
@@ -276,4 +276,4 @@ results = asyncio.run(asyncio.gather(crawl("짱구"), crawl("도라에몽"), cra
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day04 예외 처리 try·except·else·finally]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day04 예외 처리 try·except·else·finally]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[KDT_2026 학습 지도]]
