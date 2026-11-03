@@ -1,0 +1,41 @@
+name: Update README
+
+on:
+  schedule:
+    - cron: "47 14 * * *"   # 매일 23:47 KST
+  workflow_dispatch:         # Actions 탭에서 수동 실행
+
+permissions:
+  contents: write
+
+concurrency:
+  group: readme
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # 성장 곡선에 전체 git 기록이 필요
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install numpy
+
+      - run: python .github/scripts/update_readme.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md .github/assets
+          if git diff --cached --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "README 자동 갱신 (그래프·서가·성장 곡선)"
+            git push
+          fi
