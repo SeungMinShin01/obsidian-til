@@ -8,9 +8,9 @@ tags: [학습, python]
 # Python day12 — 사이킷런 단순 선형 회귀로 물고기 무게 예측
 
 > 실습 파일: `day12/s-01.py`, `day12/Fish.csv`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · 다음: [[Python day12 사이킷런 선형 회귀 연습문제 풀이]]
 
-day06~09가 **자료를 읽고·고치고·그리는** 단계였고 day10~11이 **자료를 바깥에서 가져오는** 단계였다면, day12는 드디어 그 자료로 **무언가를 맞히는** 단계다. 도구는 사이킷런(`scikit-learn`), 재료는 캐글의 Fish Market 데이터(물고기 159마리의 종·무게·길이·높이·너비)다. 첫 모델은 가장 단순한 **단순 선형 회귀** — 물고기의 대각선 길이(`Length2`) 하나만 보고 무게(`Weight`)를 맞히는 직선 하나를 긋는다. 코드는 열 줄 남짓이지만 **특성·타깃 → 학습/테스트 분리 → `fit` → `coef_`·`intercept_` → `predict` → 산점도 위에 직선**이라는 머신러닝 코드의 뼈대가 전부 들어 있어, 앞으로 나올 모델들은 이 뼈대에서 `LinearRegression` 한 줄만 바뀐다.
+day06~09가 **자료를 읽고·고치고·그리는** 단계였고 day10~11이 **자료를 바깥에서 가져오는** 단계였다면, day12는 드디어 그 자료로 **무언가를 맞히는** 단계다. 도구는 사이킷런(`scikit-learn`), 재료는 캐글의 Fish Market 데이터(물고기 159마리의 종·무게·길이·높이·너비)다. 첫 모델은 가장 단순한 **단순 선형 회귀** — 물고기의 대각선 길이(`Length2`) 하나만 보고 무게(`Weight`)를 맞히는 직선 하나를 긋는다. 코드는 열 줄 남짓이지만 **특성·타깃 → 학습/테스트 분리 → `fit` → `coef_`·`intercept_` → `predict` → 산점도 위에 직선 → 떼어 둔 테스트 자료로 RMSE·R² 평가**라는 머신러닝 코드의 뼈대가 전부 들어 있어, 앞으로 나올 모델들은 이 뼈대에서 `LinearRegression` 한 줄만 바뀐다. 직선 하나로는 안 맞는 자료가 있다는 "문제점"과 그 답(다항 회귀)까지 수업 끝에 예고되어 있다.
 
 ## 1. 배운 내용
 
@@ -173,7 +173,37 @@ plt.show()
 
 day09의 산점도(`scatter`)와 선 차트(`plot`)를 한 도화지에 겹친 것이다. 직선을 그리려고 x를 촘촘히 만들 필요 없이 **양 끝 두 점의 예측값**만 이으면 되는 것이 선형 회귀라서 가능한 요령이다. 그림을 보면 점들이 직선 주위에 모여 있지만 길이가 길어질수록 위로 휘어 올라가는 경향이 보이는데, 이 "휨"이 3-1의 출발점이다. `show()`는 함수 호출이므로 괄호까지 적어야 창이 뜬다 — 괄호를 빼면 함수 객체를 참조만 하고 아무 일도 일어나지 않는다.
 
-### 1-10. 머신러닝 코드의 뼈대
+### 1-10. 문제점 — 직선은 비례만 안다
+
+수업 주석 11)이 짚는 한계는 한 줄이다. "x, y가 직선 관계이며 실 자료들은 꼭 비례 증가가 아닐 수 있다." 단순 선형 회귀는 길이가 1 cm 늘 때 무게가 항상 30.4 g씩 는다고 가정하는데, 1-9의 그림에서 본 것처럼 실제 물고기는 길어질수록 무게가 **더 가파르게** 는다. 직선은 이 휨을 따라가지 못해 작은 물고기는 음수 무게로, 큰 물고기는 실제보다 가볍게 찍는다. 주석이 적어 둔 해결책은 **다항 회귀로 확장해 특성을 추가**하는 것 — `x` 하나였던 특성에 `x²`를 더해 곡선으로 맞추는 방법이고, 코드는 3-1에 정리해 둔다. 핵심은 "모델을 바꾸는" 것이 아니라 "특성을 더하는" 것이라는 점이다.
+
+### 1-11. 모델 평가 — 테스트 자료로 RMSE와 R² 구하기
+
+```python
+Y_pred = model.predict(X_test)      # 테스트용 특성 32개 → 예측 무게 32개
+
+import numpy as np
+from sklearn.metrics import mean_squared_error
+rmse = np.sqrt(mean_squared_error(Y_test, Y_pred))
+print("rmse:", rmse)                # 160.0
+
+from sklearn.metrics import r2_score
+r2 = r2_score(Y_test, Y_pred)
+print("r2:", r2)                    # 0.8199... → 82%
+```
+
+1-5에서 떼어 둔 테스트 자료 32마리가 드디어 쓰이는 자리다. 학습에 쓰지 않은 특성(`X_test`)을 넣어 예측을 받고, 그 예측을 **정답지(`Y_test`)와 비교**해 점수를 낸다. 수업 주석의 표현대로 "훈련 세트는 규칙을 찾는 자료, 테스트 세트는 학습 후 평가·예측 성능 점수"다. 두 함수 모두 인자 순서가 `(정답, 예측)`이다.
+
+| 지표 | 함수 | 값 | 읽는 법 |
+| --- | --- | --- | --- |
+| RMSE (평균 제곱근 오차) | `np.sqrt(mean_squared_error(Y_test, Y_pred))` | 160 g | 예측 무게가 실제와 **평균 160 g** 어긋남 — 타깃과 같은 단위 |
+| R² (결정계수) | `r2_score(Y_test, Y_pred)` | 0.82 | 무게의 전체 변동 중 **82%**를 길이 하나가 설명 — 0~1 비율 |
+
+`mean_squared_error`는 오차를 제곱해 평균 낸 값이라 단위가 g²이고 숫자가 커서(약 25,600) 감이 안 온다. 그래서 넘파이의 `sqrt`로 제곱근을 씌워 **다시 g 단위로** 돌려놓은 것이 RMSE다. 제곱을 거치기 때문에 크게 틀린 표본이 더 무겁게 반영된다 — 큰 물고기 몇 마리를 많이 빗나간 것이 160 g을 키운 주범이다. R²는 수업 주석대로 "타깃 데이터의 전체 변동성 대비 모델이 얼마나 잘 설명하는지 0~1 비율"이다. 1이면 완벽, 0이면 평균으로만 찍는 것과 같고, 음수가 나오면 평균보다도 못한 모델이다. 82%면 직선치고 꽤 잘 맞는 편이지만, 남은 18%가 1-10의 "휨"이다.
+
+RMSE와 R²는 서로 보완한다 — R²는 단위가 없어 자료가 달라도 비교가 되고, RMSE는 "몇 g 틀리나"라는 현실 감각을 준다. 무게 평균이 398 g인 자료에서 160 g 오차는 작지 않으므로, R² 0.82라는 숫자만 보고 안심하긴 이르다.
+
+### 1-12. 머신러닝 코드의 뼈대
 
 ```text
 ① 자료 읽기        pd.read_csv → info()
@@ -182,30 +212,29 @@ day09의 산점도(`scatter`)와 선 차트(`plot`)를 한 도화지에 겹친 �
 ④ 모델 생성·학습   model = 알고리즘();  model.fit(X_train, Y_train)
 ⑤ 결과 확인        coef_ · intercept_ (모델마다 다름)
 ⑥ 예측            model.predict(새 X)
-⑦ 시각화·평가      scatter + plot / score (2-1)
+⑦ 시각화          scatter + plot
+⑧ 평가            predict(X_test) → RMSE · R² (테스트 자료)
 ```
 
-이 일곱 단계가 사이킷런 코드의 공통 틀이다. 알고리즘을 바꿔도 ④의 클래스 이름만 달라지고 `fit`·`predict`는 그대로다.
+이 여덟 단계가 사이킷런 코드의 공통 틀이다. 알고리즘을 바꿔도 ④의 클래스 이름만 달라지고 `fit`·`predict`는 그대로이며, ⑧의 지표만 회귀(RMSE·R²)냐 분류(정확도)냐에 따라 바뀐다.
 
 ## 2. 추가로 알면 좋은 활용법
 
-### 2-1. 모델 평가 — `score`와 테스트 자료의 쓸모
+### 2-1. 평가 지름길 `score`와 학습·테스트 점수 비교
 
 ```python
 print(model.score(X_train, Y_train))   # 0.849
-print(model.score(X_test, Y_test))     # 0.820
+print(model.score(X_test, Y_test))     # 0.820  ← r2_score(Y_test, Y_pred)와 같은 값
 ```
 
-수업 코드는 테스트 자료를 떼어 두기만 하고 쓰지 않았는데, 그 자료의 용도가 `score`다. 회귀 모델의 `score`는 **결정계수 R²** — 타깃의 흩어짐 중 모델이 설명한 비율이다(1이면 완벽, 0이면 평균으로 찍는 것과 같음). 학습용 0.85·테스트용 0.82로 큰 차이가 없으면 외운 것이 아니라 일반화된 것이다. 학습용 점수만 높고 테스트용이 뚝 떨어지면 **과적합**이고, day09에서 `val_loss`가 다시 오르는 그래프로 본 현상이 이것이다.
+회귀 모델의 `score`는 안에서 `predict`까지 하고 **R²를 바로 돌려주는** 지름길이다. 1-11의 `r2_score(Y_test, Y_pred)`와 값이 같다. 이 한 줄 덕에 학습용과 테스트용 점수를 나란히 놓기 쉬운데, 학습용 0.85·테스트용 0.82로 큰 차이가 없으면 외운 것이 아니라 일반화된 것이다. 학습용 점수만 높고 테스트용이 뚝 떨어지면 **과적합**이고, day09에서 `val_loss`가 다시 오르는 그래프로 본 현상이 이것이다.
 
 ```python
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-pred = model.predict(X_test)
-print(mean_absolute_error(Y_test, pred))          # 평균 절대 오차 (g)
-print(mean_squared_error(Y_test, pred) ** 0.5)    # RMSE (g)
+from sklearn.metrics import mean_absolute_error
+print(mean_absolute_error(Y_test, Y_pred))   # 128.8 — 평균 절대 오차 (g)
 ```
 
-R²는 단위가 없어 감이 안 올 때 MAE·RMSE로 "평균 몇 g 틀리나"를 본다. 타깃과 같은 단위라 읽기 쉽다.
+RMSE의 짝으로 **MAE**(평균 절대 오차)도 자주 본다. 제곱 없이 오차의 절댓값을 평균 내므로 큰 실수에 덜 끌려간다. 같은 자료에서 MAE 129 g < RMSE 160 g인데, 이 차이가 클수록 "몇 마리를 크게 틀렸다"는 신호다.
 
 ### 2-2. 특성을 여러 개로 — 다중 선형 회귀
 
@@ -298,7 +327,7 @@ clf.predict([[30, 400]])     # 'Bream' 같은 종 이름
 clf.score(X_test, Y_test)    # 정확도 (맞힌 비율)
 ```
 
-같은 Fish 자료로 타깃을 `Species`로 바꾸면 분류 문제다. 1-10의 일곱 단계가 그대로이고, 모델 클래스와 `score`의 뜻(R² → 정확도)만 달라진다. k-최근접 이웃·로지스틱 회귀·결정 트리·랜덤 포레스트가 분류 쪽의 첫 모델들이다.
+같은 Fish 자료로 타깃을 `Species`로 바꾸면 분류 문제다. 1-12의 여덟 단계가 그대로이고, 모델 클래스와 `score`의 뜻(R² → 정확도)만 달라진다. k-최근접 이웃·로지스틱 회귀·결정 트리·랜덤 포레스트가 분류 쪽의 첫 모델들이다.
 
 ### 3-5. 특성 스케일링과 파이프라인
 
@@ -320,9 +349,9 @@ clf.score(X_test, Y_test)    # 정확도 (맞힌 비율)
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day12/s-01.py` — 사이킷런 단순 선형 회귀: `pip install scikit-learn` 주석과 머신러닝 목표·특성/타깃·지도/비지도 정의 주석, 캐글 Fish Market 출처 주석, `pd.read_csv('./day12/Fish.csv')` → `df.info()`, `feature = ['Length2']`(2차원 특성)·`target = 'Weight'` → `X = df[feature]`·`Y = df[target]`, `train_test_split(X, Y, test_size=0.2, random_state=42)` 네 변수 언패킹, `LinearRegression()` → `model.fit(X_train, Y_train)`, `model.coef_`·`model.intercept_` 출력, `model.predict([[30]])`, `plt.scatter(X_train, Y_train)` + 빨간 예측점 `scatter([30], …, color="red")` + `plt.plot([0, 100], model.predict([[0], [100]]))` 직선 → `show`
+- `KDT_2026/2026_Python/day12/s-01.py` — 사이킷런 단순 선형 회귀: `pip install scikit-learn` 주석과 머신러닝 목표·특성/타깃·지도/비지도 정의 주석, 캐글 Fish Market 출처 주석, `pd.read_csv('./day12/Fish.csv')` → `df.info()`, `feature = ['Length2']`(2차원 특성)·`target = 'Weight'` → `X = df[feature]`·`Y = df[target]`, `train_test_split(X, Y, test_size=0.2, random_state=42)` 네 변수 언패킹, `LinearRegression()` → `model.fit(X_train, Y_train)`, `model.coef_`·`model.intercept_` 출력, `model.predict([[30]])`, `plt.scatter(X_train, Y_train)` + 빨간 예측점 `scatter([30], …, color="red")` + `plt.plot([0, 100], model.predict([[0], [100]]))` 직선 → `show`, 11) 문제점 주석(직선 관계 가정·비례 증가가 아닐 수 있음 → 다항 회귀로 특성 추가), 12) 모델 평가 — `Y_pred = model.predict(X_test)` → `np.sqrt(mean_squared_error(Y_test, Y_pred))` RMSE(약 160 g) → `r2_score(Y_test, Y_pred)` 결정계수(0.82)
 - `KDT_2026/2026_Python/day12/Fish.csv` — 물고기 159마리 × 7열(`Species`·`Weight`·`Length1`·`Length2`·`Length3`·`Height`·`Width`), 종 7가지, 결측 없음
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · [[Python day09 맷플롯립 시작과 선 차트]] · [[Python day09 시본 범주 빈도·박스플롯·상관 히트맵]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[Python day07 넘파이 통계 함수와 axis]] · [[Python day06 넘파이 인덱싱·슬라이싱과 배열 연산]] · [[Python day03 튜플 선언과 구조분해·스왑]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · [[Python day12 사이킷런 선형 회귀 연습문제 풀이]] · [[Python day09 맷플롯립 시작과 선 차트]] · [[Python day09 시본 범주 빈도·박스플롯·상관 히트맵]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day08 판다스 데이터 전처리 중복 제거와 타입 변환]] · [[Python day07 넘파이 통계 함수와 axis]] · [[Python day06 넘파이 인덱싱·슬라이싱과 배열 연산]] · [[Python day03 튜플 선언과 구조분해·스왑]] · [[KDT_2026 학습 지도]]
