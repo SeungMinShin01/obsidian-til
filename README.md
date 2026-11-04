@@ -36,8 +36,8 @@
 <!-- SHELVES:START -->
 | 서가 | 노트 | 들어가기 |
 | --- | ---: | --- |
-| **KDT 수업 노트** | 163 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
-| **기술 블로그 정리** | 168 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
+| **KDT 수업 노트** | 165 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
+| **기술 블로그 정리** | 171 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
 | **프로젝트 결정 로그** | 101 | [프로젝트 노트 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8%20MOC.md) |
 | **프로젝트 코드 분석** | 25 | [프로젝트 코드 분석 안내](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D%20%EC%95%88%EB%82%B4.md) |
 | **코드 레퍼런스** | 107 | [코드정리](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC.md) |
@@ -131,16 +131,16 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 <!-- RECENT:START -->
 | 날짜 | 노트 | 서가 |
 | --- | --- | --- |
+| `2026-11-04` | [AI - 순서만 옮기는 온폴리시 증류](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EC%88%9C%EC%84%9C%EB%A7%8C%20%EC%98%AE%EA%B8%B0%EB%8A%94%20%EC%98%A8%ED%8F%B4%EB%A6%AC%EC%8B%9C%20%EC%A6%9D%EB%A5%98.md) | 기술 블로그 정리 |
+| `2026-11-04` | [뉴스 - 2026-11-03 다시 짓지 않고 고쳤고, 고친 범위는 증명해야 했다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-03%20%EB%8B%A4%EC%8B%9C%20%EC%A7%93%EC%A7%80%20%EC%95%8A%EA%B3%A0%20%EA%B3%A0%EC%B3%A4%EA%B3%A0%2C%20%EA%B3%A0%EC%B9%9C%20%EB%B2%94%EC%9C%84%EB%8A%94%20%EC%A6%9D%EB%AA%85%ED%95%B4%EC%95%BC%20%ED%96%88%EB%8B%A4.md) | 기술 블로그 정리 |
+| `2026-11-04` | [뉴스 - 2026-11-04 Spring Boot에서 S3에 파일을 업로드하는 세 가지 방법](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-04%20Spring%20Boot%EC%97%90%EC%84%9C%20S3%EC%97%90%20%ED%8C%8C%EC%9D%BC%EC%9D%84%20%EC%97%85%EB%A1%9C%EB%93%9C%ED%95%98%EB%8A%94%20%EC%84%B8%20%EA%B0%80%EC%A7%80%20%EB%B0%A9%EB%B2%95.md) | 기술 블로그 정리 |
+| `2026-11-04` | [뉴스 - 2026-11-04 묶인 주장은 풀려 읽혔고, 동의는 설치 스크립트가 대신 눌렀다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-04%20%EB%AC%B6%EC%9D%B8%20%EC%A3%BC%EC%9E%A5%EC%9D%80%20%ED%92%80%EB%A0%A4%20%EC%9D%BD%ED%98%94%EA%B3%A0%2C%20%EB%8F%99%EC%9D%98%EB%8A%94%20%EC%84%A4%EC%B9%98%20%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EA%B0%80%20%EB%8C%80%EC%8B%A0%20%EB%88%8C%EB%A0%80%EB%8B%A4.md) | 기술 블로그 정리 |
+| `2026-11-04` | [Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day12%20%EC%82%AC%EC%9D%B4%ED%82%B7%EB%9F%B0%20%EB%8B%A8%EC%88%9C%20%EC%84%A0%ED%98%95%20%ED%9A%8C%EA%B7%80%EB%A1%9C%20%EB%AC%BC%EA%B3%A0%EA%B8%B0%20%EB%AC%B4%EA%B2%8C%20%EC%98%88%EC%B8%A1.md) | KDT 수업 노트 |
+| `2026-11-04` | [Python day12 사이킷런 선형 회귀 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day12%20%EC%82%AC%EC%9D%B4%ED%82%B7%EB%9F%B0%20%EC%84%A0%ED%98%95%20%ED%9A%8C%EA%B7%80%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
+| `2026-11-04` | [Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day11%20httpx%EB%A1%9C%20%EA%B3%B5%EA%B3%B5%EB%8D%B0%EC%9D%B4%ED%84%B0%20API%20%ED%98%B8%EC%B6%9C%EA%B3%BC%20JSON%20%EB%8D%B0%EC%9D%B4%ED%84%B0%ED%94%84%EB%A0%88%EC%9E%84%20%EB%B3%80%ED%99%98.md) | KDT 수업 노트 |
 | `2026-11-03` | [Python day10 Playwright 비동기로 동적 페이지 크롤링](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day10%20Playwright%20%EB%B9%84%EB%8F%99%EA%B8%B0%EB%A1%9C%20%EB%8F%99%EC%A0%81%20%ED%8E%98%EC%9D%B4%EC%A7%80%20%ED%81%AC%EB%A1%A4%EB%A7%81.md) | KDT 수업 노트 |
-| `2026-11-03` | [Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day10%20Playwright%20%ED%81%B4%EB%A6%AD%EC%9C%BC%EB%A1%9C%20%EB%8F%99%EC%A0%81%20%ED%8E%98%EC%9D%B4%EC%A7%80%EB%84%A4%EC%9D%B4%EC%85%98%20%ED%81%AC%EB%A1%A4%EB%A7%81%20%EC%8B%A4%EC%8A%B5.md) | KDT 수업 노트 |
-| `2026-11-03` | [Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day11%20httpx%EB%A1%9C%20%EA%B3%B5%EA%B3%B5%EB%8D%B0%EC%9D%B4%ED%84%B0%20API%20%ED%98%B8%EC%B6%9C%EA%B3%BC%20JSON%20%EB%8D%B0%EC%9D%B4%ED%84%B0%ED%94%84%EB%A0%88%EC%9E%84%20%EB%B3%80%ED%99%98.md) | KDT 수업 노트 |
-| `2026-11-03` | [뉴스 - 2026-11-02 영수증이 찍히자, 남는 값은 설명이었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-02%20%EC%98%81%EC%88%98%EC%A6%9D%EC%9D%B4%20%EC%B0%8D%ED%9E%88%EC%9E%90%2C%20%EB%82%A8%EB%8A%94%20%EA%B0%92%EC%9D%80%20%EC%84%A4%EB%AA%85%EC%9D%B4%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
-| `2026-11-03` | [AI - 가중치 공간 프로그래밍](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EA%B0%80%EC%A4%91%EC%B9%98%20%EA%B3%B5%EA%B0%84%20%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D.md) | 기술 블로그 정리 |
-| `2026-11-03` | [뉴스 - 2026-11-03 Legacy DB의 JPA Entity Mapping (Enum Converter 편)](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-03%20Legacy%20DB%EC%9D%98%20JPA%20Entity%20Mapping%20%28Enum%20Converter%20%ED%8E%B8%29.md) | 기술 블로그 정리 |
-| `2026-11-03` | [뉴스 - 2026-11-03 다시 짓지 않고 고쳤고, 고친 범위는 증명해야 했다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-03%20%EB%8B%A4%EC%8B%9C%20%EC%A7%93%EC%A7%80%20%EC%95%8A%EA%B3%A0%20%EA%B3%A0%EC%B3%A4%EA%B3%A0%2C%20%EA%B3%A0%EC%B9%9C%20%EB%B2%94%EC%9C%84%EB%8A%94%20%EC%A6%9D%EB%AA%85%ED%95%B4%EC%95%BC%20%ED%96%88%EB%8B%A4.md) | 기술 블로그 정리 |
-| `2026-11-02` | [Python day10 페이징 반복으로 베스트셀러 목록 크롤링](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day10%20%ED%8E%98%EC%9D%B4%EC%A7%95%20%EB%B0%98%EB%B3%B5%EC%9C%BC%EB%A1%9C%20%EB%B2%A0%EC%8A%A4%ED%8A%B8%EC%85%80%EB%9F%AC%20%EB%AA%A9%EB%A1%9D%20%ED%81%AC%EB%A1%A4%EB%A7%81.md) | KDT 수업 노트 |
 
-<sub>마지막 자동 갱신: 2026-11-04 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-05 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
