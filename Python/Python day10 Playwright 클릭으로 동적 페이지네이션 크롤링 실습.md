@@ -149,6 +149,50 @@ async def 실습7():
 
 이번 코드는 세 값을 `print`로 찍는 데서 끝난다. `c-03.py`가 `item_list.append({...})`로 모아 반환하던 것과 비교하면 수집 단계까지다. 데이터프레임으로 넘기려면 2-3처럼 딕셔너리로 모아 두면 된다. 평점은 `"8.00"` 같은 **문자열**로 들어오므로 숫자 비교·평균을 내려면 `float()` 변환이 필요하다.
 
+### 1-9. 다시 쓴 판 — 리스트에 담아 반환하고 개수 세기
+
+```python
+async def run():
+    movie_list = []                                   # 반복문 바깥 — 세 페이지가 한 리스트에
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=False)
+        page = await browser.new_page()
+        await page.goto(url)
+        await page.wait_for_timeout(3000)
+
+        for i in range(1, 4):                          # 2-1 페이지 순회
+            page_buttons = await page.query_selector_all('.pagination .page a')
+            await page_buttons[i - 1].click()
+            await page.wait_for_timeout(3000)
+
+            items = await page.query_selector_all('.list_with_upthumb_item')
+            for item in items:                         # 2-2 요소 추출
+                title = await item.query_selector('.title')
+                title = await title.inner_text() if title else '제목없음'
+                img = await item.query_selector('.img_wrap>img')
+                img = await img.get_attribute('src') if img else '이미지없음'
+                point = await item.query_selector('.star_wrap > p.num')
+                point = await point.inner_text() if point else '평점없음'
+                                                       # 2-3 데이터 적재
+                movie_list.append({'페이지': i, '영화제목': title, '이미지': img, '전문가평점': point})
+    return movie_list
+
+movie_list = asyncio.run(run())
+print(movie_list)
+print(f"총 {len(movie_list)}개 수집")
+```
+
+같은 문제를 지문의 요구사항(2-1 순회 · 2-2 추출 · 2-3 적재) 번호에 맞춰 다시 쓴 판이다. 1-7·1-8에서 본 첫 판과 비교하면 바뀐 점이 넷이다.
+
+| 첫 판 | 다시 쓴 판 | 뜻 |
+| --- | --- | --- |
+| 한글 식별자(`실습7`·`비동기통신`·`페이지`) | 영문(`run`·`p`·`page`·`item`) | 1-7의 관례 쪽으로 |
+| `print`로 세 값 출력 | `movie_list.append({...})` | 2-3 "딕셔너리로 묶어 리스트에 저장" |
+| 반환 없음 | `return movie_list` → `asyncio.run(run())`이 값을 돌려줌 | 코루틴의 반환값은 `asyncio.run`의 결과 |
+| `wait_for_timeout(5000)` | `3000` | 대기 시간은 페이지 상황 보고 조절 |
+
+핵심은 `movie_list = []`를 **`for` 바깥, `async with` 바깥**에 둔 것이다. 페이지 반복 안에 두면 바퀴마다 비워져 마지막 페이지만 남고, `async with` 안에 두어도 되지만 `return`이 블록 밖에 있으면 이름이 안 보인다. 딕셔너리에 `'페이지': i`를 넣어 어느 페이지에서 온 영화인지 남긴 것은 2-3에서 적은 요령 그대로이고, 마지막 f-문자열 `len(movie_list)`가 페이지당 카드 수 × 3이 맞게 모였는지 확인하는 자리다. 이 리스트는 그대로 `pd.DataFrame(movie_list)`의 재료가 된다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 몇 번째 `a`가 아니라 "글자가 2인 버튼"을 누르기
@@ -264,7 +308,7 @@ Playwright는 원래 **웹 앱 자동 테스트** 도구다. "버튼을 누르�
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/practice/practice7.py` — 씨네21 영화 평점 페이지(`cine21.com/movie/point`) 동적 페이지네이션 크롤링: 주석 1~4로 동적/정적 판별·주소·카드 선택자(`.list_with_upthumb_item` 안 `.title`·`.img_wrap>img`·`.star_wrap > p.num`)·클릭 대상(`.pagination .page a`) 설계, `import asyncio`·`from playwright.async_api import async_playwright`, `async def 실습7()` 안에서 `async with async_playwright() as 비동기통신` → `await 비동기통신.chromium.launch(headless=False)` → `new_page()` → `goto(...)` → `wait_for_timeout(5000)`, `for i in range(1, 4)`로 매 바퀴 `query_selector_all('.pagination .page a')` 다시 받아 `[i - 1].click()` → `wait_for_timeout(5000)` → `query_selector_all('.list_with_upthumb_item')` 카드마다 `query_selector` → `inner_text()`/`get_attribute('src')`를 조건부 표현식으로 `None` 방어("제목없음"·"이미지없음"·"전문가평점없음") → `print`, `asyncio.run(실습7())`
+- `KDT_2026/2026_Python/practice/practice7.py` — 씨네21 영화 평점 페이지(`cine21.com/movie/point`) 동적 페이지네이션 크롤링: 주석 1~4로 동적/정적 판별·주소·카드 선택자(`.list_with_upthumb_item` 안 `.title`·`.img_wrap>img`·`.star_wrap > p.num`)·클릭 대상(`.pagination .page a`) 설계, `import asyncio`·`from playwright.async_api import async_playwright`, `async def 실습7()` 안에서 `async with async_playwright() as 비동기통신` → `await 비동기통신.chromium.launch(headless=False)` → `new_page()` → `goto(...)` → `wait_for_timeout(5000)`, `for i in range(1, 4)`로 매 바퀴 `query_selector_all('.pagination .page a')` 다시 받아 `[i - 1].click()` → `wait_for_timeout(5000)` → `query_selector_all('.list_with_upthumb_item')` 카드마다 `query_selector` → `inner_text()`/`get_attribute('src')`를 조건부 표현식으로 `None` 방어("제목없음"·"이미지없음"·"전문가평점없음") → `print`, `asyncio.run(실습7())` (첫 판). 다시 쓴 판: 지문 주석(목표 / 2-1 페이지 순회 / 2-2 요소 추출 / 2-3 데이터 적재), `async def run()` 안 `movie_list = []` → `async_playwright() as p` → `launch(headless=False)` → `goto` → `wait_for_timeout(3000)`, `for i in range(1, 4)` 버튼 재조회 → `[i - 1].click()` → `wait_for_timeout(3000)` → 카드별 `title`·`img`·`point` 조건부 표현식('평점없음') → `movie_list.append({'페이지': i, '영화제목', '이미지', '전문가평점'})` → `return movie_list`, `movie_list = asyncio.run(run())` → `print` → f-문자열 `총 {len(movie_list)}개 수집`
 
 ## 관련 노트
 

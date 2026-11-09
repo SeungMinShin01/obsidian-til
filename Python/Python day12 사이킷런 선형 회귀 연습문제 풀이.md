@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day12 — 사이킷런 선형 회귀 연습문제 풀이
 
 > 실습 파일: `ML_pracitce/practice1.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · 다음: [[Python day13 다항 회귀 제곱항 추가와 PolynomialFeatures]]
 
 day12 수업에서 물고기 길이로 무게를 맞히던 뼈대를 **다른 자료에 그대로 옮겨 보는** 연습이다. 재료는 시본에 내장된 `tips` 데이터셋 — 식당 손님 244팀의 식사 총액(`total_bill`)·팁(`tip`)·성별·흡연 여부·요일·시간대·인원이 들어 있고, 이번에는 **식사 총액 하나로 팁을 맞히는** 단순 선형 회귀다. 문제는 다섯 단계(자료 준비 → 분할 → 학습·파라미터 확인 → 평가·새 손님 예측 → 시각화·한계 분석)로 짜여 있고, 수업 `s-01.py`의 1)~12) 번호와 거의 1:1로 대응한다. 풀고 나면 `read_csv` 자리에 `sns.load_dataset`이 들어간 것 말고는 **코드가 한 줄도 바뀌지 않는다**는 것, 그리고 같은 뼈대라도 자료가 달라지면 R²가 0.82에서 0.54로 뚝 떨어진다는 것이 눈에 들어온다 — 팁은 식사 총액만으로는 절반밖에 설명되지 않는다.
 
@@ -102,19 +102,25 @@ print(model.predict([[30], [100]]))   # [ 4.13  11.62 ]
 
 지문의 "식사 총액이 $30, $100인 새 손님"은 표본 두 개를 한 번에 넘기는 `[[30], [100]]`이다. 30달러 식사엔 약 4.13달러, 100달러 식사엔 약 11.62달러 팁이 나온다. 손으로 확인하면 `0.107 × 30 + 0.925 ≈ 4.13`으로 `coef_`·`intercept_`와 맞는다. 다만 자료의 식사 총액 최댓값이 50.81달러라 **100달러는 자료 범위 밖**이다 — 직선을 바깥으로 쭉 늘인 외삽이라 숫자는 나오지만 믿을 근거가 약하다.
 
-### 1-5. 문제 5 — 세 요소를 한 도화지에: 풀이 방향
+### 1-5. 문제 5 — 세 요소를 한 도화지에
 
-문제 5는 코드 대신 지문만 있어, 수업 10)의 시각화 패턴을 그대로 옮기면 된다.
+수업 10)의 시각화 패턴을 테스트 세트에 그대로 옮긴 것이 문제 5의 답이다.
 
 ```python
-import matplotlib.pyplot as plt
-plt.scatter(X_test, Y_test)                                 # ① 테스트 세트 실제 점 49개
-plt.plot([5, 100], model.predict([[5], [100]]))             # ② 식사비 5~100달러 회귀선 — 양 끝 두 점
-plt.scatter([50], model.predict([[50]]), color="red")       # ③ 식사비 50달러 예측점 (붉은 점)
-plt.xlabel("total_bill ($)")
-plt.ylabel("tip ($)")
+plt.rc('font', family='Malgun Gothic')                      # 한글 라벨 — day09 설정
+plt.rcParams['axes.unicode_minus'] = False
+
+plt.scatter(X_test, Y_test, label="실제 데이터")                            # ① 테스트 세트 실제 점 49개
+plt.plot([5, 100], model.predict([[5], [100]]), label="회귀선")             # ② 식사비 5~100달러 회귀선 — 양 끝 두 점
+plt.scatter([50], model.predict([[50]]), color="red", label="$50 예측")     # ③ 식사비 50달러 예측점 (붉은 점)
+plt.title("식사 총액 vs 팁")
+plt.xlabel("식사 총액($)")
+plt.ylabel("팁($)")
+plt.legend()
 plt.show()
 ```
+
+세 요소에 각각 `label=`을 달고 `legend()`로 범례를 띄우면 어느 점이 실제값이고 어느 점이 예측인지 그림만 보고도 구분된다. 한글 제목·축 이름을 쓰므로 그리기 전에 day09의 폰트 설정 두 줄이 먼저 와야 네모 글자가 안 생긴다. `plot([5, 100], predict([[5], [100]]))`은 day12 수업의 "직선은 양 끝 두 점이면 그려진다" 요령 그대로다.
 
 수업과 다른 점은 산점도에 **학습 세트가 아니라 테스트 세트**를 올리라는 것이다. 테스트 점 위에 직선을 그리면 "모델이 처음 보는 자료에서 얼마나 빗나가나"가 그림으로 보이고, R² 0.54가 왜 나왔는지 — 점들이 직선 주위에 넓게 퍼져 있는 것 — 가 눈에 들어온다. 50달러 예측점은 약 6.27달러이고 직선 위에 정확히 올라간다.
 
@@ -229,8 +235,8 @@ print(result.summary())
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice1.py` — 사이킷런 선형 회귀 연습문제: 문제 1 `sns.load_dataset('tips')` → `info()`·`feature = ['total_bill']`(2차원)·`target = 'tip'`(1차원), 문제 2 `train_test_split(…, test_size=0.2, random_state=42)` 네 변수 언패킹, 문제 3 `LinearRegression()` → `fit` → `"기울기:"` `coef_`·`"y절편:"` `intercept_` 출력, 문제 4 `predict(X_test)` → `r2_score`·`np.sqrt(mean_squared_error)` RMSE 산출(소수 둘째 자리)과 $30·$100 신규 손님 팁 예측, 문제 5 테스트 세트 산점도 + 식사비 5~100달러 회귀선 + 식사비 50달러 붉은 예측점 시각화와 한계점 분석(지문)
+- `KDT_2026/2026_Python/ML_pracitce/practice1.py` — 사이킷런 선형 회귀 연습문제: 문제 1 `sns.load_dataset('tips')` → `info()`·`feature = ['total_bill']`(2차원)·`target = 'tip'`(1차원), 문제 2 `train_test_split(…, test_size=0.2, random_state=42)` 네 변수 언패킹, 문제 3 `LinearRegression()` → `fit` → `"기울기:"` `coef_`·`"y절편:"` `intercept_` 출력, 문제 4 `predict(X_test)` → `r2_score`·`np.sqrt(mean_squared_error)` RMSE 산출(소수 둘째 자리)과 $30·$100 신규 손님 팁 예측, 문제 5 `plt.rc` 한글 폰트 설정 → 테스트 세트 산점도(`label="실제 데이터"`) + 식사비 5~100달러 회귀선(`label="회귀선"`) + 식사비 50달러 붉은 예측점(`label="$50 예측"`) → `title`·`xlabel`·`ylabel`·`legend`·`show`, 한계점 분석(지문)
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[Python day09 시본 범주 빈도·박스플롯·상관 히트맵]] · [[Python day09 맷플롯립 시작과 선 차트]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[Python day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[Python day09 시본 범주 빈도·박스플롯·상관 히트맵]] · [[Python day09 맷플롯립 시작과 선 차트]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day01 파이썬 시작과 키워드 확인]] · [[KDT_2026 학습 지도]]

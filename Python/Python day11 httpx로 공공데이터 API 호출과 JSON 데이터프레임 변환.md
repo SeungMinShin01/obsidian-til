@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day11 — httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환
 
 > 실습 파일: `day11/h-01.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]] · 다음: [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]]
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]] · 다음: [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]]
 
 day10까지는 사람이 보라고 만든 **HTML 화면**을 긁어 데이터를 꺼냈다. day11은 처음부터 프로그램이 읽으라고 열어 둔 **API**를 부른다. 재료는 공공데이터포털(data.go.kr)의 "대구광역시 중구 맛집 현황"으로, 회원가입 후 활용 신청을 하면 **인증키(serviceKey)**가 발급되고, 그 키를 주소에 붙여 요청하면 서버가 JSON으로 자료를 돌려준다. 통신은 `httpx`라는 라이브러리가 맡고(`requests`와 거의 같은 사용법), 받은 JSON은 `.json()` 한 번으로 딕셔너리가 되어 `pd.DataFrame`에 바로 들어간다. 크롤링 노트들 끝마다 적어 두던 "공개 API가 있으면 그쪽이 먼저"가 바로 이 자리다. 파싱도, 선택자도, 브라우저도 없다 — **주소 분석 → 요청 → JSON 변환 → 데이터프레임** 네 단계가 전부다.
 
@@ -275,4 +275,4 @@ API 응답은 서버 사정으로 열이 늘거나 값이 비어서 올 수 있�
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]] · [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day04 예외 처리 try·except·else·finally]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day10 Playwright 클릭으로 동적 페이지네이션 크롤링 실습]] · [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]] · [[Python day10 페이징 반복으로 베스트셀러 목록 크롤링]] · [[Python day10 requests·BeautifulSoup으로 정적 페이지 크롤링]] · [[Python day08 판다스 데이터프레임 생성과 인덱싱·필터링]] · [[Python day04 예외 처리 try·except·else·finally]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[KDT_2026 학습 지도]]
