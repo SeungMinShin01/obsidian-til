@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day14 — 로지스틱 회귀로 도미·빙어 분류
 
 > 실습 파일: `day14/s-06.py`, `day14/Fish.csv`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · 다음: [[AI day14 로지스틱 이진 분류 연습문제 풀이]]
 
 day12부터 지금까지는 전부 **회귀**였다 — 타깃이 `Weight`라는 연속 숫자였고, 모델은 "몇 g인가"를 맞혔다. 이 노트에서 처음으로 타깃이 **범주**(`Species`)로 바뀐다. "도미인가 빙어인가"를 맞히는 **분류**다. day12 용어표에서 "타깃이 연속 숫자면 회귀·범주면 분류"라고 적어 둔 그 갈림길을 드디어 건넌다. 재미있는 것은 뼈대가 거의 그대로라는 점이다 — 읽기 → 특성/타깃 → 분리 → 표준화 → 모델 → 예측. 바뀌는 자리는 세 군데뿐이다. ① 타깃 열이 문자열이고, ② `train_test_split`에 `stratify=Y`가 붙고, ③ 모델 클래스가 `LinearRegression`에서 **`LogisticRegression`** 으로 바뀐다. 이름에 "회귀"가 들어 있지만 분류 모델이라는 것부터 정리한다.
 
@@ -114,11 +114,31 @@ print(Y_test.values)
 print(model.score(X_test_scaled, Y_test))   # 1.0
 ```
 
-수업 코드는 `Y_pred`를 출력하는 데서 끝난다. 열 개의 예측을 정답과 나란히 놓으면 **열 개 모두 맞았다** — 도미 7마리, 빙어 3마리. 회귀에서 `score`가 R²였듯이 분류에서 `score`는 **정확도**(맞힌 개수 ÷ 전체)이고, 여기서는 10/10 = 1.0이다. 학습 세트 39마리도 전부 맞혀 1.0이다. 도미와 빙어는 크기가 수십 배 차이 나는 쉬운 짝이라 완벽한 점수가 나오는 것이 이상하지 않다 — 중요한 것은 점수보다 **"회귀 뼈대 그대로, 클래스 이름만 바꿔 분류가 된다"** 는 사실을 눈으로 확인한 것이다.
+수업 코드 4)는 `Y_pred`를 출력하는 데서 끝나고, 5)·6)에서 확률과 정확도로 이어진다(1-6). 열 개의 예측을 정답과 나란히 놓으면 **열 개 모두 맞았다** — 도미 7마리, 빙어 3마리. 회귀에서 `score`가 R²였듯이 분류에서 `score`는 **정확도**(맞힌 개수 ÷ 전체)이고, 여기서는 10/10 = 1.0이다. 학습 세트 39마리도 전부 맞혀 1.0이다. 도미와 빙어는 크기가 수십 배 차이 나는 쉬운 짝이라 완벽한 점수가 나오는 것이 이상하지 않다 — 중요한 것은 점수보다 **"회귀 뼈대 그대로, 클래스 이름만 바꿔 분류가 된다"** 는 사실을 눈으로 확인한 것이다.
 
 `predict`가 숫자가 아니라 **문자열 배열**을 돌려준다는 점이 회귀와 가장 눈에 띄는 차이다. `score`도 R²에서 정확도로 의미가 바뀐다. 같은 메서드 이름이 문제 종류에 따라 다른 지표를 뜻하니, 분류 `score`를 보고 "결정계수"라고 읽지 않도록 한다.
 
-### 1-6. 이 날의 흐름 한 장
+### 1-6. 수업 코드 5)·6) — `classes_`·`predict_proba`·`accuracy_score`
+
+```python
+# 5) 결과 속성
+print(model.classes_)                           # ['Bream' 'Smelt']  정답지 종류
+print(model.predict_proba(X_test_scaled[:3]))   # 확률 반환
+# [[0.99255987 0.00744013]      # Bream( 0 )열 , Smelt( 1 )열
+#  [0.99568698 0.00431302]
+#  [0.04598467 0.95401533]]
+
+# 6) 정확도 평가 : accuracy_score( 테스트정답지 , 테스트예측 )
+from sklearn.metrics import accuracy_score
+acc = accuracy_score(Y_test, Y_pred)
+print(acc)   # 1.0  => 100 %  현재 실습은 데이터가 적다
+```
+
+수업 코드가 4) `predict` 뒤에 두 단계를 더 붙였다. 5)는 모델이 **무엇을 어떤 순서로 알고 있는지**를 보는 자리다. `classes_`가 `['Bream' 'Smelt']`이니 `predict_proba`가 돌려주는 두 열은 `[도미 확률, 빙어 확률]`이고, 행마다 둘의 합은 1이다. 첫 표본은 도미 99.3 %, 셋째 표본은 빙어 95.4 % — `predict`가 `'Bream'`·`'Smelt'`라고 결론만 내던 것의 **근거 숫자**다. 1-4의 수식에서 시그모이드를 거친 p가 바로 둘째 열이고, 0.5를 넘으면 `Smelt`가 된다. 수업 주석이 열에 `( 0 )`·`( 1 )`을 적어 둔 것은 사이킷런이 안에서 문자열 클래스를 0·1 번호로 다룬다는 뜻이다.
+
+6)은 **회귀의 `r2_score(Y_test, Y_pred)` 자리에 `accuracy_score(Y_test, Y_pred)`** 를 놓은 것이다. 같은 `sklearn.metrics`, 같은 `(정답, 예측)` 순서, 하는 일은 "맞힌 개수 ÷ 전체". `model.score(X_test_scaled, Y_test)`와 값은 같지만 인자가 **정답·예측 배열**이라 모델 객체 없이도, 임계값을 바꿔 만든 예측에도 쓸 수 있다는 점이 다르다. 결과 1.0 뒤에 적힌 "현재 실습은 데이터가 적다"가 이 날의 결론이다 — 테스트 10마리로 100 %는 모델이 완벽하다는 뜻이 아니라 **시험지가 작다**는 뜻이고, 도미·빙어가 크기부터 수십 배 다른 쉬운 짝이라는 점까지 겹쳤다. 표본이 늘고 클래스가 비슷해지면 정확도는 내려오고, 그때부터 2-4의 혼동 행렬이 필요해진다. 같은 뼈대를 569건·30특성 자료에 옮긴 연습이 [[AI day14 로지스틱 이진 분류 연습문제 풀이]]다.
+
+### 1-7. 이 날의 흐름 한 장
 
 ```text
 Fish.csv 159마리 ──▶ Bream | Smelt 두 종만 ──▶ 49마리 (도미 35 · 빙어 14)
@@ -132,6 +152,8 @@ StandardScaler  fit(학습) → transform(학습·테스트)
 LogisticRegression().fit  →  z = w·x + b  →  시그모이드  →  p ≥ 0.5 ? Smelt : Bream
         ▼
 predict(테스트) = ['Bream' 'Bream' 'Smelt' …]  10/10 정답
+        ▼
+classes_ ['Bream' 'Smelt'] · predict_proba [도미 p, 빙어 p] · accuracy_score(Y_test, Y_pred) = 1.0
 ```
 
 ## 2. 추가로 알면 좋은 활용법
@@ -147,7 +169,7 @@ model.decision_function(X_test_scaled[:3]).round(2)
 # [-4.89 -5.44  3.03]  ← 시그모이드 전의 z
 ```
 
-`predict`는 결론만 주지만 `predict_proba`는 **클래스별 확률**을 준다. 열 순서는 `classes_`와 같아서 `[도미 확률, 빙어 확률]`이고 두 값의 합은 1이다. `decision_function`은 시그모이드에 넣기 **전의 z** 다 — 첫 행의 z = −4.89를 `1 / (1 + e^4.89)`에 넣으면 0.0074, 즉 빙어 확률 0.7 %가 그대로 나온다. 1-4의 수식을 숫자로 확인하는 가장 빠른 길이다. 확률이 0.5 근처인 표본이 있으면 "모델이 헷갈리는 물고기"이고, 그런 표본이 많을수록 정확도 1.0은 운일 가능성이 높다. 이 자료에서는 가장 애매한 것도 0.95라 걱정이 없다.
+`predict_proba`는 1-6의 수업 코드 5)에서 봤고, 여기에 `decision_function`을 더해 본다. `predict`는 결론만 주지만 `predict_proba`는 **클래스별 확률**을 준다. 열 순서는 `classes_`와 같아서 `[도미 확률, 빙어 확률]`이고 두 값의 합은 1이다. `decision_function`은 시그모이드에 넣기 **전의 z** 다 — 첫 행의 z = −4.89를 `1 / (1 + e^4.89)`에 넣으면 0.0074, 즉 빙어 확률 0.7 %가 그대로 나온다. 1-4의 수식을 숫자로 확인하는 가장 빠른 길이다. 확률이 0.5 근처인 표본이 있으면 "모델이 헷갈리는 물고기"이고, 그런 표본이 많을수록 정확도 1.0은 운일 가능성이 높다. 이 자료에서는 가장 애매한 것도 0.95라 걱정이 없다.
 
 ### 2-2. 새 물고기 한 마리 — 열 이름 데이터프레임 + 같은 스케일러
 
@@ -242,9 +264,9 @@ df = df[df['Species'].isin(['Bream', 'Smelt'])]     # (49, 7)
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day14/s-06.py` — `Fish.csv` 읽기 → `Species`가 `Bream`/`Smelt`인 행만 → `X` 여섯 특성(`Weight`·`Length1~3`·`Height`·`Width`)·`Y = Species` → `train_test_split(test_size=0.2, random_state=42, stratify=Y)`("타깃 무작위 분리 시 클래스 비율 일정 유지" 주석) → `StandardScaler` `fit(X_train)`·`transform` 둘 → `LogisticRegression().fit(X_train_scaled, Y_train)` → `predict(X_test_scaled)` 출력
+- `KDT_2026/2026_Python/day14/s-06.py` — `Fish.csv` 읽기 → `Species`가 `Bream`/`Smelt`인 행만 → `X` 여섯 특성(`Weight`·`Length1~3`·`Height`·`Width`)·`Y = Species` → `train_test_split(test_size=0.2, random_state=42, stratify=Y)`("타깃 무작위 분리 시 클래스 비율 일정 유지" 주석) → `StandardScaler` `fit(X_train)`·`transform` 둘 → `LogisticRegression().fit(X_train_scaled, Y_train)` → `predict(X_test_scaled)` 출력 → 5) `classes_`·`predict_proba(X_test_scaled[:3])`("Bream(0)열, Smelt(1)열" 주석) → 6) `accuracy_score(Y_test, Y_pred)` 1.0("현재 실습은 데이터가 적다" 주석)
 - `KDT_2026/2026_Python/day14/Fish.csv` — 캐글 Fish Market, 159마리 × `Species`·`Weight`·`Length1~3`·`Height`·`Width` (도미 35·빙어 14)
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[AI day14 로지스틱 이진 분류 연습문제 풀이]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[KDT_2026 학습 지도]]
