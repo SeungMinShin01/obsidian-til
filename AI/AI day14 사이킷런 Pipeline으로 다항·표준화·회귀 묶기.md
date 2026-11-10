@@ -72,6 +72,8 @@ print('r2 : ', model.score(X_test_scaled, Y_test))
 
 학습 점수는 0.98 언저리로 안정적인데 테스트 점수는 0.95~0.98 사이를 오간다. 테스트가 32마리뿐이라 **어떤 물고기가 시험지에 들어가느냐**에 따라 점수가 흔들리는 것이다. day12에서 `random_state=42`를 고정했던 이유가 여기서 역으로 보인다 — 비교 실험을 할 땐 고정해서 분할 운을 빼고, 모델의 진짜 실력이 궁금할 땐 여러 번 갈라서 평균을 본다(2-5의 교차 검증). 한 번 찍힌 점수 하나로 "0.98짜리 모델"이라고 말하지 않는 편이 안전하다.
 
+이 표는 `random_state`를 뺀 상태에서 돌린 것이고, 수업이 끝난 뒤의 `s-04.py` 최종본에는 `train_test_split(X, Y, test_size=0.2, random_state=42)`로 시드가 들어가 있다. 뒤에 그리드 서치(다음 노트 1-7)로 조합 12개를 **같은 분할** 위에서 비교해야 하니 고정이 필요해진 것이다. 그래서 최종본의 7) 결정계수는 표 마지막 줄의 0.983 / 0.972로 고정되고, 주석에 적힌 "학습 데이터와 테스트 데이터 결정계수 차이"가 그 두 숫자의 간격을 가리킨다.
+
 ### 1-3. `Pipeline` — 4~6단계를 한 덩어리로
 
 ```python
@@ -316,7 +318,7 @@ pipe_model[:-1].fit_transform(X_train).head()     # 모델 직전까지만 돌�
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day14/s-04.py` — 1)~7) 번호 주석으로 `read_csv` → `df[['Length2', 'Height', 'Width']]`·`df['Weight']` → `train_test_split(test_size=0.2)` → `PolynomialFeatures(degree=2, include_bias=False)` `fit`·`transform` 둘 → `StandardScaler` `fit`·`transform` 둘 → `LinearRegression` `fit` → `score` 학습·테스트, "4 ~ 6 과정 묶음" 주석 아래 `Pipeline([('poly', …), ('scaler', …), ('regressor', …)])`와 "식별자, 클래스명() — 파이썬 인스턴스 생성" 주석, 9) `pipe_model.fit`·`score`
+- `KDT_2026/2026_Python/day14/s-04.py` — 1)~7) 번호 주석으로 `read_csv` → `df[['Length2', 'Height', 'Width']]`·`df['Weight']` → `train_test_split(test_size=0.2)` → `PolynomialFeatures(degree=2, include_bias=False)` `fit`·`transform` 둘 → `StandardScaler` `fit`·`transform` 둘 → `LinearRegression` `fit` → `score` 학습·테스트, "4 ~ 6 과정 묶음" 주석 아래 `Pipeline([('poly', …), ('scaler', …), ('regressor', …)])`와 "식별자, 클래스명() — 파이썬 인스턴스 생성" 주석, 9) `pipe_model.fit`·`score`. 최종본은 3)에 `random_state=42`가 고정되어 있고, 10) 그리드 서치·11) `joblib` 서빙으로 이어진다(다음 노트)
 - `KDT_2026/2026_Python/day14/Fish.csv` — 캐글 Fish Market, 159마리 × `Species`·`Weight`·`Length1~3`·`Height`·`Width`
 - 수업 PPT 「8. Pipeline」·「[1] 선형 회귀: Pipeline」 — 파이프라인 정의와 필요 이유(파편화·데이터 누수), 표준 파이프라인 vs `ColumnTransformer` 연계, Step 1 `fit`/Step 2 `predict` 그림, `pipe_poly_lr` 세 단계의 명칭·종류(변환기/예측기)·역할표, 훈련/테스트 R² 출력
 

@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: 수업 PPT(KFold·GridSearchCV·joblib 슬라이드), KDT_2026/2026_Python/day14/Fish.csv
+원본: KDT_2026/2026_Python/day14/s-04.py(10~11단계), day14/Fish.csv, 수업 PPT(KFold·GridSearchCV·joblib 슬라이드)
 작성일: 2026-11-10
 tags: [학습, ai, python]
 ---
 
 # AI day14 — KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색
 
-> 실습 파일: 수업 PPT 슬라이드 9~10, [2]·[3] (`day14/선형회귀모델.pkl` 저장 코드), `day14/Fish.csv`
+> 실습 파일: `day14/s-04.py` (10)~11) 단계), `day14/Fish.csv`, 수업 PPT 슬라이드 9~10, [2]·[3] (`day14/선형회귀모델.pkl` 저장 코드)
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · 다음: (아직 없음)
 
 앞 노트에서 다항 확장 → 표준화 → 회귀를 파이프라인 하나로 묶었다. 이 노트는 그 파이프라인을 재료로 두 가지 질문에 답한다. 하나는 **"한 번 나눈 테스트 점수를 믿어도 되나"** — 앞 노트 1-2에서 `random_state`를 빼자 테스트 R²가 0.95~0.98 사이를 오갔다. 답은 자료를 K개로 나눠 K번 평가하고 평균을 내는 **K-Fold 교차 검증**이다. 다른 하나는 **"`degree`는 2인가 3인가, `alpha`는 얼마인가"** — day13에서 `alpha` 여섯 개를 `for`로 돌려 격차를 눈으로 고르던 일을, 후보 조합 전부를 교차 검증으로 전수 조사해 자동으로 고르는 **`GridSearchCV`** 가 맡는다. 두 도구는 따로가 아니라 `GridSearchCV(cv=KFold(…))`로 한 몸이고, 파이프라인의 `단계__파라미터` 이름 규칙 덕분에 전처리 차수와 모델 규제 강도를 **한 격자 안에서** 같이 고른다. 마지막으로 고른 최적 파이프라인을 `joblib`으로 파일에 저장하고 다시 읽어 새 물고기 한 마리를 예측하는 데까지 간다.
@@ -168,6 +168,65 @@ X_test (20%) ───▶ best_pipe.score ─── 0.972  (처음 보는 자료
                        joblib.dump ─▶ 선형회귀모델.pkl ─▶ joblib.load ─▶ predict(새 물고기) 370 g
 ```
 
+### 1-7. 수업 코드 — `s-04.py` 10)~11) 단계
+
+앞 노트의 `s-04.py`가 9) 파이프라인 학습에서 끝나지 않고 **10) 최적 파라미터 찾기 → 11) 서빙**까지 이어진다. 슬라이드 코드(1-3)와 같은 뼈대인데 수업에서 직접 친 버전이라 번호 주석이 붙어 있고, `alpha` 후보가 하나 더 많다.
+
+```python
+# 10) 최적(성능 좋은/오차 적은) 파라미터(매개변수/대입값) 찾기 — degree=2, alpha=0.01
+# 1. 파이프라인 만들기
+pipe_model = Pipeline([
+    ('poly',   PolynomialFeatures(include_bias=False)),   # degree 튜닝
+    ('scaler', StandardScaler()),
+    ('ridge',  Ridge())                                    # alpha 튜닝
+])
+# 2. 파라미터 후보군 만들기 — { '식별자__파라미터명' : [후보값, 후보값] }
+param_grid = {
+    'poly__degree': [2, 3],
+    'ridge__alpha': [0.001, 0.01, 0.1, 1, 10, 100]
+}
+# 3. k-fold 교차 검증 — KFold(n_splits=k개의 동일한 폴드로 분할, shuffle=분할 시 무작위 섞기, random_state=42)
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+# 학습 데이터를 5개로 나누어 4개로 학습하고 1개로 검증하는 과정을 5번 = 평균 오차/손실 성능
+
+# 4. 그리드서치CV — 교차 검증과 다양한 파라미터를 자동으로 실행하고 최적 성능 찾기
+# GridSearchCV(estimator=진행할 모델/파이프라인, param_grid={파라미터 후보군},
+#              scoring='평가지표명', cv=교차검증, n_jobs=-1(CPU 성능 최대화))
+grid = GridSearchCV(estimator=pipe_model, param_grid=param_grid, scoring='r2',
+                    cv=kf, n_jobs=-1)
+# 5. 그리드서치로 학습
+grid.fit(X_train, Y_train)
+# 6. 주요 속성
+best_model = grid.best_estimator_        # 가장 성능 좋은 모델 반환
+print(grid.best_params_)                 # 가장 성능 좋은 파라미터 조합 반환   {'poly__degree': 2, 'ridge__alpha': 0.1}
+print(grid.best_score_)                  # 교차 검증에서 평균 점수 반환          0.9731
+# 7. 최적 모델로 평가
+print('r2 : ', best_model.score(X_train, Y_train))   # 0.9820
+print('r2 : ', best_model.score(X_test,  Y_test))    # 0.9721
+
+# 11) 서빙 — 학습된 모델 저장하고 다른 곳에서 호출
+# 연구/학습 : 코랩(고사양)에서 학습 --> 실제 서버(FastAPI)에서 호출
+# 실무     : GPU 서버에서 학습    --> 실제 서버(FastAPI)에서 호출
+import joblib
+joblib.dump(best_model, './day14/fish_model.pkl')
+```
+
+수업 주석의 1~7 소번호가 그대로 절차다. 정리하면 이렇다.
+
+| 소번호 | 하는 일 | 슬라이드(1-3)와 다른 점 |
+| --- | --- | --- |
+| 1. 파이프라인 | `poly` → `scaler` → `ridge`, `degree`·`alpha`는 비워 둔다 | 같다 (변수명만 `pipe_model`) |
+| 2. 후보군 | `'식별자__파라미터명': [후보…]` 딕셔너리 | `alpha`에 **0.001**이 추가되어 6개 → 2 × 6 = **12조합** |
+| 3. 교차 검증 | `KFold(5, shuffle=True, random_state=42)` | 같다 |
+| 4. 그리드서치 | `GridSearchCV(estimator, param_grid, scoring='r2', cv=kf, n_jobs=-1)` | 같다 — 총 학습 횟수는 12 × 5 = **60회** |
+| 5. 학습 | `grid.fit(X_train, Y_train)` | 같다 |
+| 6. 속성 | `best_estimator_` · `best_params_` · `best_score_` | 같다 |
+| 7. 평가 | `best_model.score` 학습·테스트 | 같다 |
+
+주석의 "degree=2, alpha=0.01"은 **찾으려는 답의 예시**이고, 실제로 돌리면 1-4와 같은 `{'poly__degree': 2, 'ridge__alpha': 0.1}`이 나온다. `alpha=0.001`을 더 넣어도 순위가 바뀌지 않는 것이 확인 포인트다 — 2차에서 0.001·0.01·0.1·1은 0.9725~0.9731로 사실상 같고, 3차에서 `alpha=0.001`은 0.9606(폴드 간 표준편차 0.046)으로 **12개 중 10위**다. 특성이 19개인 3차에 규제를 거의 안 걸면 폴드마다 점수가 크게 흔들린다는 뜻이고, day13의 "항이 많을수록 규제를 세게"가 숫자 하나로 다시 보인다. 2차·3차 모두 `alpha`가 너무 작아도(0.001) 너무 커도(100) 떨어지고 가운데 어딘가가 좋다 — 그 "어딘가"를 손이 아니라 격자가 찾는다.
+
+11)의 주석 두 줄이 이 날 코드의 마지막 문장이면서 다음 단계의 그림이다. **학습하는 곳과 쓰는 곳이 다르다** — 공부할 땐 코랩 같은 고사양 환경에서, 실무에선 GPU 서버에서 `fit`을 돌리고, 결과물인 `.pkl` 하나만 실제 서비스 서버(FastAPI)로 옮겨 `load`·`predict`만 한다. 학습 환경은 무겁고 비싸지만 가끔 돌리면 되고, 서빙 환경은 가볍고 항상 떠 있어야 하니 둘을 떼어 놓는 것이 자연스럽다. 1-5의 두 코드 블록이 "다른 파일, 다른 시점"이라고 적은 이유가 이 주석에 있다. 저장되는 `fish_model.pkl`은 `poly` 차수 2 · `scaler` 통계 9쌍 · `ridge` 기울기 9개와 절편·`alpha=0.1`이 든 파이프라인 통째로, 2 KB가 채 안 된다 — 모델이 작다는 것이 아니라 선형 모델은 **가중치 몇 개가 전부**라는 뜻이다. 같은 폴더의 `s-05.py`는 아직 빈 파일이라, 저장한 모델을 불러 쓰는 쪽(1-5의 `joblib.load`)이 그 자리에 들어갈 차례다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 격자 없이 교차 검증만 — `cross_val_score`
@@ -282,6 +341,8 @@ best_pipe.get_params()['ridge__alpha']            # 0.1
 
 ## 실습 파일
 
+- `KDT_2026/2026_Python/day14/s-04.py` — 10) 최적 파라미터 찾기: 1. `Pipeline([('poly', PolynomialFeatures(include_bias=False)), ('scaler', StandardScaler()), ('ridge', Ridge())])` → 2. `param_grid {'poly__degree': [2, 3], 'ridge__alpha': [0.001, 0.01, 0.1, 1, 10, 100]}`(`'식별자__파라미터명'` 주석) → 3. `KFold(n_splits=5, shuffle=True, random_state=42)`("5개로 나누어 4개 학습·1개 검증을 5번" 주석) → 4. `GridSearchCV(estimator=pipe_model, param_grid, scoring='r2', cv=kf, n_jobs=-1)`("CPU 성능 최대화" 주석) → 5. `grid.fit` → 6. `best_estimator_`·`best_params_`·`best_score_` → 7. `best_model.score` 학습·테스트, 11) 서빙 — "코랩/GPU 서버에서 학습 → 실제 서버(FastAPI)에서 호출" 주석, `joblib.dump(best_model, './day14/fish_model.pkl')`
+- `KDT_2026/2026_Python/day14/s-05.py` — 빈 파일 (아직 내용 없음)
 - 수업 PPT 「9. KFold」·「10. GridSearchCV」·「[2] 선형 회귀: KFold, GridSearchCV」·「[3] joblib」 — K-Fold 정의와 5단계 그림, `KFold`/`StratifiedKFold` 비교, 그리드 서치 정의·전수 탐색·refit·파이프라인 결합 튜닝·주요 속성 4개, `pipe_poly_ridge` + `param_grid {'poly__degree': [2, 3], 'ridge__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}` + `KFold(5, shuffle=True, random_state=42)` + `GridSearchCV(scoring='r2', cv=kf, n_jobs=-1)` → `best_estimator_`·`best_params_`·`best_score_`·훈련/테스트 `score` 출력, `joblib.dump(best_pipe, './day14/선형회귀모델.pkl')` → `joblib.load` → `sample_fish` 데이터프레임(`Length2` 32.5·`Height` 10.0·`Width` 4.2) `predict`
 - `KDT_2026/2026_Python/day14/Fish.csv` — 캐글 Fish Market, 159마리 × `Species`·`Weight`·`Length1~3`·`Height`·`Width`
 
