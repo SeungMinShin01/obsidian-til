@@ -1,14 +1,14 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/day14/s-04.py(10~11단계), day14/Fish.csv, 수업 PPT(KFold·GridSearchCV·joblib 슬라이드)
+원본: KDT_2026/2026_Python/day14/s-04.py(10~11단계), day14/s-05.py, day14/Fish.csv, 수업 PPT(KFold·GridSearchCV·joblib 슬라이드)
 작성일: 2026-11-10
 tags: [학습, ai, python]
 ---
 
 # AI day14 — KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색
 
-> 실습 파일: `day14/s-04.py` (10)~11) 단계), `day14/Fish.csv`, 수업 PPT 슬라이드 9~10, [2]·[3] (`day14/선형회귀모델.pkl` 저장 코드)
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · 다음: [[AI day14 로지스틱 회귀로 도미·빙어 분류]]
+> 실습 파일: `day14/s-04.py` (10)~11) 단계), `day14/s-05.py` (저장한 모델 불러오기), `day14/Fish.csv`, 수업 PPT 슬라이드 9~10, [2]·[3] (`day14/선형회귀모델.pkl` 저장 코드)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · 다음: [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]]
 
 앞 노트에서 다항 확장 → 표준화 → 회귀를 파이프라인 하나로 묶었다. 이 노트는 그 파이프라인을 재료로 두 가지 질문에 답한다. 하나는 **"한 번 나눈 테스트 점수를 믿어도 되나"** — 앞 노트 1-2에서 `random_state`를 빼자 테스트 R²가 0.95~0.98 사이를 오갔다. 답은 자료를 K개로 나눠 K번 평가하고 평균을 내는 **K-Fold 교차 검증**이다. 다른 하나는 **"`degree`는 2인가 3인가, `alpha`는 얼마인가"** — day13에서 `alpha` 여섯 개를 `for`로 돌려 격차를 눈으로 고르던 일을, 후보 조합 전부를 교차 검증으로 전수 조사해 자동으로 고르는 **`GridSearchCV`** 가 맡는다. 두 도구는 따로가 아니라 `GridSearchCV(cv=KFold(…))`로 한 몸이고, 파이프라인의 `단계__파라미터` 이름 규칙 덕분에 전처리 차수와 모델 규제 강도를 **한 격자 안에서** 같이 고른다. 마지막으로 고른 최적 파이프라인을 `joblib`으로 파일에 저장하고 다시 읽어 새 물고기 한 마리를 예측하는 데까지 간다.
 
@@ -225,7 +225,26 @@ joblib.dump(best_model, './day14/fish_model.pkl')
 
 주석의 "degree=2, alpha=0.01"은 **찾으려는 답의 예시**이고, 실제로 돌리면 1-4와 같은 `{'poly__degree': 2, 'ridge__alpha': 0.1}`이 나온다. `alpha=0.001`을 더 넣어도 순위가 바뀌지 않는 것이 확인 포인트다 — 2차에서 0.001·0.01·0.1·1은 0.9725~0.9731로 사실상 같고, 3차에서 `alpha=0.001`은 0.9606(폴드 간 표준편차 0.046)으로 **12개 중 10위**다. 특성이 19개인 3차에 규제를 거의 안 걸면 폴드마다 점수가 크게 흔들린다는 뜻이고, day13의 "항이 많을수록 규제를 세게"가 숫자 하나로 다시 보인다. 2차·3차 모두 `alpha`가 너무 작아도(0.001) 너무 커도(100) 떨어지고 가운데 어딘가가 좋다 — 그 "어딘가"를 손이 아니라 격자가 찾는다.
 
-11)의 주석 두 줄이 이 날 코드의 마지막 문장이면서 다음 단계의 그림이다. **학습하는 곳과 쓰는 곳이 다르다** — 공부할 땐 코랩 같은 고사양 환경에서, 실무에선 GPU 서버에서 `fit`을 돌리고, 결과물인 `.pkl` 하나만 실제 서비스 서버(FastAPI)로 옮겨 `load`·`predict`만 한다. 학습 환경은 무겁고 비싸지만 가끔 돌리면 되고, 서빙 환경은 가볍고 항상 떠 있어야 하니 둘을 떼어 놓는 것이 자연스럽다. 1-5의 두 코드 블록이 "다른 파일, 다른 시점"이라고 적은 이유가 이 주석에 있다. 저장되는 `fish_model.pkl`은 `poly` 차수 2 · `scaler` 통계 9쌍 · `ridge` 기울기 9개와 절편·`alpha=0.1`이 든 파이프라인 통째로, 2 KB가 채 안 된다 — 모델이 작다는 것이 아니라 선형 모델은 **가중치 몇 개가 전부**라는 뜻이다. 같은 폴더의 `s-05.py`는 아직 빈 파일이라, 저장한 모델을 불러 쓰는 쪽(1-5의 `joblib.load`)이 그 자리에 들어갈 차례다. 수업이 이어지면서 `s-04.py`는 7) 평가까지만 남기고 11) 서빙 블록은 파일에서 빠졌다 — 위 11) 코드와 주석은 수업 중 적었던 시점의 기록으로 둔다. 같은 날 `s-06.py`에서 타깃을 `Species`로 바꾼 첫 분류(로지스틱 회귀)로 넘어간다 → [[AI day14 로지스틱 회귀로 도미·빙어 분류]].
+11)의 주석 두 줄이 이 날 코드의 마지막 문장이면서 다음 단계의 그림이다. **학습하는 곳과 쓰는 곳이 다르다** — 공부할 땐 코랩 같은 고사양 환경에서, 실무에선 GPU 서버에서 `fit`을 돌리고, 결과물인 `.pkl` 하나만 실제 서비스 서버(FastAPI)로 옮겨 `load`·`predict`만 한다. 학습 환경은 무겁고 비싸지만 가끔 돌리면 되고, 서빙 환경은 가볍고 항상 떠 있어야 하니 둘을 떼어 놓는 것이 자연스럽다. 1-5의 두 코드 블록이 "다른 파일, 다른 시점"이라고 적은 이유가 이 주석에 있다. 저장되는 `fish_model.pkl`은 `poly` 차수 2 · `scaler` 통계 9쌍 · `ridge` 기울기 9개와 절편·`alpha=0.1`이 든 파이프라인 통째로, 2 KB가 채 안 된다 — 모델이 작다는 것이 아니라 선형 모델은 **가중치 몇 개가 전부**라는 뜻이다. 저장한 모델을 불러 쓰는 쪽은 같은 폴더의 `s-05.py`가 맡는다 — 바로 아래 1-8이다. 수업이 이어지면서 `s-04.py`는 7) 평가까지만 남기고 11) 서빙 블록은 파일에서 빠졌다 — 위 11) 코드와 주석은 수업 중 적었던 시점의 기록으로 둔다. 같은 날 `s-06.py`에서 타깃을 `Species`로 바꾼 첫 분류(로지스틱 회귀)로 넘어간다 → [[AI day14 로지스틱 회귀로 도미·빙어 분류]].
+
+### 1-8. 수업 코드 — `s-05.py` 저장한 모델 불러와 예측
+
+```python
+import joblib
+# 1. 모델 불러오기 , joblib.load( '모델경로.pkl')
+model = joblib.load('./day14/fish_model.pkl')
+
+# 2. 불러온 모델로 예측 테스트 — 임의의 특성 넣어서 예측 무게 찾기
+import pandas as pd
+sample = pd.DataFrame({'Length2': [32], 'Height': [10], 'Width': [4]})
+predict = model.predict(sample)
+print('예측값/무게: ', predict)
+# 예측값/무게:  [346.91669994]
+```
+
+여덟 줄짜리 파일이지만 이 날의 그림을 완성하는 조각이다. `s-04.py`가 **학습 스크립트**(`fit` → `GridSearchCV` → `joblib.dump`)라면 `s-05.py`는 **서빙 스크립트**다 — `fit`도, `Fish.csv`도, 사이킷런 모델 클래스의 `import`도 없다. `joblib.load` 한 줄로 `fish_model.pkl` 안의 파이프라인(`poly` 차수 2 → `scaler` → `ridge alpha 0.1`)이 통째로 돌아오고, 새 물고기는 **열 이름이 있는 데이터프레임 한 행**으로 만들어 `predict`에 넣는다. 열 이름 `Length2`·`Height`·`Width`는 학습 때 `X`의 열과 같아야 한다 — 이름이 다르거나 순서가 바뀌면 사이킷런이 경고하거나 멈춘다. 다항 변환·표준화를 손으로 다시 할 필요가 없는 이유는 파이프라인 통째로 저장했기 때문이고, 앞 노트에서 "원본 특성을 넣는다"고 적은 그 원칙이 여기서도 적용된다.
+
+결과 **346.9 g**은 1-5 슬라이드 코드의 370 g과 다른데, 입력이 다르고(길이 32 vs 32.5·너비 4 vs 4.2) 저장된 모델도 각자 학습한 것이라 완전히 같지 않다. 길이 0.5 cm·너비 0.2 차이가 수십 g을 만드는 것은 2차 항(길이²·길이×너비)이 들어간 모델이라 큰 물고기 쪽에서 기울기가 가파르기 때문이다. 이 파일이 돌아가려면 **`s-04.py`를 먼저 실행해 `fish_model.pkl`이 생겨 있어야** 하고, `'./day14/…'` 상대 경로라 `2026_Python` 폴더에서 실행해야 한다는 점은 두 파일 모두 같다. 1-5에서 "다른 파일, 다른 시점"이라고 적은 것이 이 두 파일(`s-04.py`·`s-05.py`)로 실현됐다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -342,10 +361,10 @@ best_pipe.get_params()['ridge__alpha']            # 0.1
 ## 실습 파일
 
 - `KDT_2026/2026_Python/day14/s-04.py` — 10) 최적 파라미터 찾기: 1. `Pipeline([('poly', PolynomialFeatures(include_bias=False)), ('scaler', StandardScaler()), ('ridge', Ridge())])` → 2. `param_grid {'poly__degree': [2, 3], 'ridge__alpha': [0.001, 0.01, 0.1, 1, 10, 100]}`(`'식별자__파라미터명'` 주석) → 3. `KFold(n_splits=5, shuffle=True, random_state=42)`("5개로 나누어 4개 학습·1개 검증을 5번" 주석) → 4. `GridSearchCV(estimator=pipe_model, param_grid, scoring='r2', cv=kf, n_jobs=-1)`("CPU 성능 최대화" 주석) → 5. `grid.fit` → 6. `best_estimator_`·`best_params_`·`best_score_` → 7. `best_model.score` 학습·테스트, 11) 서빙 — "코랩/GPU 서버에서 학습 → 실제 서버(FastAPI)에서 호출" 주석, `joblib.dump(best_model, './day14/fish_model.pkl')`
-- `KDT_2026/2026_Python/day14/s-05.py` — 빈 파일 (아직 내용 없음). `s-04.py`는 이후 10) 7. 평가까지만 남은 상태(11) 서빙 블록은 당시 기록)
+- `KDT_2026/2026_Python/day14/s-05.py` — 저장한 모델 불러오기(서빙 쪽): `joblib.load('./day14/fish_model.pkl')` → `pd.DataFrame({'Length2': [32], 'Height': [10], 'Width': [4]})` 한 행 → `model.predict(sample)` → 346.9 g 출력. `fit`·CSV 없이 여덟 줄. `s-04.py`는 이후 10) 7. 평가까지만 남은 상태(11) 서빙 블록은 당시 기록)
 - 수업 PPT 「9. KFold」·「10. GridSearchCV」·「[2] 선형 회귀: KFold, GridSearchCV」·「[3] joblib」 — K-Fold 정의와 5단계 그림, `KFold`/`StratifiedKFold` 비교, 그리드 서치 정의·전수 탐색·refit·파이프라인 결합 튜닝·주요 속성 4개, `pipe_poly_ridge` + `param_grid {'poly__degree': [2, 3], 'ridge__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}` + `KFold(5, shuffle=True, random_state=42)` + `GridSearchCV(scoring='r2', cv=kf, n_jobs=-1)` → `best_estimator_`·`best_params_`·`best_score_`·훈련/테스트 `score` 출력, `joblib.dump(best_pipe, './day14/선형회귀모델.pkl')` → `joblib.load` → `sample_fish` 데이터프레임(`Length2` 32.5·`Height` 10.0·`Width` 4.2) `predict`
 - `KDT_2026/2026_Python/day14/Fish.csv` — 캐글 Fish Market, 159마리 × `Species`·`Weight`·`Length1~3`·`Height`·`Width`
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[KDT_2026 학습 지도]]
