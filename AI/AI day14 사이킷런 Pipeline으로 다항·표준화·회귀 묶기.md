@@ -1,14 +1,14 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/day14/s-04.py, day14/Fish.csv
+원본: KDT_2026/2026_Python/day14/s-04.py, day14/Fish.csv, 수업 PPT
 작성일: 2026-11-10
-tags: [학습, python]
+tags: [학습, ai, python]
 ---
 
-# Python day14 — 사이킷런 Pipeline으로 다항·표준화·회귀 묶기
+# AI day14 — 사이킷런 Pipeline으로 다항·표준화·회귀 묶기
 
 > 실습 파일: `day14/s-04.py`, `day14/Fish.csv`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day13 다항 규제 회귀 연습문제 풀이]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day13 다항 규제 회귀 연습문제 풀이]] · 다음: [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]]
 
 day12~13에서 조각조각 배운 것을 **한 파일에 처음부터 끝까지** 다시 쓰는 날이다. 자료 수집 → 특성·타깃 선정 → 학습/테스트 분리 → 다항 항 추가 → 표준화 → 모델 학습 → 결정계수, 이렇게 일곱 단계를 번호를 붙여 차례로 적고 나서, 그중 **4~6단계(변환기 둘 + 모델 하나)를 `Pipeline` 하나로 묶는다**. 앞에서 `fit` → `transform`을 여섯 번 부르던 코드가 `pipe_model.fit(X_train, Y_train)` 한 줄이 되고, `score`도 변환 전 원본 특성을 그대로 넣으면 된다. day13 2-1에서 `make_pipeline`으로 미리 맛본 것을 이번엔 **단계마다 이름을 붙이는 `Pipeline` 클래스**로 정식으로 다룬다. 이름이 있으면 나중에 `poly__degree`처럼 단계 안의 파라미터를 바깥에서 집어 바꿀 수 있어서, 이 이름 규칙이 그리드 서치로 이어지는 문이 된다.
 
@@ -162,6 +162,44 @@ pipe_model.named_steps['regressor'].coef_.round(1), pipe_model.named_steps['regr
          └──────────────── 같은 분할이면 같은 R² ────────────────┘
 ```
 
+### 1-8. 수업 슬라이드 — 파이프라인이란
+
+파이프라인은 데이터 전처리·특성 공학·최종 모델 학습과 예측에 이르는 **일련의 머신러닝 워크플로우를 하나로 묶어 단일 추정기처럼 동작하게** 만드는 기법이다. 왜 필요한가 — 스케일링·인코딩·결측치 처리 같은 전처리를 손으로 따로 관리하면 코드가 파편화되어 유지보수가 어려워지고, 무엇보다 **테스트 데이터나 교차 검증용 폴드의 정보가 전처리 과정에 새어 들어가는 데이터 누수(Data Leakage)** 가 자주 생기기 때문이다.
+
+| 종류 | 설명 |
+| --- | --- |
+| 표준 파이프라인 `Pipeline` / `make_pipeline` | 여러 변환기(Transformer)의 `fit_transform()`을 차례로 거친 뒤 마지막 예측기(Estimator)의 `fit()`을 **단일 인터페이스**로 실행. 학습(Train)과 평가(Test)에서 동일한 변환 기준을 누락 없이 재현하고, 교차 검증(`cross_val_score`)·하이퍼파라미터 튜닝(`GridSearchCV`) 때 데이터 누수를 원천 차단 |
+| 복합 특성 파이프라인 (`ColumnTransformer` 연계) | 수치형과 범주형이 섞인 현실 데이터에서 수치형 열에는 결측치 대체·표준화(`StandardScaler`), 범주형 열에는 원-핫 인코딩을 **병렬로** 지정한 뒤 모델 파이프라인에 연결. 서로 다른 타입의 전처리 복잡도를 낮추고 전처리부터 예측까지 **객체 하나**로 통제 |
+
+슬라이드 그림이 1-4의 흐름을 한 장으로 그린다. 왼쪽 **Step 1** — `Training set`이 `pipeline.fit(…)`으로 들어가면 `Scaling` → `Dimensionality Reduction` 단계는 `.fit(…) & .transform(…)`을, 마지막 `Learning Algorithm`은 `.fit(…)`만 거쳐 `Predictive Model`이 된다. 오른쪽 **Step 2** — `Test set`이 `pipeline.predict(…)`로 들어가면 같은 단계들을 `.transform(…)`만으로 통과해 모델의 `.predict(…)`가 `Class labels`를 내놓는다. 굵은 화살표(학습)와 흰 화살표(예측)가 서로 다른 메소드를 타는 것이 핵심이다.
+
+### 1-9. 수업 슬라이드 — `pipe_poly_lr` 세 단계의 명칭과 역할
+
+```python
+pipe_poly_lr = Pipeline([
+    ('poly',      PolynomialFeatures(degree=2, include_bias=False)),
+    ('scaler',    StandardScaler()),
+    ('regressor', LinearRegression())
+])
+pipe_poly_lr.fit(X_train, y_train)
+
+train_r2 = pipe_poly_lr.score(X_train, y_train)
+test_r2  = pipe_poly_lr.score(X_test,  y_test)
+print("\n=== [2차 다항 선형 회귀 Pipeline 평가] ===")
+print(f"훈련 데이터 설명력 (Train R2): {train_r2:.4f}")      # 0.9833
+print(f"테스트 데이터 설명력 (Test R2) : {test_r2:.4f}")     # 0.9719
+```
+
+슬라이드가 이 코드를 "비선형 패턴을 학습하려고 입력을 2차 다항식으로 확장하고, 폭발적으로 늘어난 특성의 단위를 표준화한 뒤, 최종 선형 회귀 모델로 전달하는 전체 과정을 **단 하나의 추정기(Estimator)** 로 캡슐화한 구조"라고 요약한다. 세 단계의 명칭과 역할표가 1-3의 표를 보완한다.
+
+| 단계 | 명칭 | 종류 | 역할 |
+| --- | --- | --- | --- |
+| 1 `PolynomialFeatures(degree=2, include_bias=False)` | 2차 다항 특성 생성기 | 변환기 (Transformer) | 선형 모델의 한계인 비선형 표현력을 극복하려고 기존 피처 간의 거듭제곱 및 상호작용 항(Cross-product)을 생성 |
+| 2 `StandardScaler()` | 표준 정규분포 스케일러 | 변환기 (Transformer) | 각 특성의 평균을 0, 표준편차를 1로 맞추는 표준화(Z-score 정규화) |
+| 3 `LinearRegression()` | 정규방정식 기반 다중 선형 회귀 | 예측기 (Estimator) | 표준화된 고차 다항 특성을 입력받아 최소제곱법(OLS)으로 손실(MSE)을 최소화하는 가중치 w와 편향 b를 학습 |
+
+앞 둘은 `fit`·`transform`을 가진 **변환기**, 마지막은 `fit`·`predict`를 가진 **예측기** — 1-3에서 적은 "마지막 단계만 모델" 규칙이 이 분류다. 슬라이드 코드는 타깃 변수를 소문자 `y_train`·`y_test`로 쓰는데, 수업 코드(`Y_train`)와 이름만 다르다. 같은 분할(`random_state=42`)이면 1-4에서 손 코드와 비교한 0.9833 / 0.9719가 그대로 나온다. 이 파이프라인이 다음 노트에서 `KFold`·`GridSearchCV`의 재료가 된다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `단계__파라미터` — 바깥에서 안쪽 설정 바꾸기
@@ -280,7 +318,8 @@ pipe_model[:-1].fit_transform(X_train).head()     # 모델 직전까지만 돌�
 
 - `KDT_2026/2026_Python/day14/s-04.py` — 1)~7) 번호 주석으로 `read_csv` → `df[['Length2', 'Height', 'Width']]`·`df['Weight']` → `train_test_split(test_size=0.2)` → `PolynomialFeatures(degree=2, include_bias=False)` `fit`·`transform` 둘 → `StandardScaler` `fit`·`transform` 둘 → `LinearRegression` `fit` → `score` 학습·테스트, "4 ~ 6 과정 묶음" 주석 아래 `Pipeline([('poly', …), ('scaler', …), ('regressor', …)])`와 "식별자, 클래스명() — 파이썬 인스턴스 생성" 주석, 9) `pipe_model.fit`·`score`
 - `KDT_2026/2026_Python/day14/Fish.csv` — 캐글 Fish Market, 159마리 × `Species`·`Weight`·`Length1~3`·`Height`·`Width`
+- 수업 PPT 「8. Pipeline」·「[1] 선형 회귀: Pipeline」 — 파이프라인 정의와 필요 이유(파편화·데이터 누수), 표준 파이프라인 vs `ColumnTransformer` 연계, Step 1 `fit`/Step 2 `predict` 그림, `pipe_poly_lr` 세 단계의 명칭·종류(변환기/예측기)·역할표, 훈련/테스트 R² 출력
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day13 다항 규제 회귀 연습문제 풀이]] · [[Python day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[Python day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[Python day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day13 다항 규제 회귀 연습문제 풀이]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[KDT_2026 학습 지도]]

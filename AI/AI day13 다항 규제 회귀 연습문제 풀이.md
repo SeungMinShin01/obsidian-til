@@ -2,13 +2,13 @@
 출처: Claude 분석
 원본: KDT_2026/2026_Python/ML_pracitce/practice2.py, ML_pracitce/student_dataset_10000_rows.csv
 작성일: 2026-11-09
-tags: [학습, python]
+tags: [학습, ai, python]
 ---
 
-# Python day13 — 다항 규제 회귀 연습문제 풀이
+# AI day13 — 다항 규제 회귀 연습문제 풀이
 
 > 실습 파일: `ML_pracitce/practice2.py`, `ML_pracitce/student_dataset_10000_rows.csv`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day13 StandardScaler 표준화와 릿지·라쏘 규제]] · 다음: [[Python day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]]
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · 다음: [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]]
 
 day13 수업의 흐름 — 다항 특성 확장 → 표준화 → 선형·릿지·라쏘 세 모델 비교 — 를 **다른 자료에 통째로 옮겨 보는** 연습이다. 재료는 캐글의 학생 성적 데이터(1만 명 × 공부 시간·출석률·수면 시간·인터넷 사용·과제 완료 수·이전 점수·시험 점수·취업 여부)이고, 수치형 6개로 시험 점수(`exam_score`)를 맞힌다. 수업과 달리 차수는 `degree=2`, 규제 강도는 `alpha=1.0`으로 **고정**되어 있어 "고르기"는 없고 "같은 조건에서 세 모델이 어떻게 다른가"에 집중한다. 마지막에 상위권·하위권 학생 한 명씩을 지어내어 세 모델에 넣어 보는데, 선형·릿지는 거의 같은 답을 내고 라쏘만 10점 넘게 다른 답을 낸다 — 라쏘가 특성 27개 중 17개를 지워 버린 결과다.
 
@@ -264,4 +264,4 @@ print(lasso_cv.alpha_, lasso_cv.score(X_test_scaled, Y_test))
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[Python day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[Python day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[Python day12 사이킷런 선형 회귀 연습문제 풀이]] · [[Python day08 판다스로 이커머스 주문 데이터 전처리 실습]] · [[Python day09 시본 범주 빈도·박스플롯·상관 히트맵]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 다항 회귀 제곱항 추가와 PolynomialFeatures]] · [[AI day12 사이킷런 선형 회귀 연습문제 풀이]] · [[KDT_2026 학습 지도]]
