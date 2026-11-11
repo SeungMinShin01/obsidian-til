@@ -1,16 +1,16 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/practice3.py, ML_pracitce/student_dataset_10000_rows.csv
+원본: KDT_2026/2026_Python/ML_pracitce/practice3.py, ML_pracitce/student_dataset_10000_rows.csv, best_student_performance_pipe.pkl
 작성일: 2026-11-10
 tags: [학습, ai, python]
 ---
 
 # AI day14 — 파이프라인·그리드서치·joblib 연습문제 풀이
 
-> 실습 파일: `ML_pracitce/practice3.py`, `ML_pracitce/student_dataset_10000_rows.csv`
+> 실습 파일: `ML_pracitce/practice3.py`, `ML_pracitce/student_dataset_10000_rows.csv`, 산출물 `best_student_performance_pipe.pkl`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · 다음: [[AI day14 로지스틱 회귀로 도미·빙어 분류]]
 
-day14 수업의 세 도구 — `Pipeline`, `KFold` + `GridSearchCV`, `joblib` — 를 **한 문제에 이어 붙여** 쓰는 연습이다. 재료는 day13 연습에서 썼던 캐글 학생 성적 데이터(1만 명 × 수치형 6열 → `exam_score`) 그대로다. 앞 연습에서는 `degree=2`·`alpha=1.0`을 **고정**하고 다항 변환과 표준화를 손으로 두 번씩 돌렸는데, 이번에는 그 전처리를 파이프라인 하나에 넣고, 차수와 규제 강도를 격자 탐색으로 **고르고**, 고른 파이프라인을 파일로 저장했다가 다시 읽어 새 학생 두 명의 점수를 예측한다. 연습 파일에는 1~6번 지시문만 있고 풀이 코드는 비어 있어, 지시문을 따라 적은 풀이와 실행 결과를 여기에 정리한다. 결론부터 적으면 최적 조합은 `degree=2`·`alpha=0.1`, 교차 검증 평균 R² 0.730, 테스트 R² 0.737 — day13 연습의 릿지(0.737)와 사실상 같은 점수다. 자료가 8,000행이라 `alpha`가 거의 영향을 못 주고, 차수 1 → 2의 차이(0.66 → 0.73)만 뚜렷하다.
+day14 수업의 세 도구 — `Pipeline`, `KFold` + `GridSearchCV`, `joblib` — 를 **한 문제에 이어 붙여** 쓰는 연습이다. 재료는 day13 연습에서 썼던 캐글 학생 성적 데이터(1만 명 × 수치형 6열 → `exam_score`) 그대로다. 앞 연습에서는 `degree=2`·`alpha=1.0`을 **고정**하고 다항 변환과 표준화를 손으로 두 번씩 돌렸는데, 이번에는 그 전처리를 파이프라인 하나에 넣고, 차수와 규제 강도를 격자 탐색으로 **고르고**, 고른 파이프라인을 파일로 저장했다가 다시 읽어 새 학생 두 명의 점수를 예측한다. 연습 파일은 처음엔 1~6번 지시문만 있었고, 같은 날 저녁에 풀이 코드가 채워져 커밋됐다(`practice1` 커밋, 산출물 `best_student_performance_pipe.pkl` 2,409바이트 포함). 아래 풀이는 그 코드와 같은 흐름이고, 실행 결과를 함께 정리한다 — 파일 쪽과 다른 자리는 1-7에 따로 적었다. 결론부터 적으면 최적 조합은 `degree=2`·`alpha=0.1`, 교차 검증 평균 R² 0.730, 테스트 R² 0.737 — day13 연습의 릿지(0.737)와 사실상 같은 점수다. 자료가 8,000행이라 `alpha`가 거의 영향을 못 주고, 차수 1 → 2의 차이(0.66 → 0.73)만 뚜렷하다.
 
 ## 1. 배운 내용
 
@@ -138,6 +138,20 @@ sample → poly.transform → ss.transform          ▼
 
 왼쪽은 "같은 조건에서 세 모델을 비교"하는 연습이었고 오른쪽은 "한 모델의 조건을 고르고 저장해 쓰는" 연습이다. 숫자는 같은 곳에 도착하지만, 오른쪽만이 **다른 파일·다른 시점에서 다시 쓸 수 있는 산출물**(`.pkl`)을 남긴다.
 
+### 1-7. 파일에 채워진 풀이와 대조 (2026-11-11 보강)
+
+파일에 들어온 풀이는 위 코드와 단계·값이 모두 같다. 다른 것은 이름과 모양뿐이다.
+
+| 자리 | 이 노트 | 파일 |
+| --- | --- | --- |
+| 파이프라인 변수 | `pipe` | `pipe_model` |
+| 격자 정의 순서 | `kf` → `param_grid` | `param_grid` → `kf` (순서는 결과와 무관) |
+| 출력 | `best_params_`·`best_score_`·학습/테스트 `score` | 같은 네 줄, `'r2 : '` 접두사로 출력 |
+| 샘플 데이터프레임 | 행 리스트 + `columns=feature` | `{'study_hours': [9, 2], 'attendance': [95, 60], …}` 열 딕셔너리 |
+| 결과 출력 | `predict(sample)` 배열 | `predict[0]`·`predict[1]`을 "상위권/하위권 예상 시험 점수"로 따로 출력 |
+
+샘플을 만드는 두 방법은 같은 (2, 6) 데이터프레임을 만든다. 열 딕셔너리는 **열 이름이 코드에 그대로 보여** 지시문의 "독립변수와 동일한 컬럼 규격"을 눈으로 맞추기 쉽고, 행 리스트 + `columns=`는 **표본이 한 줄에 한 명**이라 표본이 많을 때 읽기 쉽다. 어느 쪽이든 열 순서가 `feature`와 같아야 파이프라인이 열 이름 검사를 통과한다. `.pkl`이 `2026_Python/` 바로 아래에 생긴 것은 2-5에 적은 대로 `'./best_student_performance_pipe.pkl'`이 **실행 폴더 기준**이기 때문이다 — 같은 폴더의 `.gitignore`가 `.pkl`을 막지 않아 산출물까지 같이 커밋됐다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `cv_results_`를 표로 펼치기
@@ -211,7 +225,8 @@ loaded['model'].predict(sample[loaded['feature']])
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice3.py` — 파이프라인·그리드서치·joblib 연습문제(지시문 1~6): 1 캐글 학생 성적 CSV → 수치형 6열 `X`·`exam_score` `y`, 2 `train_test_split(…, 0.2, random_state=42)`, 3 `Pipeline([('poly', PolynomialFeatures(include_bias=False)), ('scaler', StandardScaler()), ('ridge', Ridge(random_state=42))])`(데이터 누수 방지), 4 `KFold(n_splits=5, shuffle=True, random_state=42)` + `param_grid {'poly__degree': [1, 2], 'ridge__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}` + `GridSearchCV(scoring='r2', cv=kf, n_jobs=-1)` `fit`, 5 `best_estimator_`를 `joblib.dump('./best_student_performance_pipe.pkl')` → `joblib.load` → `loaded_model`, 6 상위권·하위권 샘플 2행 데이터프레임을 `.predict()`에 **원시 그대로** 전달해 비교 출력. 풀이 코드는 파일에 없고 지시문만 있어 이 노트에 풀이와 실행 결과를 적었다
+- `KDT_2026/2026_Python/ML_pracitce/practice3.py` — 파이프라인·그리드서치·joblib 연습문제(지시문 1~6): 1 캐글 학생 성적 CSV → 수치형 6열 `X`·`exam_score` `y`, 2 `train_test_split(…, 0.2, random_state=42)`, 3 `Pipeline([('poly', PolynomialFeatures(include_bias=False)), ('scaler', StandardScaler()), ('ridge', Ridge(random_state=42))])`(데이터 누수 방지), 4 `KFold(n_splits=5, shuffle=True, random_state=42)` + `param_grid {'poly__degree': [1, 2], 'ridge__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}` + `GridSearchCV(scoring='r2', cv=kf, n_jobs=-1)` `fit`, 5 `best_estimator_`를 `joblib.dump('./best_student_performance_pipe.pkl')` → `joblib.load` → `loaded_model`, 6 상위권·하위권 샘플 2행 데이터프레임을 `.predict()`에 **원시 그대로** 전달해 비교 출력. 처음엔 지시문만 있었고 2026-11-10 저녁에 풀이 코드가 채워졌다 — 이 노트의 풀이와 같은 흐름(차이는 1-7)
+- `KDT_2026/2026_Python/best_student_performance_pipe.pkl` — 문제 5에서 `joblib.dump`로 저장된 최적 파이프라인(2,409바이트), 실행 폴더 기준 경로라 `2026_Python/` 바로 아래에 생김
 - `KDT_2026/2026_Python/ML_pracitce/student_dataset_10000_rows.csv` — 학생 10,000명 × 8열, 결측 없음 (day13 연습과 같은 파일)
 
 ## 관련 노트

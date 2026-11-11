@@ -1,16 +1,16 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/practice4.py
+원본: KDT_2026/2026_Python/ML_pracitce/practice4.py, ML_pracitce/data.csv
 작성일: 2026-11-10
 tags: [학습, ai, python]
 ---
 
 # AI day14 — 로지스틱 이진 분류 연습문제 풀이
 
-> 실습 파일: `ML_pracitce/practice4.py`
+> 실습 파일: `ML_pracitce/practice4.py`, `ML_pracitce/data.csv`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · 다음: (아직 없음)
 
-수업 `s-06.py`의 흐름 — 두 클래스만 남기기 → `stratify` 분할 → 표준화 → `LogisticRegression` → `predict`·`predict_proba`·`accuracy_score` — 를 **다른 자료에 옮기는** 연습이다. 재료는 캐글의 위스콘신 유방암 진단 데이터(569건 × 세포핵 측정값 30열, 진단 `M` 악성/`B` 양성)다. 도미·빙어는 특성 6개에 49마리였는데 여기는 특성 30개에 569건이고, 타깃을 문자열 그대로 두지 않고 **악성 1·양성 0 숫자로 바꾸는** 단계가 추가된다. 연습 파일에는 단계 1~6 지시문과 단계 1의 힌트 코드만 있고, 데이터 파일 `data.csv`도 아직 폴더에 없다. 그래서 풀이 코드를 여기에 적고, 실행 결과는 사이킷런에 내장된 같은 자료(`load_breast_cancer`, 569건·30열이 캐글 CSV와 동일)로 확인했다 — 열 이름 표기(`radius_mean` vs `mean radius`)만 다르고 값은 같다. 결론은 테스트 114건 중 110건 정답, 정확도 **0.965**. 도미·빙어의 1.0과 달리 이번엔 틀리는 표본이 생겨, 정확도 뒤의 혼동 행렬을 읽을 이유가 처음 생긴다.
+수업 `s-06.py`의 흐름 — 두 클래스만 남기기 → `stratify` 분할 → 표준화 → `LogisticRegression` → `predict`·`predict_proba`·`accuracy_score` — 를 **다른 자료에 옮기는** 연습이다. 재료는 캐글의 위스콘신 유방암 진단 데이터(569건 × 세포핵 측정값 30열, 진단 `M` 악성/`B` 양성)다. 도미·빙어는 특성 6개에 49마리였는데 여기는 특성 30개에 569건이고, 타깃을 문자열 그대로 두지 않고 **악성 1·양성 0 숫자로 바꾸는** 단계가 추가된다. 연습 파일에는 단계 1~6 지시문과 단계 1의 힌트 코드만 있고 풀이 코드는 아직 없다. 데이터 파일 `data.csv`는 처음 정리할 때는 폴더에 없어 사이킷런에 내장된 같은 자료(`load_breast_cancer`, 569건·30열이 캐글 CSV와 동일)로 결과를 확인했고, 같은 날 저녁 `ML_pracitce/data.csv`로 들어온 뒤(아직 커밋 전) 실제 CSV로 다시 돌려 보니 정확도·혼동 행렬·앞 세 건의 확률이 모두 같았다(1-7) — 열 이름 표기(`radius_mean` vs `mean radius`)만 다르고 값은 같다. 결론은 테스트 114건 중 110건 정답, 정확도 **0.965**. 도미·빙어의 1.0과 달리 이번엔 틀리는 표본이 생겨, 정확도 뒤의 혼동 행렬을 읽을 이유가 처음 생긴다.
 
 ## 1. 배운 내용
 
@@ -110,6 +110,21 @@ predict_proba 열 = [도미, 빙어]               predict_proba 열 = [양성, 
 accuracy_score 1.0 (10/10)                   accuracy_score 0.965 (110/114) → 혼동 행렬
 ```
 
+### 1-7. 실제 `data.csv`로 다시 확인 (2026-11-11 보강)
+
+```python
+df = pd.read_csv('./ML_pracitce/data.csv')   # 2026_Python 폴더에서 실행할 때의 경로
+df.shape                                      # (569, 33)
+df.columns[-2:]                               # ['fractal_dimension_worst', 'Unnamed: 32']
+df = df.drop(columns=['id']).dropna(axis=1, how='all')   # (569, 31)
+# … 1-1 ~ 1-5 그대로 …
+accuracy_score(Y_test, Y_pred)                # 0.9649 (110 / 114)
+confusion_matrix(Y_test, Y_pred)              # [[71 1] [3 39]]
+model.predict_proba(X_test_scaled[:3])        # [[0.9996 0.0004] [0.0000 1.0000] [0.9574 0.0426]]
+```
+
+캐글 CSV는 지시문이 예고한 그대로 **33열**이고, 마지막 열이 이름 없는 `Unnamed: 32`다 — 행 끝의 쉼표 하나가 만든 빈 열이라 `dropna(axis=1, how='all')` 한 줄이 꼭 필요하다는 것을 파일을 열어 보고서야 실감했다. 그 뒤는 1-1의 코드가 글자 그대로 돌아가고, 결과는 내장 자료로 확인한 값과 소수점 넷째 자리까지 같다. 같은 UCI 자료를 두 경로로 받은 것이니 당연하지만, "내장 자료로 대신 확인한 결과"가 "실제 파일의 결과"와 일치함을 한 번 짚어 둔다. 경로는 신경 쓸 자리다. 지시문의 `./data.csv`는 **스크립트 파일 위치가 아니라 실행 폴더 기준**이라, VS Code에서 `2026_Python`을 열고 실행하면 `./ML_pracitce/data.csv`로 적어야 찾는다(앞 연습 practice3의 `'./ML_pracitce/student_dataset_10000_rows.csv'`와 같은 방식). 찾지 못하면 `FileNotFoundError`가 나고, `import os; os.getcwd()`로 현재 폴더부터 확인하는 편이 빠르다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 어떤 특성이 악성 쪽으로 미는가 — `coef_` 읽기
@@ -184,8 +199,8 @@ Y = LabelEncoder().fit_transform(df['diagnosis'])        # B → 0, M → 1 (알
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice4.py` — 로지스틱 이진 분류 연습문제(지시문 단계 1~6): 1 `./data.csv` 로드 → `id`·전부 결측인 `Unnamed: 32` 제거(`drop(columns=['id'])`·`dropna(axis=1, how='all')` 힌트 코드) → `diagnosis` M = 1·B = 0 매핑 `y`·나머지 30열 `X`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=y)`, 3 `StandardScaler` 학습 세트 `fit` → `transform` 둘, 4 `LogisticRegression().fit`, 5 `predict` → `accuracy_score`, 6 테스트 앞 3건의 예측 클래스와 `predict_proba`(양성 0/악성 1 확률). 풀이 코드는 파일에 없고 `data.csv`도 폴더에 없어, 풀이는 이 노트에 적고 결과는 사이킷런 내장 `load_breast_cancer`(같은 569건·30열)로 확인했다
-- (데이터) 캐글 Breast Cancer Wisconsin — 569건 × `id`·`diagnosis`·30 측정값·`Unnamed: 32`, 양성 357·악성 212
+- `KDT_2026/2026_Python/ML_pracitce/practice4.py` — 로지스틱 이진 분류 연습문제(지시문 단계 1~6): 1 `./data.csv` 로드 → `id`·전부 결측인 `Unnamed: 32` 제거(`drop(columns=['id'])`·`dropna(axis=1, how='all')` 힌트 코드) → `diagnosis` M = 1·B = 0 매핑 `y`·나머지 30열 `X`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=y)`, 3 `StandardScaler` 학습 세트 `fit` → `transform` 둘, 4 `LogisticRegression().fit`, 5 `predict` → `accuracy_score`, 6 테스트 앞 3건의 예측 클래스와 `predict_proba`(양성 0/악성 1 확률). 풀이 코드는 파일에 없어 이 노트에 적었고, 결과는 사이킷런 내장 `load_breast_cancer`와 실제 `data.csv` 양쪽으로 확인했다(동일)
+- `KDT_2026/2026_Python/ML_pracitce/data.csv` — 캐글 Breast Cancer Wisconsin, 569건 × 33열(`id`·`diagnosis`·30 측정값·`Unnamed: 32`), 양성 357·악성 212. 2026-11-10 저녁 추가(아직 커밋 전), 1-7에서 실제 결과 확인
 
 ## 관련 노트
 
