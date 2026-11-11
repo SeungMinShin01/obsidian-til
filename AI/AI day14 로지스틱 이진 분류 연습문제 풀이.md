@@ -125,6 +125,33 @@ model.predict_proba(X_test_scaled[:3])        # [[0.9996 0.0004] [0.0000 1.0000]
 
 캐글 CSV는 지시문이 예고한 그대로 **33열**이고, 마지막 열이 이름 없는 `Unnamed: 32`다 — 행 끝의 쉼표 하나가 만든 빈 열이라 `dropna(axis=1, how='all')` 한 줄이 꼭 필요하다는 것을 파일을 열어 보고서야 실감했다. 그 뒤는 1-1의 코드가 글자 그대로 돌아가고, 결과는 내장 자료로 확인한 값과 소수점 넷째 자리까지 같다. 같은 UCI 자료를 두 경로로 받은 것이니 당연하지만, "내장 자료로 대신 확인한 결과"가 "실제 파일의 결과"와 일치함을 한 번 짚어 둔다. 경로는 신경 쓸 자리다. 지시문의 `./data.csv`는 **스크립트 파일 위치가 아니라 실행 폴더 기준**이라, VS Code에서 `2026_Python`을 열고 실행하면 `./ML_pracitce/data.csv`로 적어야 찾는다(앞 연습 practice3의 `'./ML_pracitce/student_dataset_10000_rows.csv'`와 같은 방식). 찾지 못하면 `FileNotFoundError`가 나고, `import os; os.getcwd()`로 현재 폴더부터 확인하는 편이 빠르다.
 
+### 1-8. 파일에 채워진 풀이 코드와 대조 (2026-11-11 보강)
+
+```python
+df = pd.read_csv('./ML_pracitce/data.csv')     # 실행 폴더(2026_Python) 기준 경로
+df = df.drop(columns=['id'])
+df = df.dropna(axis=1, how='all')               # Unnamed: 32 제거 → (569, 31)
+Y = df['diagnosis']                              # 'M' / 'B' 문자열 그대로
+X = df.drop(columns=['diagnosis'])
+# … train_test_split(stratify=Y) → StandardScaler ss.fit(X_train) → transform 둘 → LogisticRegression().fit …
+print('정확도:', acc)                            # 0.9649
+print(model.classes_)                            # ['B' 'M']
+print('예측한 클래스: ', Y_pred[:3])             # ['B' 'M' 'B']
+print(np.round(model.predict_proba(X_test_scaled[:3]), 3))   # [[1. 0.] [0. 1.] [0.957 0.043]]
+```
+
+11-11 아침, 지시문만 있던 `practice4.py`에 풀이 코드가 채워졌다. 1-1~1-5에 적어 둔 풀이와 나란히 두면 세 군데가 다르고 결과는 같다.
+
+| | 이 노트의 풀이 (1-1~1-5) | 파일의 풀이 |
+| --- | --- | --- |
+| 타깃 | `map({'M': 1, 'B': 0})` → `classes_ [0 1]` | **문자열 그대로** → `classes_ ['B' 'M']` (알파벳순) |
+| 표준화 | `ss.fit_transform(X_train)` 한 줄 | `ss.fit(X_train)` → `ss.transform(X_train)` 두 줄 |
+| 확률 열 순서 | `[양성 0, 악성 1]` | `[B, M]` — 결과적으로 **같은 순서** |
+| 정확도 | 0.9649 (110/114) | 0.9649 (110/114) |
+| 앞 3건 확률 | `[0.9996 0.0004] [0 1] [0.9574 0.0426]` | `[1. 0.] [0. 1.] [0.957 0.043]` (`np.round(…, 3)`) |
+
+핵심은 **타깃을 숫자로 바꾸지 않아도 사이킷런은 돌아간다**는 것 — 수업 `s-06.py`가 `'Bream'`/`'Smelt'`를 그대로 넣었던 것과 같은 방식이고, 알파벳순으로 `B`가 0번·`M`이 1번이 되어 `predict_proba`의 둘째 열이 악성 확률인 점도 우연히 매핑 풀이와 일치한다. 다만 이 일치는 `B < M`이라는 알파벳 순서 덕이라, 라벨이 `benign`/`malignant`가 아니라 `malignant`/`healthy`였다면 열 순서가 뒤집힌다. `classes_`를 찍어 어느 열이 어느 클래스인지 확인하는 줄이 풀이에 들어 있는 이유가 그것이고, 어느 쪽이 양성(positive)인지를 내가 정하고 싶으면 1-1처럼 `map`으로 숫자를 매기는 편이 안전하다. 두 번째 차이는 취향 문제다 — `fit` 뒤 `transform`을 따로 부르면 "학습용에만 `fit`, 둘 다 `transform`"이라는 규칙이 코드에 글자 그대로 드러난다. 수렴은 20회, 혼동 행렬 `[[71 1] [3 39]]`도 1-6과 같다. 주석으로 남겨 둔 힌트 블록(`# df = pd.read_csv('./data.csv') …`)은 지시문의 경로 그대로라, 실행 폴더가 다르면 `FileNotFoundError`가 난다는 1-7의 메모가 그 블록에도 적용된다.
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. 어떤 특성이 악성 쪽으로 미는가 — `coef_` 읽기
@@ -193,13 +220,13 @@ Y = LabelEncoder().fit_transform(df['diagnosis'])        # B → 0, M → 1 (알
 
 - `drop(columns=['id'])` · `dropna(axis=1, how='all')` vs `how='any'` · `map({'M': 1, 'B': 0})`로 양성 클래스 직접 지정
 - `stratify=Y` 63:37 · 30열 표준화 필수(수렴 20회 vs 3,000회+) · `accuracy_score(정답, 예측)` = `score`
-- `classes_ [0 1]` → `predict_proba` 둘째 열 = 악성 확률 · 혼동 행렬 `[[71 1] [3 39]]` · 거짓 음성 3건 · 악성 재현율 0.93
+- `classes_ [0 1]` → `predict_proba` 둘째 열 = 악성 확률 · 문자열 타깃 그대로면 `classes_ ['B' 'M']`(알파벳순, 열 순서 우연히 일치) · 혼동 행렬 `[[71 1] [3 39]]` · 거짓 음성 3건 · 악성 재현율 0.93
 - `coef_` 30개 부호 읽기 · 임계값 0.3 · `StratifiedKFold` + 파이프라인 · `LabelEncoder` vs `map`
 - 정밀도·재현율·F1·ROC-AUC · `PolynomialFeatures`/k-NN/트리/SVC · `load_breast_cancer` 타깃 부호 반대
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice4.py` — 로지스틱 이진 분류 연습문제(지시문 단계 1~6): 1 `./data.csv` 로드 → `id`·전부 결측인 `Unnamed: 32` 제거(`drop(columns=['id'])`·`dropna(axis=1, how='all')` 힌트 코드) → `diagnosis` M = 1·B = 0 매핑 `y`·나머지 30열 `X`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=y)`, 3 `StandardScaler` 학습 세트 `fit` → `transform` 둘, 4 `LogisticRegression().fit`, 5 `predict` → `accuracy_score`, 6 테스트 앞 3건의 예측 클래스와 `predict_proba`(양성 0/악성 1 확률). 풀이 코드는 파일에 없어 이 노트에 적었고, 결과는 사이킷런 내장 `load_breast_cancer`와 실제 `data.csv` 양쪽으로 확인했다(동일)
+- `KDT_2026/2026_Python/ML_pracitce/practice4.py` — 로지스틱 이진 분류 연습문제(지시문 단계 1~6): 1 `./data.csv` 로드 → `id`·전부 결측인 `Unnamed: 32` 제거(`drop(columns=['id'])`·`dropna(axis=1, how='all')` 힌트 코드) → `diagnosis` M = 1·B = 0 매핑 `y`·나머지 30열 `X`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=y)`, 3 `StandardScaler` 학습 세트 `fit` → `transform` 둘, 4 `LogisticRegression().fit`, 5 `predict` → `accuracy_score`, 6 테스트 앞 3건의 예측 클래스와 `predict_proba`(양성 0/악성 1 확률). 풀이는 이 노트에 먼저 적었고(결과는 사이킷런 내장 `load_breast_cancer`와 실제 `data.csv` 양쪽으로 확인, 동일), 11-11 파일에 채워진 풀이 코드(타깃 문자열 그대로 → `classes_ ['B' 'M']`·`ss.fit` → `transform` 둘·`np.round(predict_proba, 3)`·지시문 경로 힌트 블록은 주석)는 1-8에서 대조 — 정확도 0.9649·앞 3건 확률 동일
 - `KDT_2026/2026_Python/ML_pracitce/data.csv` — 캐글 Breast Cancer Wisconsin, 569건 × 33열(`id`·`diagnosis`·30 측정값·`Unnamed: 32`), 양성 357·악성 212. 2026-11-10 저녁 추가(아직 커밋 전), 1-7에서 실제 결과 확인
 
 ## 관련 노트

@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day15 — Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색
 
 > 실습 파일: `day15/s-07.py`(뒷부분 "파이프라인 구성"부터), `day15/Fish.csv`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · 다음: [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]]
 
 앞 노트에서 일곱 종 다중 분류는 정확도 0.81·매크로 F1 0.66에서 멈췄고, 틀린 여섯 마리 중 다섯이 "로치를 퍼치로" 였다. 그리고 2단에 "기본 `C=1.0`을 믿지 말고 훑어보되, 훑을 때는 교차 검증으로"라고 적어 두었다. 이 노트는 그 문장을 **수업 코드로 실제로 하는 부분**이다 — `s-07.py` 뒷부분에 **파이프라인 구성 → `param_grid` → `StratifiedKFold` → `GridSearchCV(scoring='f1_macro')` → `best_estimator_`로 리포트 재출력**이 이어 붙었다. 도구는 전부 day14에서 본 것이다(Pipeline·KFold·GridSearchCV). 달라진 것은 셋이다. 분할기가 `KFold`에서 **`StratifiedKFold`**로, 점수가 `r2`에서 **`f1_macro`**로, 후보가 `alpha`에서 **`C`** 하나로. 결과는 `C=100`이 뽑혀 테스트 정확도가 **0.81 → 0.97**, 로치 4마리가 전부 맞는다.
 
@@ -267,4 +267,4 @@ print(clf.predict(new), clf.predict_proba(new).round(3), clf.classes_)
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[KDT_2026 학습 지도]]
