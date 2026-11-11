@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day15 — ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인
 
 > 실습 파일: `day15/s-08.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색]] · 다음: [[AI day15 다중 분류 파이프라인 연습문제 풀이]]
 
 day12부터 지금까지 특성은 전부 **숫자**였다. Fish의 길이·높이·너비, 학생 성적의 공부 시간, 유방암 자료의 세포핵 측정값 — 모델에 넣기 전에 한 일은 제곱항을 더하거나 표준화하는 것뿐이었다. `s-08.py`는 수업 첫 줄 주석 그대로 **"범주형(문자) 특성 갖는 학습 방법"**이다. 시본 내장 펭귄 자료(`penguins`)로 세 종을 맞히는데, 특성 여섯 중 `island`(섬 이름)와 `sex`(성별) 둘이 문자열이다. 문자열을 `LogisticRegression`에 그대로 넣으면 `could not convert string to float: 'Biscoe'`로 멈춘다. 해법은 두 도구다 — 범주를 0/1 열로 바꾸는 **`OneHotEncoder`**, 그리고 "이 열들엔 표준화, 저 열들엔 원-핫"처럼 **열마다 다른 변환기를 붙이는 `ColumnTransformer`**. 둘을 묶은 전처리 하나를 `Pipeline` 첫 단계에 넣으면 앞 노트의 `[('scaler', …), ('model', …)]` 두 단계 그림이 그대로 유지된다. day14 Pipeline 노트 2단에 "`ColumnTransformer`+`OneHotEncoder` 열별 전처리"라고 키워드만 적어 둔 것이 이번에 수업 코드로 나왔다.
 
@@ -273,4 +273,4 @@ GridSearchCV(pipe, param_grid, cv=StratifiedKFold(5, shuffle=True, random_state=
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day15 Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 로지스틱 이진 분류 연습문제 풀이]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day15 Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색]] · [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 로지스틱 이진 분류 연습문제 풀이]] · [[KDT_2026 학습 지도]]
