@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day16 — FastAPI 시작과 쿼리·경로·본문 파라미터
 
 > 실습 파일: `day16/f-01.py`, `day16/f-02.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]] · 다음: [[Python day16 FastAPI APIRouter로 컨트롤러·서비스 파일 분리]]
 
 day11까지는 남이 열어 둔 API를 `httpx`로 **부르는 쪽**이었다. day16은 방향이 뒤집힌다 — 이번에는 내가 API를 **열어 주는 쪽**이 된다. 도구는 FastAPI로, 파이썬 함수에 데코레이터 한 줄을 얹으면 그 함수가 곧 주소(엔드포인트)가 되고, 함수의 매개변수가 곧 요청 파라미터가 된다. 서버를 띄우는 일은 `uvicorn`이 맡는다. day12~15에서 사이킷런 모델을 `joblib`로 저장해 두었으니, 그 모델을 불러 예측 결과를 돌려주는 창구가 바로 이런 서버다(AI 폴더의 day15 연습 노트 끝에 "FastAPI 서빙"이라고 적어 둔 자리). 코드 전체가 스무 줄 남짓인데, 이 안에 **쿼리스트링·경로·본문** 세 가지 통신 방식이 전부 들어 있다.
 
@@ -324,4 +324,4 @@ def test_user():
 
 ## 관련 노트
 
-[[Python 정리본 인덱스]] · [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]] · [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · [[Python day10 Playwright 비동기로 동적 페이지 크롤링]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[KDT_2026 학습 지도]]
+[[Python 정리본 인덱스]] · [[Python day11 httpx로 착한가격업소 API 수집과 업종별 평균 가격 실습]] · [[Python day16 FastAPI APIRouter로 컨트롤러·서비스 파일 분리]] · [[Python day11 httpx로 공공데이터 API 호출과 JSON 데이터프레임 변환]] · [[Python day10 Playwright 비동기로 동적 페이지 크롤링]] · [[Python day05 클래스 정의와 생성자·메소드]] · [[Python day02 딕셔너리 선언과 키로 값 다루기]] · [[KDT_2026 학습 지도]]
