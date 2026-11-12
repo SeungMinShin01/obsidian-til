@@ -46,6 +46,25 @@ Spring Boot 앱에 **의존성 한 줄과 키 하나**만 넣으면 로컬 개�
 | [[AiOps 08 - 하트비트와 Starter 빌드 정리]] | 하트비트를 MVP로 당긴 이유(D-086), protocol을 api로, Starter에서 Jackson을 뺀 이유(D-085), JitPack 함정 |
 | [[AiOps 09 - sample-app 에러 재현 앱]] | 주소별 고장, 지연 연결이라 넣은 DbStartupCheck, 500·응답에 예외 이름 없는 이유, 팀 앱 문제와 Starter 문제 구분 |
 | [[AiOps 10 - 선행 테스트 브랜치]] | 설계자가 테스트를 먼저 쓰는 이유(D-080), test/ 브랜치, MaskerTest 표, FingerprinterTest 케이스, 미확정 충돌 2건 |
+| [[AiOps 11 - Starter 구조와 인터페이스]] | 스레드 두 개와 버퍼 경계, 인터페이스를 먼저 만든 이유 4가지, 인터페이스 3개로 나눈 이유, fromOrNull이 null을 돌려주는 이유 |
+| [[AiOps 12 - 이벤트 버퍼 BoundedEventBuffer]] | offer와 put, getAndSet(0), null도 버린 개수, 테스트 7종, develop 43커밋 밀림, 테스트 201개 |
+| [[AiOps 13 - 수집 API (A)]] | 키 해시 인증, 202와 413 필터, 커밋 후 처리 요청, touch로 통일한 하트비트, ingest.http |
+| [[AiOps 14 - 처리 풀과 그룹화 (A)]] | @Async 처리 풀, 선행 테스트를 통과한 지문, ON CONFLICT + xmax로 새 그룹 판별, 재처리 스케줄러 |
+| [[AiOps 15 - 보관 삭제와 수집 통계 (A)]] | 원본만 묶음 삭제, 같은 트랜잭션 통계, droppedCount가 서버까지 가는 길 |
+| [[AiOps 16 - 디스코드 알림 (B)]] | Notifier 인터페이스, 웹훅 주소가 로그로 새는 경로, 분당 제한, LLM 출력 형식과의 연결 |
+| [[AiOps 17 - 팀 격리 RLS (B)]] | TenantContext → set_config → RLS, 0건이 정상인 이유, 테스트에 @Transactional 금지, 격리 8종 초록 |
+| [[AiOps 18 - V3 콘솔 스키마 (B)]] | RLS 없는 새 테이블 5개(D-023), text + CHECK, V3에 함께 넣은 컬럼, 12단계 PR 결정 |
+| [[AiOps 19 - 디스코드 자동화 (B)]] | 저장된 id 기준 멱등, 롤백 없는 외부 시스템, 서명된 state, 웹훅만 지우는 정지 |
+| [[AiOps 20 - HTTP 전송과 JsonWriter]] | 의존성 0 JsonWriter(record 리플렉션·캐시·이스케이프), 2초·3초 타임아웃, HTTP_1_1 고정, interrupt 복구, 첫 실패만 로그 |
+| [[AiOps 21 - 전송 스레드 BatchingEventSender]] | 5초·100개 묶음, 1회 재시도와 개수 이월, 60초 하트비트, Clock·Sleeper·tick 테스트 구조, Atomic·final·ProtocolConstants Q&A |
+| [[AiOps 22 - 부품 조립 AiopsRuntime]] | spring.factories 진입점과 순서 +1, 이중 확인 잠금, NOT NULL host_hash, 하트비트로 서버 도달 확인, D-005·006·084·087 |
+| [[AiOps 23 - 마스킹 Masker]] | 정책 표, 혼자 쓰는 선행 테스트(D-080 운영), NPE 틀 예외(D-094), 가린 뒤 자르기, 정규식 lookaround |
+| [[AiOps 24 - 예외 변환 EventMapper]] | 원인 체인 순환 방지(IdentityHashMap), 동적 프록시 가짜, protocol loggerName 추가, 설계로 되돌린 3가지(loggerName·phase null·줄 번호) |
+| [[AiOps 25 - 어펜더 AiopsLogbackAppender]] | 팀 앱 스레드의 입구, UnsynchronizedAppenderBase, 무시 로거와 무한 루프, 점 단위 비교 |
+| [[AiOps 26 - 로그인과 권한 (B)]] | 보안 체인 2개, GitHub OAuth2와 app_user, 세션 쿠키·CSRF, MembershipGuard → TenantContext, @RequireOwner, 권한 E2E 7종 |
+| [[AiOps 27 - 팀 API 초대와 팀원 (B)]] | 초대 토큰(43자·해시만), 조건부 UPDATE로 동시 수락 막기, 수락 next=key-guide, 팀원 내보내기 즉시 403, 디스코드 연결 컨트롤러 |
+| [[AiOps 28 - 관리자 API 기수와 접근 기록 (A)]] | 접근 기록 인터셉터(경로 패턴만 기록), V4 append-only(REVOKE), 기수 API, 이름 중복 검사의 경쟁 |
+| [[AiOps 29 - 어펜더 장착과 비활성 처리]] | 루트 로거 장착·재장착(멈춘 것 교체), 세 시점 이벤트, disable 한 번만·한 줄, 전체 교체한 두 파일의 변경 표, 붙여넣기·미커밋 사고 |
 
 ## PR 대응표
 
@@ -57,12 +76,52 @@ Spring Boot 앱에 **의존성 한 줄과 키 하나**만 넣으면 로컬 개�
 | #4 | [AI-33] protocol 하트비트 추가·starter 빌드 정리 | 08 |
 | #5 | [AI-48] 샘플 앱 보강 (에러 API, 시작 실패 프로필) | 09 |
 | — | `test/AI-41-masker`, `test/AI-51-fingerprinter` (PR 없음) | 10 |
+| #6 | [AI-8] Starter 보내기 인터페이스 3개 | 11 |
+| #7 | [AI-58] 알림 보내기 (B) | 16 |
+| #8 | [AI-59] 채널 선택·분당 제한 (B) | 16 |
+| #9 | [AI-35] 설정 읽기 실구현 (AiopsSettings) | 11 |
+| #10 | [AI-90] 디스코드 준비 (B) | 19 |
+| #11 | [AI-91] DiscordApiClient (B) | 19 |
+| #12 | [AI-30] 키 인증 (A) | 13 |
+| #13 | [AI-31] 이벤트 수집 (A) | 13 |
+| #14 | [AI-32] 커밋 후 처리 요청 (A) | 13 |
+| #15 | [AI-33] hello·heartbeat (A) | 13 |
+| #16 | [AI-50] 처리 스레드 풀 (A) | 14 |
+| #17 | [AI-51] 지문 계산 (A) | 14 |
+| #18 | [AI-52] 그룹 upsert (A) | 14 |
+| #19 | [AI-53] 재처리 스케줄러 (A) | 14 |
+| #20 | [AI-34] ingest.http (A) | 13 |
+| #21 | [AI-61] 보관 삭제 (A) | 15 |
+| #22 | [AI-62] 수집 통계 (A) | 15 |
+| #23 | [AI-16] 팀 격리 AI-70~75 (B) | 17 |
+| #24 | [AI-77] V3 콘솔 스키마 (B) | 18 |
+| #25 | [AI-92] 채널 자동 생성 (B) | 19 |
+| #26 | [AI-93] 팀원 디스코드 연결 (B) | 19 |
+| #27 | [AI-94] 정지 시 웹훅 삭제 (B) | 19 |
+| #28 | [AI-36] 버퍼 실구현 (BoundedEventBuffer) | 12 |
+| #29 | [AI-37] HTTP 전송 실구현 (HttpTransport + JsonWriter) | 20 |
+| #30 | [AI-38] 전송 스레드 실구현 (BatchingEventSender) | 21 |
+| #31 | [AI-81] 로그인·권한 (AI-76·78~81 포함, B) | 26 |
+| #32 | [AI-93] 디스코드 연결 컨트롤러 (B) | 27 |
+| #33 | [AI-39] 부품 조립 (AiopsRuntime + 진입점 등록) | 22 |
+| #34 | [AI-105] 초대 발급·수락 (B) | 27 |
+| #35 | [AI-89] 팀원 초대·목록·내보내기 (B) | 27 |
+| #36 | [AI-41] 마스킹 실구현 (Masker + RegexMasker) | 23 |
+| #37 | [AI-40] 예외 변환 실구현 (EventMapper + DefaultEventMapper, protocol loggerName) | 24 |
+| #38 | [AI-87] 관리자 접근 기록 (A) | 28 |
+| #39 | [AI-82] 관리자 기수 API (A) | 28 |
+| #40 | [AI-42] 어펜더 (AiopsLogbackAppender) | 25 |
+| #41 | [AI-88] 관리자 키 발급·폐기 (B) | (다음) |
+| #42 | [AI-43] 어펜더 장착·재장착·비활성 처리 | 29 |
+| — | `test/AI-76-authorization` (PR 없음, #31에 포함되어 머지) | 18의 5절 · 26 |
 
 ## 장부
 
 | 노트 | 용도 |
 | --- | --- |
 | [[AiOps - 규칙제안 기록]] | 이 프로젝트가 Vault 규칙에 낸 제안과 처리 상태 |
+| [[AiOps - 배포 전 고려사항]] | 첫 배포 전에 고치거나 결정할 것 (방법 비교표, 상태, 처리 체크) |
+| [[AiOps - 결정 기록]] | 대화에서 정한 D-번호 결정·번호 없는 합의·일정 판단 (레포 문서 반영 여부 표시) |
 
 ## 개념 노트
 
@@ -75,6 +134,11 @@ Spring Boot 앱에 **의존성 한 줄과 키 하나**만 넣으면 로컬 개�
 | 2026-10-29 | 환경: GitHub 레포·보호 규칙·Jira 연동·Docker 확인. 0단계: Gradle 멀티 모듈, protocol 11개, CI, PR 템플릿, 문서 → PR #1 머지. Jira AI-5·24·25 완료 |
 | 2026-10-30 | 1단계 착수: docker-compose, 계정 3개 init 스크립트, 시드. C 탈퇴 → C 몫(Starter 3·4·5단계)을 내가 이어받기로 |
 | 2026-11-02 | 1단계 완료(V1·엔티티·리포지토리·Testcontainers) → PR #3. 하트비트·Starter 빌드 정리 → PR #4. sample-app → PR #5. 선행 테스트 2개 브랜치. 다음: 3단계 Starter 보내기(인터페이스 3개부터) |
+| 11/3~11/5 | A: 2·6·9단계 머지(#12~#22). B: 8·11·15단계와 V3 머지(#7·#8, #10·#11, #23~#27). 9단계는 A, 15단계는 B로 바꿔서 진행 |
+| 11/4 | 권한 E2E 선행 테스트 `test/AI-76-authorization` push (B의 V3 브랜치 위) |
+| 11/10 | 진행률: B 14/19, A 11/21, 나 9/43 (머지 기준). 병목은 Starter(3·4·5)와 LLM(7). AI-36(#28)·AI-37(#29) 머지, AI-38 커밋 완료. 새 규칙: 메서드 참조(`::`) 대신 람다 |
+| 11/10 오후 | AI-38(#30) 머지, AI-39(#33) PR, 하트비트 서버 도착 확인. D-092(키 관리자 발급), D-094(NPE 틀 예외). 14단계 B 이관. MVP 43%, 주말 완료 불가 판단 |
+| 11/11~11/12 | AI-40(#37, protocol loggerName)·AI-42(#40) 머지, AI-43 PR #42. A: 13단계 착수(#38 접근 기록·#39 기수). B: 14단계 #34·#35·#41 머지. Jira 일정을 PR 실제 기간으로 정리. 팀원 PR 리뷰 노트 26~28. 다음: 마일스톤 1(AI-44, 11/13), LLM(11/15), main PR은 첫 배포 직전(11/18~19) |
 
 ## 관련 노트
 

@@ -81,4 +81,4 @@ A: git fetch origin && git checkout -b feat/server-AI-51-fingerprinter origin/te
 
 ## 관련 노트
 
-[[AiOps 09 - sample-app 에러 재현 앱]]
+[[AiOps 09 - sample-app 에러 재현 앱]] · [[AiOps 11 - Starter 구조와 인터페이스]]
