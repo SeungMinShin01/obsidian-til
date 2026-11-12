@@ -36,9 +36,9 @@
 <!-- SHELVES:START -->
 | 서가 | 노트 | 들어가기 |
 | --- | ---: | --- |
-| **KDT 수업 노트** | 178 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
-| **기술 블로그 정리** | 189 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
-| **프로젝트 결정 로그** | 101 | [프로젝트 노트 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8%20MOC.md) |
+| **KDT 수업 노트** | 182 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
+| **기술 블로그 정리** | 192 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
+| **프로젝트 결정 로그** | 124 | [프로젝트 노트 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8%20MOC.md) |
 | **프로젝트 코드 분석** | 25 | [프로젝트 코드 분석 안내](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D%20%EC%95%88%EB%82%B4.md) |
 | **코드 레퍼런스** | 107 | [코드정리](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC.md) |
 | **운영 규칙** | 33 | [Vault 홈](https://github.com/SeungMinShin01/obsidian-til/blob/main/Vault%20%ED%99%88.md) |
@@ -131,16 +131,16 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 <!-- RECENT:START -->
 | 날짜 | 노트 | 서가 |
 | --- | --- | --- |
-| `2026-11-11` | [AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day15%20ColumnTransformer%C2%B7OneHotEncoder%EB%A1%9C%20%EB%B2%94%EC%A3%BC%ED%98%95%20%ED%8A%B9%EC%84%B1%20%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI day15 다중 분류 파이프라인 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day15%20%EB%8B%A4%EC%A4%91%20%EB%B6%84%EB%A5%98%20%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI day14 로지스틱 이진 분류 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day14%20%EB%A1%9C%EC%A7%80%EC%8A%A4%ED%8B%B1%20%EC%9D%B4%EC%A7%84%20%EB%B6%84%EB%A5%98%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI day15 Pipeline·StratifiedKFold·GridSearchCV로 다중 분류 C 탐색](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day15%20Pipeline%C2%B7StratifiedKFold%C2%B7GridSearchCV%EB%A1%9C%20%EB%8B%A4%EC%A4%91%20%EB%B6%84%EB%A5%98%20C%20%ED%83%90%EC%83%89.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day15%20%EB%A1%9C%EC%A7%80%EC%8A%A4%ED%8B%B1%20%EB%8B%A4%EC%A4%91%20%EB%B6%84%EB%A5%98%EC%99%80%20%ED%98%BC%EB%8F%99%ED%96%89%EB%A0%AC%C2%B7%EB%B6%84%EB%A5%98%20%EB%A6%AC%ED%8F%AC%ED%8A%B8.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI day14 파이프라인·그리드서치·joblib 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day14%20%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8%C2%B7%EA%B7%B8%EB%A6%AC%EB%93%9C%EC%84%9C%EC%B9%98%C2%B7joblib%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
-| `2026-11-11` | [AI - 온폴리시 증류의 불일치 예산](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EC%98%A8%ED%8F%B4%EB%A6%AC%EC%8B%9C%20%EC%A6%9D%EB%A5%98%EC%9D%98%20%EB%B6%88%EC%9D%BC%EC%B9%98%20%EC%98%88%EC%82%B0.md) | 기술 블로그 정리 |
-| `2026-11-11` | [뉴스 - 2026-11-10 위아래 모델이 같은 날 나왔고, 경계는 선의로 넘었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-10%20%EC%9C%84%EC%95%84%EB%9E%98%20%EB%AA%A8%EB%8D%B8%EC%9D%B4%20%EA%B0%99%EC%9D%80%20%EB%82%A0%20%EB%82%98%EC%99%94%EA%B3%A0%2C%20%EA%B2%BD%EA%B3%84%EB%8A%94%20%EC%84%A0%EC%9D%98%EB%A1%9C%20%EB%84%98%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
+| `2026-11-12` | [AI day15 다중 분류 파이프라인 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day15%20%EB%8B%A4%EC%A4%91%20%EB%B6%84%EB%A5%98%20%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
+| `2026-11-12` | [AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day16%20%EC%9D%98%EB%A3%8C%EB%B9%84%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%A0%84%EC%B2%98%EB%A6%AC%EC%99%80%20ColumnTransformer%C2%B7%EB%8B%A4%ED%95%AD%20%EB%A6%BF%EC%A7%80%20%EA%B7%B8%EB%A6%AC%EB%93%9C%EC%84%9C%EC%B9%98%20%EC%8B%A4%EC%8A%B5.md) | KDT 수업 노트 |
+| `2026-11-12` | [Python day16 FastAPI APIRouter로 컨트롤러·서비스 파일 분리](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day16%20FastAPI%20APIRouter%EB%A1%9C%20%EC%BB%A8%ED%8A%B8%EB%A1%A4%EB%9F%AC%C2%B7%EC%84%9C%EB%B9%84%EC%8A%A4%20%ED%8C%8C%EC%9D%BC%20%EB%B6%84%EB%A6%AC.md) | KDT 수업 노트 |
+| `2026-11-12` | [Python day16 FastAPI StaticFiles로 학습 모델 예측 웹 서비스 만들기](https://github.com/SeungMinShin01/obsidian-til/blob/main/Python/Python%20day16%20FastAPI%20StaticFiles%EB%A1%9C%20%ED%95%99%EC%8A%B5%20%EB%AA%A8%EB%8D%B8%20%EC%98%88%EC%B8%A1%20%EC%9B%B9%20%EC%84%9C%EB%B9%84%EC%8A%A4%20%EB%A7%8C%EB%93%A4%EA%B8%B0.md) | KDT 수업 노트 |
+| `2026-11-12` | [AiOps - 결정 기록](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%20-%20%EA%B2%B0%EC%A0%95%20%EA%B8%B0%EB%A1%9D.md) | 프로젝트 결정 로그 |
+| `2026-11-12` | [AiOps - 배포 전 고려사항](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%20-%20%EB%B0%B0%ED%8F%AC%20%EC%A0%84%20%EA%B3%A0%EB%A0%A4%EC%82%AC%ED%95%AD.md) | 프로젝트 결정 로그 |
+| `2026-11-12` | [AiOps - 설계 대비 점검 (11-12)](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%20-%20%EC%84%A4%EA%B3%84%20%EB%8C%80%EB%B9%84%20%EC%A0%90%EA%B2%80%20%2811-12%29.md) | 프로젝트 결정 로그 |
+| `2026-11-12` | [AiOps 29 - 어펜더 장착과 비활성 처리](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%2029%20-%20%EC%96%B4%ED%8E%9C%EB%8D%94%20%EC%9E%A5%EC%B0%A9%EA%B3%BC%20%EB%B9%84%ED%99%9C%EC%84%B1%20%EC%B2%98%EB%A6%AC.md) | 프로젝트 결정 로그 |
 
-<sub>마지막 자동 갱신: 2026-11-12 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-13 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
