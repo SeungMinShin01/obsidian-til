@@ -14,10 +14,13 @@ tags: [프로젝트, java]
 
 | # | 문제 | 추천 | 비용 | 담당 | 언제까지 | 상태 |
 |---|---|---|---|---|---|---|
-| 1 | `dev.aiops.` 접두사에 샘플 앱이 걸림 | A: sample-app 패키지 변경 | 30분 | 나 | 마일스톤 1 전 | ⬜ 미결정 |
+| 1 | `dev.aiops.` 접두사에 샘플 앱이 걸림 | A: sample-app 패키지 변경 | 30분 | 나 | 마일스톤 1 전 | ✅ A 적용 (AI-44 브랜치, PR 머지 대기) |
 | 2 | local에서 본 에러가 prod에서 나도 알림 없음 | B: 그룹 키에 env 추가 (D-093, V4) | 반나절 | A | **마일스톤 2 전 (데이터가 쌓이기 전)** | ⬜ 미결정 |
-| 3-1 | 본문 크기 필터가 chunked 전송을 통과시킴 | A + C: 411 + Caddy 제한 | 30분 + 한 줄 | A, 나 | 411은 지금, Caddy는 10단계 | ⬜ 미결정 |
+| 3-1 | 본문 크기 필터가 chunked 전송을 통과시킴 | A + C: 411 + 프록시 제한(Nginx, D-097) | 30분 + 한 줄 | A, 나 | 411은 지금, Nginx는 10단계 | ⬜ 미결정 |
 | 3-2 | 정지된 팀의 키가 통과됨 | A: 13단계에서 + 캐시 evict | Jira 한 줄 | A | 13단계 | ⬜ 미결정 |
+| 5 | 서버 기본 프로필이 `local` — 운영에서 프로필을 빠뜨리면 시드 팀·키가 운영 DB에 생기고 쿠키 secure=false | A: 기본 프로필 삭제 + 운영 `.env.example`에 `SPRING_PROFILES_ACTIVE=prod` | 한 줄 + 로컬 실행법 README | 나 | **배포 직전에 삭제** (10단계) | ✅ A 결정 (11/12), 적용 대기 |
+| 6-1 | 프록시 뒤 `X-Forwarded-*` 미처리 → OAuth 리다이렉트가 http로 만들어짐 | A: `server.forward-headers-strategy: native` + Nginx `proxy_set_header` (서버 포트는 Nginx에만) | 한 줄 + Nginx 4줄 | B | 10단계 | ✅ A 결정 (11/12), Jira AI-65·102 반영 |
+| 6-2 | 두 보안 체인 밖 경로가 검사 없이 통과 | A: 마지막 체인 `denyAll` (`/health`·`/error`만 허용) | 체인 하나 + 테스트 | B | 10단계 | ✅ A 결정 (11/12) |
 
 표 읽는 법: **이점** = 적용하면 얻는 것 / **적용 비용** = 지금 해야 하는 작업과 손대는 범위 / **적용 후 단점** = 적용한 다음 남는 부작용·위험 / **되돌리기** = 나중에 마음이 바뀌었을 때 얼마나 쉽게 되돌리나.
 
@@ -98,7 +101,7 @@ tags: [프로젝트, java]
 |---|---|---|---|---|
 | **A. 길이 헤더가 없으면 411 Length Required** | 앱에서 바로 막음. 로컬·운영 모두 적용 | A, 30분. 필터 조건 1개 + 테스트 1개 | chunked로 보내는 클라이언트는 거절(지금은 Starter뿐, Starter는 항상 길이를 보냄) | 쉬움 |
 | B. 읽으면서 바이트를 세다가 넘으면 413 | chunked까지 정확히 막음. 클라이언트 제약 없음 | A, 반나절. 요청 래퍼 + 스트림 처리 + 테스트 | 코드가 가장 복잡. 읽던 도중 끊을 때 응답이 깨지는 경계 상황 | 보통 |
-| **C. Caddy `request_body max_size 1MB`** | 앱 앞에서 모든 경로를 막음. 앱 코드 그대로 | 나, 10단계 설정 한 줄 | 로컬에는 적용 안 됨(운영 전이라 실질 공백 없음) | 쉬움 |
+| **C. 프록시 본문 제한** (원래 Caddy `request_body max_size 1MB` → D-097로 Nginx `client_max_body_size 2m`) | 앱 앞에서 모든 경로를 막음. 앱 코드 그대로 | 나, 10단계 설정 한 줄 | 로컬에는 적용 안 됨(운영 전이라 실질 공백 없음) | 쉬움 |
 | D. 그대로 | 작업 없음 | 없음 | 큰 chunked 요청이 서버 메모리를 씀(공격 경로) | — |
 
 **추천: A + C.** 둘 다 작고 쉽게 되돌릴 수 있으며, 앱과 인프라 두 겹으로 막는다.
@@ -106,7 +109,7 @@ tags: [프로젝트, java]
 ### 처리할 때 체크
 
 - [ ] `IngestBodySizeFilter`: `getContentLengthLong() < 0`이면 411 + 테스트
-- [ ] 10단계 Caddyfile `ingest.` 블록에 `request_body { max_size 1MB }`
+- [ ] 10단계 Nginx `ingest.` server 블록에 `client_max_body_size 2m;` — 서버 1MB와 같거나 약간 크게(AI-65). D-097로 Caddy에서 변경
 
 ---
 
@@ -144,3 +147,66 @@ tags: [프로젝트, java]
 | `.gitattributes` | `* text=auto` 정리. 윈도우에서 CRLF만 바뀐 파일이 계속 "수정됨"으로 보임 | 나 |
 | 주석 | `ErrorEventRepository.findUnprocessed`의 "RLS가 켜지면 팀별 조회로 바꿈" — 이미 팀마다 set해서 부르므로 주석만 정리 | A |
 | 운영 디스코드 | 운영 서버·봇을 `docs/discord-setup.md`대로 생성, `.env`에 `AIOPS_STATE_SECRET` | 나, 10단계 |
+
+---
+
+## 5. 서버 기본 프로필이 `local` — 운영에서 빠뜨리면 조용히 local로 켜진다
+
+### 문제
+
+- `application.yml`의 `spring.profiles.default: local`. 운영에서 `SPRING_PROFILES_ACTIVE`를 빠뜨리면:
+  - Flyway가 `db/seed`를 돌려 **시드 팀과 원문이 레포에 공개된 키**가 운영 DB에 생긴다.
+  - 세션 쿠키가 `secure: false`.
+  - DB 주소가 `localhost`로 덮여 연결 실패 — 원인을 찾기 어렵다.
+
+### 방법 비교
+
+| 방법 | 이점 | 적용 비용 | 적용 후 단점 | 되돌리기 |
+|---|---|---|---|---|
+| **A. 기본 프로필 삭제** + 운영 `.env.example`에 `SPRING_PROFILES_ACTIVE=prod` | 프로필이 없으면 DB 설정이 없어 **시작 실패**. 실수가 바로 보임 | 한 줄 + README | 로컬 실행마다 `--spring.profiles.active=local`이나 IDE 설정. 기본 프로필에 기대는 테스트가 있으면 수정 | 줄을 다시 넣으면 끝 |
+| B. 유지 + 시작 검사 Bean (local인데 DB가 localhost가 아니면 거부) | 로컬 습관 그대로 | Bean + 테스트 | 검사 조건이 틀리면 뚫림. 지킬 코드가 늘어남 | Bean 삭제 |
+| C. 시드는 `seed` 프로필, 쿠키 기본 `secure: true` | 빠뜨려도 기본값이 안전 | 설정 재배치 | 로컬에서 프로필 2개 | 파일 다시 합침 |
+
+**결정: A (11/12). 단, 개발 중 로컬 편의를 위해 삭제는 첫 배포 직전에 한다.**
+
+### 처리할 때 체크
+
+- [ ] 배포 직전: `application.yml`에서 `spring.profiles.default` 삭제
+- [ ] 서버 테스트가 기본 프로필에 기대는지 확인 (`@ActiveProfiles`)
+- [ ] README·IDE 실행 설정에 `local` 프로필 안내, 팀원 공지
+- [ ] `infra/prod/.env.example`에 `SPRING_PROFILES_ACTIVE=prod` (값 없는 줄)
+- [ ] 운영 첫 기동 후 tenant 테이블에 시드 팀이 없는지 확인
+
+---
+
+## 6. 프록시 뒤 설정 두 가지
+
+### 6-1. `X-Forwarded-*` 처리 — A 결정
+
+**문제:** 운영은 프록시(Nginx, D-097)가 HTTPS를 받고 서버에는 http로 넘긴다. 서버는 자신을 http로 알아서 GitHub 로그인 리다이렉트 주소가 `http://...`로 만들어지고 GitHub가 거부할 수 있다.
+
+| 방법 | 이점 | 적용 비용 | 적용 후 단점 | 되돌리기 |
+|---|---|---|---|---|
+| **A. `forward-headers-strategy: native`** | 표준. Tomcat이 **사설 IP에서 온 헤더만** 믿어 외부 위조 무시 | 한 줄 | 서버 포트가 인터넷에 직접 열리면 의미 감소 → 포트는 Nginx에만 | 줄 삭제 |
+| B. `framework` (`ForwardedHeaderFilter`) | 표준 `Forwarded` 헤더도 처리 | 한 줄 | 기본으로 모든 출처를 믿음 → 포트가 열리면 위조 가능 | 줄 삭제 |
+| C. `redirect-uri`를 yml에 https로 고정 | 헤더를 믿지 않음 | 한 줄 | OAuth만 해결, `isSecure()` 등은 여전히 http | 줄 삭제 |
+
+**결정: A (11/12).** 프록시는 Nginx(D-097). Nginx는 헤더를 기본으로 붙이지 않으므로 `proxy_set_header X-Forwarded-Proto $scheme` 등을 **반드시** 넣어야 하고, 서버 쪽 A도 여전히 필요.
+
+### 6-2. 두 보안 체인 밖 경로 — A 결정
+
+**문제:** 체인은 `/v1/**`와 `/api/**`·로그인 경로에만 걸린다. 그 밖(`/actuator/**`, 앞으로 생길 경로)은 **보안 검사 없이 통과**.
+
+| 방법 | 이점 | 적용 비용 | 적용 후 단점 | 되돌리기 |
+|---|---|---|---|---|
+| **A. 마지막 체인 `denyAll`** (`/health`·`/error`만 허용) | 새 경로가 기본으로 닫힘 (fail closed) | 체인 하나 + 테스트 | 열어야 할 경로를 빠뜨리면 403 (헬스체크, 서버가 정적 파일을 서빙한다면 그 파일) | 체인 Bean 삭제 |
+| B. 그대로 + actuator 노출만 `health`로 제한 | 동작 변화 없음, 한 줄 | 한 줄 | 앞으로 생기는 경로가 조용히 열림 | 줄 삭제 |
+
+**결정: A (11/12).**
+
+### 처리할 때 체크 (6-2)
+
+- [ ] `SecurityConfig`에 가장 낮은 순서의 체인: `/health`·`/error` permitAll, 나머지 denyAll (지금 주석: `/health`·`/_test/**`는 어느 체인에도 없음. `_test`는 테스트 코드에만 있음)
+- [ ] 테스트: 체인 밖 임의 경로 → 403, `/health` → 200. 테스트용 `/_test/**`가 막히지 않는지 확인
+- [ ] 배포 헬스체크 주소가 허용 목록에 있는지 확인
+- [ ] 담당 B(조현우)에게 전달

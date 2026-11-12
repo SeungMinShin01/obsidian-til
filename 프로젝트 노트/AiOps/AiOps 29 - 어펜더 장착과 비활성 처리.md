@@ -152,4 +152,4 @@ PR #40에 테스트 커밋만 올라가고 `AiopsLogbackAppender.java`는 untrac
 
 ## 관련 노트
 
-[[AiOps 28 - 관리자 API 기수와 접근 기록 (A)]]
+[[AiOps 28 - 관리자 API 기수와 접근 기록 (A)]] · [[AiOps 30 - 마일스톤 1 끝까지 돌려보기]]
