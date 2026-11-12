@@ -8,7 +8,7 @@ tags: [학습, python]
 # Python day16 — FastAPI APIRouter로 컨트롤러·서비스 파일 분리
 
 > 실습 파일: `day16/AppStart.py`, `day16/Controller.py`, `day16/Service.py`
-> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day16 FastAPI 시작과 쿼리·경로·본문 파라미터]] · 다음: (아직 없음)
+> 허브: [[Python 정리본 인덱스]] · 이전: [[Python day16 FastAPI 시작과 쿼리·경로·본문 파라미터]] · 다음: [[Python day16 FastAPI StaticFiles로 학습 모델 예측 웹 서비스 만들기]]
 
 앞 노트의 `f-02.py`는 앱 객체·라우트·실행 코드가 한 파일에 다 들어 있었다. 라우트가 네 개일 때는 그래도 되지만, 상품·회원·주문처럼 주제가 늘어나면 한 파일이 금방 수백 줄이 된다. 이번 세 파일은 그 한 파일을 **역할별로 셋으로 쪼개는 가장 작은 형태**다. `AppStart.py`는 앱을 만들고 서버를 띄우기만 하고, `Controller.py`는 주소를 받고, `Service.py`는 실제 데이터를 만든다. Spring 수업에서 보던 Controller → Service 계층이 파이썬에서는 **모듈(파일) 단위의 import 사슬**로 표현된다는 점이 핵심이다. 데이터는 아직 DB가 아니라 day08의 판다스 데이터프레임인데, 덕분에 "데이터프레임을 JSON 배열로 돌려주는" 한 줄과, 그 표를 테이블처럼 다루는 저장·수정·삭제(`concat`·`loc`·불리언 필터)까지 같이 배우게 된다.
 
