@@ -164,7 +164,7 @@ Spring 수업에서 `@CrossOrigin`으로 풀었던 것과 같은 문제가(Vite 
     <label>키 (cm) <input type="number" id="height" min="120" max="220" value="170" required /></label>
     <label>몸무게 (kg) <input type="number" id="weight" min="30" max="200" value="65" required /></label>
   </div>
-  <p class="hint">BMI : <span id="bmi">22.5</span></p>
+  <p class="hint">BMI : <span id="bmi">22.5</span> (예측 가능 범위 16~53)</p>
   ...
   <select id="smoker"><option value="no">비흡연</option><option value="yes">흡연</option></select>
   <select id="region"><option value="northeast">북동부</option> ... </select>
@@ -186,6 +186,7 @@ Spring 수업에서 `@CrossOrigin`으로 풀었던 것과 같은 문제가(Vite 
 | `<option value="male">남성</option>` | 화면에는 한국어, **`value`는 학습 자료의 범주 글자 그대로**(`male`·`yes`·`northeast`). 서버로 가는 것은 `value`다 |
 | `min`·`max`·`required` | 브라우저가 먼저 거르는 1차 검증. 학습 자료의 범위(나이 18~64)를 그대로 옮겨 모델이 본 적 없는 값을 막는다 |
 | 키·몸무게 입력 | 모델의 특성은 `bmi`이지만 사람은 BMI를 모른다. 키·몸무게를 받아 **JS가 BMI로 환산**한다 |
+| `.hint`의 "(예측 가능 범위 16~53)" | BMI는 직접 입력하는 칸이 아니라 `min`·`max`를 걸 곳이 없다. 대신 범위를 글자로 보여 주고, 실제 차단은 `app.js`의 범위 검사(1-8)가 맡는다 — 나이·자녀는 HTML 속성과 JS 검사가 겹치고, BMI는 JS 검사만 있는 셈이다 |
 | `class="hidden"` | 결과 카드는 처음엔 숨겨 두고 응답이 오면 JS가 클래스를 떼어 보인다 (`.hidden { display: none; }`) |
 | axios CDN | `fetch` 대신 React 수업에서 쓰던 axios를 `<script>`로 불러 같은 문법을 쓴다 |
 | `style.css`·`app.js` 상대 경로 | HTML을 어디서 열든 **같은 폴더**의 두 파일을 찾는다. 서버가 내주는 것이 아니라 브라우저가 파일을 직접 읽는다 |

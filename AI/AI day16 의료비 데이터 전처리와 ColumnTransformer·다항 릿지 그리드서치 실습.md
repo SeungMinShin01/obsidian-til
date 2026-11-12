@@ -106,7 +106,7 @@ from sklearn.linear_model import Ridge
 pipe = Pipeline([
     ('pp',    pp),
     ('poly',  PolynomialFeatures(include_bias=False)),   # degree 튜닝
-    ('model', Ridge(random_state=42))                     # alpha 튜닝
+    ('model', Ridge())                                    # alpha 튜닝
 ])
 ```
 
@@ -114,9 +114,11 @@ pipe = Pipeline([
 | --- | --- | --- | --- |
 | `pp` | `ColumnTransformer` | 8열 숫자 행렬 만들기 | 없음 |
 | `poly` | `PolynomialFeatures(include_bias=False)` | 8열의 곱·제곱 항 추가 | `poly__degree` |
-| `model` | `Ridge(random_state=42)` | 규제 붙은 선형 회귀 | `model__alpha` |
+| `model` | `Ridge()` | 규제 붙은 선형 회귀 | `model__alpha` |
 
 day14 `s-04.py`에서는 `PolynomialFeatures` → `StandardScaler` → `LinearRegression` 순서였는데, 여기서는 **표준화가 다항보다 앞**에 있다. 범주형 원-핫과 수치 표준화를 `ColumnTransformer` 한 덩어리로 먼저 끝내야 다항 단계가 "숫자 행렬"을 받을 수 있기 때문이다. 표준화된 값끼리 곱한 교차항은 크기가 대체로 ±몇 범위에 머물러 릿지가 다루기에도 무리가 없다. 주석의 "degree 튜닝"·"alpha 튜닝"처럼 **파이프라인을 만들 때는 값을 비워 두고**, 어떤 값이 좋은지는 다음 단계가 자료로 정한다.
+
+`Ridge()`에는 `random_state`를 넣지 않았다. 릿지의 기본 `solver='auto'`는 밀집 행렬에서 `cholesky` 같은 **닫힌 해(정확한 계산)**를 쓰기 때문에 난수가 끼어들 자리가 없고, `random_state`는 `sag`·`saga`처럼 확률적 경사 하강을 고를 때만 의미가 있다. 재현성을 좌우하는 난수는 **분할(`train_test_split`)과 폴드(`KFold`)** 두 곳이고, 그 둘에는 42를 박아 둔다.
 
 `degree`에 따라 다항 단계가 만드는 열 수는 8열 기준 1차 8 · 2차 44 · 3차 164이다(`include_bias=False`, 원-핫 0/1 열은 제곱해도 자기 자신이라 사실상 중복 열이 섞인다 — 릿지가 그 중복을 눌러 준다).
 
@@ -279,7 +281,7 @@ PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
 
 ### 3-2. 재현성과 실험 기록
 
-`random_state=42`를 분할·폴드·릿지에 모두 박아 둔 덕에 이 노트의 숫자를 그대로 다시 얻을 수 있었다. 실험이 늘어나면 "어떤 격자로 어떤 점수가 나왔는지"를 파일로 남기는 도구(MLflow, 간단히는 `cv_results_`를 CSV로 저장)가 필요해진다. 지표를 `.pkl`로 따로 저장한 것은 그 가장 작은 형태다.
+`random_state=42`를 분할·폴드에 모두 박아 둔 덕에(릿지는 결정적 해법이라 필요 없다) 이 노트의 숫자를 그대로 다시 얻을 수 있었다. 실험이 늘어나면 "어떤 격자로 어떤 점수가 나왔는지"를 파일로 남기는 도구(MLflow, 간단히는 `cv_results_`를 CSV로 저장)가 필요해진다. 지표를 `.pkl`로 따로 저장한 것은 그 가장 작은 형태다.
 
 ### 3-3. 저장한 모델의 수명 — 버전과 드리프트
 
@@ -296,7 +298,7 @@ PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge(random_state=42))])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
+- `KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge())])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
 - `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance.csv` — 1,338행 × `age`·`sex`·`bmi`·`children`·`smoker`·`region`·`charges`, 결측 0, 중복 1
 - `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance_pipe.pkl`·`insurance_metrics.pkl` — 학습 산출물(파이프라인·지표 딕셔너리), FastAPI 서버가 읽는다
 
