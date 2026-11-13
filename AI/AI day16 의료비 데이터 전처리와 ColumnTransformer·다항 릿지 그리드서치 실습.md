@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day16 — 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습
 
 > 실습 파일: `ML_pracitce/total_practice/sci.py`, `ML_pracitce/total_practice/insurance.csv`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · 다음: [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]]
 
 day12부터 day15까지 조각조각 배운 도구를 **한 파일에 처음부터 끝까지** 다시 쓰는 종합 실습이다. 자료는 캐글의 의료보험 데이터 `insurance.csv`(1,338명 × 나이·성별·BMI·자녀 수·흡연·거주 지역 → 연간 의료비 `charges`)이고, 과제는 회귀 — 사람 정보로 **1년 의료비(달러)를 맞히기**다. 흐름은 "자료 살피기 → 중복 제거·공백 정리 → 수치형 표준화 + 범주형 원-핫 → 다항 항 → 릿지 → K-Fold 그리드서치 → `.pkl` 두 개 저장"이고, 마지막에 저장한 모델은 같은 폴더의 FastAPI 서버(`AppStart.py`·`Service.py`)가 읽어 웹 화면에서 예측에 쓴다. 이 노트는 그중 **모델을 만드는 쪽**(`sci.py`)만 다루고, 서버와 화면 쪽은 Python 폴더의 "Python day16 FastAPI CORS 허용으로 학습 모델 예측 웹 서비스 만들기"에 따로 정리한다(학습 지도 경유).
 
@@ -222,7 +222,17 @@ df[cat_features] = df[cat_features].apply(lambda s: s.str.strip().str.lower())
 
 열 목록을 변수에 담아 두면 전처리와 `ColumnTransformer`가 같은 목록을 쓰게 되어 열을 빠뜨릴 일이 없다. `str.lower()`까지 걸어 두면 `'Yes'`·`'YES'`가 들어와도 한 범주로 모인다. 서비스에서 사용자 입력을 받을 때는 같은 정리를 서버 쪽 `predict` 직전에 한 번 더 하는 편이 안전하다.
 
-### 2-2. `get_feature_names_out()`으로 8열의 이름 확인
+### 2-2. `OneHotEncoder(handle_unknown='ignore')` — 처음 보는 범주가 와도 멈추지 않게
+
+```python
+('cat', OneHotEncoder(drop='first', sparse_output=False, handle_unknown='ignore'), cat_features)
+```
+
+수업 코드 끝에 메모로 남긴 인자다. `OneHotEncoder`는 `fit` 때 본 범주 목록을 기억했다가 `transform` 때 그 목록에 없는 값이 들어오면 기본값(`handle_unknown='error'`)에서는 `ValueError`를 낸다. 학습 스크립트 안에서는 훈련·테스트가 같은 자료에서 나왔으니 문제가 없지만, 이 파이프라인을 서버가 `joblib.load`해서 **사용자 입력**을 넣을 때는 사정이 다르다 — `region`에 `'north'`처럼 범주에 없던 문자열이 오면 예측 요청 하나가 서버 오류로 끝난다. `handle_unknown='ignore'`를 주면 처음 보는 값은 **원-핫 열이 전부 0**(= 기준 범주와 같은 취급)으로 조용히 처리되어 예측은 계속 돌아간다.
+
+다만 `drop='first'`와 함께 쓰면 "전부 0"이 기준 범주(`northeast`)와 구별되지 않는다는 점은 알고 있어야 한다. 사이킷런 버전에 따라 두 인자를 같이 쓸 때 경고가 나기도 하므로, 서비스 쪽에서 입력값을 먼저 검사(day16 FastAPI 노트의 입력 범위 검사처럼)하고 인코더의 `ignore`는 마지막 안전망으로 두는 편이 안전하다. 새 범주를 하나의 "기타" 열로 모으고 싶다면 `handle_unknown='infrequent_if_exist'`와 `min_frequency`를 같이 보면 된다.
+
+### 2-3. `get_feature_names_out()`으로 8열의 이름 확인
 
 ```python
 pp.fit(X_train)
@@ -233,7 +243,7 @@ print(pp.get_feature_names_out())
 
 `ColumnTransformer`가 만든 열이 몇 개이고 어느 범주가 떨어졌는지(`female`·`no`·`northeast`가 기준)를 눈으로 확인할 수 있다. `best_model.named_steps['poly'].n_output_features_`를 찍으면 2차에서 44열이 된 것도 보인다.
 
-### 2-3. 격자 결과 전체를 표로 — `cv_results_`
+### 2-4. 격자 결과 전체를 표로 — `cv_results_`
 
 ```python
 r = pd.DataFrame(grid.cv_results_)
@@ -242,7 +252,7 @@ print(r.pivot(index='param_poly__degree', columns='param_model__alpha', values='
 
 `best_params_`는 1등 하나만 알려 준다. 1-7의 격자표처럼 전체를 펼쳐 보아야 "alpha는 어디서든 비슷하다", "3차는 내려간다"처럼 **격자 바깥을 더 뒤질지** 판단이 선다. 1등이 격자 가장자리(예: `alpha=0.01`)에 있으면 범위를 넓혀 다시 돌리는 것이 정석이다.
 
-### 2-4. 타깃이 오른쪽으로 긴 자료 — 로그 변환
+### 2-5. 타깃이 오른쪽으로 긴 자료 — 로그 변환
 
 ```python
 from sklearn.compose import TransformedTargetRegressor
@@ -256,7 +266,7 @@ model = TransformedTargetRegressor(
 
 `charges`는 1,122~63,770으로 오른쪽 꼬리가 길다. R²는 큰 값의 오차에 민감해 고액 환자 몇 명이 점수를 좌우한다. 타깃에 로그를 씌워 학습하고 예측 때 되돌리면 "비율" 오차가 고르게 다뤄지는 경우가 많다. `TransformedTargetRegressor`로 감싸면 파이프라인 바깥에서 변환·역변환을 자동으로 해 준다.
 
-### 2-5. 학습 자료 없는 서버에서 "달러 오차"를 말하려면
+### 2-6. 학습 자료 없는 서버에서 "달러 오차"를 말하려면
 
 ```python
 from sklearn.metrics import mean_absolute_error
@@ -265,7 +275,7 @@ metrics['test_mae'] = round(mean_absolute_error(Y_test, best_model.predict(X_tes
 
 R² 0.88은 사용자에게 와닿지 않는다. 평균 절대 오차(MAE)를 함께 저장해 두면 서비스 화면에 "평균 ±2,600달러 오차" 같은 말을 쓸 수 있다. 지표 딕셔너리는 자유롭게 키를 늘릴 수 있으니, **서비스가 보여 줄 숫자는 학습 스크립트가 다 계산해 넘기는** 구조가 맞다.
 
-### 2-6. 상호작용만 골라 넣기
+### 2-7. 상호작용만 골라 넣기
 
 ```python
 PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
@@ -298,10 +308,10 @@ PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge())])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
+- `KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge())])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`, 끝에 `handle_unknown='ignore'` 메모. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
 - `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance.csv` — 1,338행 × `age`·`sex`·`bmi`·`children`·`smoker`·`region`·`charges`, 결측 0, 중복 1
 - `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance_pipe.pkl`·`insurance_metrics.pkl` — 학습 산출물(파이프라인·지표 딕셔너리), FastAPI 서버가 읽는다
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[KDT_2026 학습 지도]]
