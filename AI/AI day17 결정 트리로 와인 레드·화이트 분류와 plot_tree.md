@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day17 — 결정 트리로 와인 레드·화이트 분류와 plot_tree
 
 > 실습 파일: `day17/s-09.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · 다음: [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]]
 
 day12부터 day16까지는 모델이 전부 **선형**(선형 회귀·다항 회귀·릿지·로지스틱 회귀)이었다. day17은 처음으로 선형이 아닌 모델, **결정 트리(Decision Tree)**를 쓴다. 자료는 혼공머신 교재의 와인 데이터(`wine.csv`, 6,497병 × 알코올 도수·당도·pH → `class` 0 레드 / 1 화이트)이고, 과제는 세 가지 화학 수치로 **레드 와인인지 화이트 와인인지 맞히기**다. 코드는 짧다. 읽기 → 특성·타깃 → `stratify` 분할 → `DecisionTreeClassifier().fit` → 훈련·테스트 정확도 → `plot_tree`로 나무 그리기 → `max_depth`·`min_samples_leaf`를 건 **두 번째 트리**를 다시 학습해 점수 비교. 뼈대는 day14 로지스틱 분류와 똑같고 바뀐 것은 **모델 한 줄과 시각화 한 줄**뿐인데, 그 한 줄이 "기울기를 배우는 모델"에서 "질문을 배우는 모델"로 넘어가는 자리다. 그리고 뒤에 붙은 두 번째 모델이 그 나무를 **얼마나 자라게 둘지** 정하는 첫 경험이다.
 
@@ -181,6 +181,13 @@ sugar >  4.33      → 화이트 (pH로 한 번 더 갈라도 넷 다 화이트)
 
 리프 최소 표본을 10으로만 올려도 리프 수가 789 → 222로 줄고 훈련 점수가 10점 내려오는데 테스트는 거의 그대로다. `max_depth`가 "위에서 깊이를 자르는" 방법이라면 `min_samples_leaf`는 "아래에서 잔가지를 막는" 방법이고, 둘을 같이 거는 것이 두 번째 모델이다.
 
+```python
+print(model.feature_names_in_)       # ['alcohol' 'sugar' 'pH']
+print(model.feature_importances_)    # [0.139 0.855 0.007]
+```
+
+두 번째 트리의 점수 뒤에 이 두 줄이 이어진다. `feature_names_in_`은 `fit`에 **열 이름이 있는 DataFrame**을 넣었을 때만 생기는 속성으로, `feature_importances_` 배열의 각 자리가 어느 열인지를 알려 준다(넘파이 배열로 학습했으면 이 속성이 없다). 당도 0.855 · 알코올 0.139 · pH 0.007 — 깊이 3 트리는 거의 당도 하나로 가른다는 것이 숫자로 보인다. 수업 코드는 이 두 줄을 기준점으로 두고 바로 랜덤 포레스트로 넘어간다 → [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]]
+
 ## 2. 추가로 알면 좋은 활용법
 
 ### 2-1. `max_depth`로 가지치기 — 과대적합 줄이기
@@ -249,7 +256,7 @@ print(classification_report(Y_test, pred, target_names=['red', 'white']))
 
 ### 3-1. 트리 하나에서 숲으로 — 랜덤 포레스트·그래디언트 부스팅
 
-트리 하나는 자료가 조금만 바뀌어도 모양이 크게 달라지고(분산이 크다) 쉽게 과대적합한다. 그래서 실무에서는 트리 **여러 개를 모아** 쓴다. `RandomForestClassifier`는 부트스트랩 표본과 무작위 특성 부분집합으로 트리 수백 개를 길러 다수결을 내고, `GradientBoostingClassifier`·`HistGradientBoostingClassifier`는 앞 트리의 오답을 다음 트리가 고치는 식으로 얕은 트리를 순서대로 쌓는다. 둘 다 `fit`·`score`·`feature_importances_` 인터페이스가 같아서 이 노트의 코드에서 모델 한 줄만 바꾸면 된다. 와인 자료는 랜덤 포레스트에서 테스트 0.89 안팎까지 오른다.
+트리 하나는 자료가 조금만 바뀌어도 모양이 크게 달라지고(분산이 크다) 쉽게 과대적합한다. 그래서 실무에서는 트리 **여러 개를 모아** 쓴다. `RandomForestClassifier`는 부트스트랩 표본과 무작위 특성 부분집합으로 트리 수백 개를 길러 다수결을 내고, `GradientBoostingClassifier`·`HistGradientBoostingClassifier`는 앞 트리의 오답을 다음 트리가 고치는 식으로 얕은 트리를 순서대로 쌓는다. 둘 다 `fit`·`score`·`feature_importances_` 인터페이스가 같아서 이 노트의 코드에서 모델 한 줄만 바꾸면 된다. 와인 자료는 랜덤 포레스트에서 테스트 0.89 안팎까지 오른다. 수업 코드의 뒷부분이 실제로 `RandomForestClassifier`로 이어지므로 자세한 내용은 다음 노트에 정리했다.
 
 ### 3-2. 분기 기준 — 지니 vs 엔트로피, 축에 평행한 경계
 
@@ -270,8 +277,8 @@ print(classification_report(Y_test, pred, target_names=['red', 'white']))
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day17/s-09.py` — `pd.read_csv(URL)`(혼공머신 `wine.csv`, 6,497 × `alcohol`·`sugar`·`pH`·`class`) → `X = df[['alcohol', 'sugar', 'pH']]`·`Y = df['class']` → `train_test_split(test_size=0.2, random_state=42, stratify=Y)` → `DecisionTreeClassifier().fit` → 훈련·테스트 `score` → `plot_tree(model, max_depth=2, feature_names=[…])`·`show()` → `DecisionTreeClassifier(max_depth=3, min_samples_leaf=10, criterion=…, random_state=42)`로 두 번째 학습·`score` 비교. 결과(이 노트에서 `random_state=42`로 확인): 제한 없는 트리 훈련 0.998 · 테스트 0.865, 깊이 24, 루트 `sugar <= 4.325`, 특성 중요도 당도 0.515 · pH 0.252 · 알코올 0.234 / 깊이 3 트리 훈련 0.846 · 테스트 0.841, 리프 8, 레드 리프 1개(당도 1.62~4.33 & 알코올 ≤ 11.03)
+- `KDT_2026/2026_Python/day17/s-09.py` — `pd.read_csv(URL)`(혼공머신 `wine.csv`, 6,497 × `alcohol`·`sugar`·`pH`·`class`) → `X = df[['alcohol', 'sugar', 'pH']]`·`Y = df['class']` → `train_test_split(test_size=0.2, random_state=42, stratify=Y)` → `DecisionTreeClassifier().fit` → 훈련·테스트 `score` → `plot_tree(model, max_depth=2, feature_names=[…])`·`show()` → `DecisionTreeClassifier(max_depth=3, min_samples_leaf=10, criterion=…, random_state=42)`로 두 번째 학습·`score` 비교 → `feature_names_in_`·`feature_importances_` 출력(이후 `RandomForestClassifier` 블록은 다음 노트). 결과(이 노트에서 `random_state=42`로 확인): 제한 없는 트리 훈련 0.998 · 테스트 0.865, 깊이 24, 루트 `sugar <= 4.325`, 특성 중요도 당도 0.515 · pH 0.252 · 알코올 0.234 / 깊이 3 트리 훈련 0.846 · 테스트 0.841, 리프 8, 레드 리프 1개(당도 1.62~4.33 & 알코올 ≤ 11.03)
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · [[AI day14 로지스틱 회귀로 도미·빙어 분류]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day15 로지스틱 다중 분류와 혼동행렬·분류 리포트]] · [[KDT_2026 학습 지도]]
