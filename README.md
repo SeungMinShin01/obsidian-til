@@ -140,7 +140,7 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 | `2026-11-12` | [AiOps - 설계 대비 점검 (11-12)](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%20-%20%EC%84%A4%EA%B3%84%20%EB%8C%80%EB%B9%84%20%EC%A0%90%EA%B2%80%20%2811-12%29.md) | 프로젝트 결정 로그 |
 | `2026-11-12` | [AiOps 29 - 어펜더 장착과 비활성 처리](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/AiOps/AiOps%2029%20-%20%EC%96%B4%ED%8E%9C%EB%8D%94%20%EC%9E%A5%EC%B0%A9%EA%B3%BC%20%EB%B9%84%ED%99%9C%EC%84%B1%20%EC%B2%98%EB%A6%AC.md) | 프로젝트 결정 로그 |
 
-<sub>마지막 자동 갱신: 2026-11-14 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-15 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
