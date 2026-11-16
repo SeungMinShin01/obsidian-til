@@ -75,4 +75,4 @@ tags: [프로젝트, java]
 
 ## 관련 노트
 
-[[AiOps 29 - 어펜더 장착과 비활성 처리]]
+[[AiOps 29 - 어펜더 장착과 비활성 처리]] · [[AiOps 31 - JsonWriter HEX 표 버그 수정]]
