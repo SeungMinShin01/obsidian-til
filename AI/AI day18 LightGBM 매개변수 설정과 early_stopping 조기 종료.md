@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day18 — LightGBM 매개변수 설정과 early_stopping 조기 종료
 
 > 실습 파일: `day18/s-11.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · 다음: [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]]
 
 `s-10.py`는 XGBoost와 LightGBM을 **같은 인자 다섯 개**로 묶어 딕셔너리 루프에 넣고 비교하는 데서 끝났다. 그때 `n_estimators`를 1,000~3,000으로 넉넉히 두고 **중간에 멈추라**는 주석이 있었는데, `s-11.py`가 그 장치를 실제로 건다. 같은 와인 자료·같은 분할에서 이번에는 **LightGBM 하나만** 골라 인자를 아홉 개로 늘려 쓰고(`n_estimators=1000, learning_rate=0.05, num_leaves=15, max_depth=6, min_child_samples=20, subsample=0.8, subsample_freq=1, colsample_bytree=0.8, class_weight="balanced"`), `fit`에 **`eval_set`과 `early_stopping` 콜백**을 넣어 1,000그루 중 310그루에서 멈추게 한다. 학습이 끝나면 `best_iteration_`·`feature_name_`·`feature_importances_` 세 속성을 읽고, 훈련·테스트 정확도와 macro F1을 찍은 뒤, 새 와인 두 병을 DataFrame으로 만들어 `predict`까지 간다. 이 노트는 인자 아홉 개를 앞 노트의 규제 인자 표에 맞춰 하나씩 풀고, 조기 종료가 실제로 어디서 왜 멈추는지를 손실 곡선과 함께 적는다. 수업 코드의 출력 주석(310 · `[579 2284 1447]` · 0.8845 / 0.8523 / 0.8192)은 이 노트에서 같은 씨앗으로 다시 돌려 그대로 확인했다.
 
@@ -239,4 +239,4 @@ LightGBM의 사이킷런 래퍼는 `class_weight="balanced"` 외에 네이티브
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]] · [[KDT_2026 학습 지도]]
