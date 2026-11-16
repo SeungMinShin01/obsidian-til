@@ -8,9 +8,9 @@ tags: [학습, ai, python]
 # AI day18 — Optuna 스터디·목적함수 설정과 판다스 category 타입
 
 > 실습 파일: `day18/s-12.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · 다음: [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]]
 
-`s-11.py`가 LightGBM 인자 아홉 개를 **손으로** 채우고 조기 종료로 트리 수만 자료에 맡기는 데서 끝났다면, `s-12.py`는 그 인자들을 **자동으로 고르는 도구** Optuna를 꺼내는 첫 파일이다. 자료도 과제도 바뀐다 — 와인 분류 대신 미국 중고차 2,499대(`USA_cars_datasets.csv`)의 **가격을 맞히는 회귀**이고, 특성에 수치형 둘(`year`·`mileage`)과 범주형 다섯(`brand`·`model`·`title_status`·`color`·`state`)이 섞여 있다. 이 파일에서 새로 배운 것은 셋이다. ① 가격이 0인 행을 걸러내는 한 줄, ② 범주형 다섯 열을 원-핫 인코딩이 아니라 **판다스 `category` 타입**으로 바꿔 LightGBM에 그대로 넘기는 방식, ③ `optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))` → `study.optimize(objective, n_trials=20)`로 이어지는 **Optuna의 세 조각(목적함수·스터디·optimize)**. 수업 앞 시간(3h)에는 목적함수 `objective(trial)`의 몸통이 `pass`로 비어 있는 **골격**까지였고, 뒤 시간(4h)에 몸통이 채워진다 — 4) `KFold(5)`로 훈련 세트를 다시 다섯 번 쪼개 폴드마다 `LGBMRegressor`를 `trial.suggest_*` 인자로 만들고 `early_stopping`으로 학습한 뒤 R² 평균을 돌려주는 목적함수, 그리고 폴드별 `best_iteration_`의 평균을 `trial.set_user_attr('best_n_estimators', …)`로 시도에 적어 두고 5) `study.best_params`·`study.best_trial.user_attrs`로 꺼내는 마무리. 이 노트는 그 세 조각과 목적함수 몸통을 순서대로 정리하고, 같은 코드를 돌려 나온 숫자(이 노트에서 확인 — optuna 5.0 · lightgbm 4.7, 수업 주석의 결과와 일치)를 뒤에 붙인다.
+`s-11.py`가 LightGBM 인자 아홉 개를 **손으로** 채우고 조기 종료로 트리 수만 자료에 맡기는 데서 끝났다면, `s-12.py`는 그 인자들을 **자동으로 고르는 도구** Optuna를 꺼내는 첫 파일이다. 자료도 과제도 바뀐다 — 와인 분류 대신 미국 중고차 2,499대(`USA_cars_datasets.csv`)의 **가격을 맞히는 회귀**이고, 특성에 수치형 둘(`year`·`mileage`)과 범주형 다섯(`brand`·`model`·`title_status`·`color`·`state`)이 섞여 있다. 이 파일에서 새로 배운 것은 셋이다. ① 가격이 0인 행을 걸러내는 한 줄, ② 범주형 다섯 열을 원-핫 인코딩이 아니라 **판다스 `category` 타입**으로 바꿔 LightGBM에 그대로 넘기는 방식, ③ `optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))` → `study.optimize(objective, n_trials=20)`로 이어지는 **Optuna의 세 조각(목적함수·스터디·optimize)**. 수업 앞 시간(3h)에는 목적함수 `objective(trial)`의 몸통이 `pass`로 비어 있는 **골격**까지였고, 뒤 시간(4h)에 몸통이 채워진다 — 4) `KFold(5)`로 훈련 세트를 다시 다섯 번 쪼개 폴드마다 `LGBMRegressor`를 `trial.suggest_*` 인자로 만들고 `early_stopping`으로 학습한 뒤 R² 평균을 돌려주는 목적함수, 그리고 폴드별 `best_iteration_`의 평균을 `trial.set_user_attr('best_n_estimators', …)`로 시도에 적어 두고 5) `study.best_params`·`study.best_trial.user_attrs`로 꺼내는 마무리. 수업 마지막 시간(5h)에는 6) `**study.best_params`로 최종 모델을 다시 학습해 훈련/테스트 R²와 특성 중요도를 찍고, 7) `joblib`으로 저장·로드한 뒤, 8) 새 차 두 대의 가격을 예측하는 **서빙까지** 이어졌다. 이 노트는 그 세 조각과 목적함수 몸통, 그리고 최종 모델·저장·예측을 순서대로 정리하고, 같은 코드를 돌려 나온 숫자(이 노트에서 확인 — optuna 5.0 · lightgbm 4.7, 수업 주석의 결과와 일치)를 뒤에 붙인다.
 
 ## 1. 배운 내용
 
@@ -165,21 +165,69 @@ print(study.best_value, study.best_trial.number)                          # 0.63
 
 19번 시도의 폴드별 R²는 `[0.596, 0.669, 0.645, 0.638, 0.632]`, 폴드별 `best_iteration_`은 `[174, 173, 125, 164, 237]`이라 평균 174가 `best_n_estimators`로 적혔다. 읽히는 것이 셋이다. ① 무작위 10번은 0.606~0.633 사이에 흩어져 있고 TPE 10번은 0.62~0.636으로 **좁게 모인다** — `subsample`이 0.6대였던 시도(0·1·6·9번)가 하나같이 0.61 아래라, TPE가 11번째부터 `subsample`을 0.9 위로만 뽑은 것이 보인다(행이 2천 개뿐이라 절반만 쓰면 모자란다). 최고가 **마지막 19번**에서 나온 것도 TPE가 끝까지 좋은 쪽을 좁혀 갔다는 뜻이다. ② `best_params`의 `learning_rate=0.066 · num_leaves=16`은 앞 노트에서 손으로 고른 수업 값(0.05 · 15)과 거의 같은 자리이고, `min_child_samples=50`은 범위의 **끝값**이다 — 끝값에 걸리면 범위를 더 열어 볼 신호다(50 위에서 더 좋아질 수도 있다). ③ 트리 수는 174로, 앞 노트 와인 분류에서 조기 종료가 멈춘 310그루보다 적다 — 보폭이 0.066으로 조금 크고 자료가 작아 손실이 빨리 바닥에 닿는다.
 
-## 2. 추가로 알면 좋은 활용법
-
-### 2-1. 최고 조합으로 최종 모델 만들기 — `best_params` + `user_attrs`
+### 1-7. 최종 모델 재학습 → `joblib` 저장·로드 → 새 차 두 대 예측 (수업 6·7·8)
 
 ```python
-best = LGBMRegressor(**study.best_params,
-                     n_estimators=study.best_trial.user_attrs['best_n_estimators'],   # 174
-                     subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)
-best.fit(X_train, Y_train)                                 # 훈련 세트 전체로 재학습 — eval_set 없이 174그루
-print(best.score(X_train, Y_train), best.score(X_test, Y_test))   # 0.803 / 0.723
+# 6) 최적 파라미터로 다시 학습 — 조기 종료 없이, 트리 수는 폴드가 찾아 준 174로
+final_model = LGBMRegressor(
+    random_state=42, verbose=-1, n_jobs=-1,
+    **study.best_params,            # 여섯 인자를 딕셔너리 전개(**)로 — **리스트가 아니라 **딕셔너리
+    n_estimators=optimal_model      # 174
+)
+final_model.fit(X_train, Y_train)
+print('train r2: ', final_model.score(X_train, Y_train))   # 0.8019
+print('test r2: ', final_model.score(X_test, Y_test))      # 0.7206
+print(final_model.feature_name_)        # ['year', 'mileage', 'brand', 'model', 'title_status', 'color', 'state']
+print(final_model.feature_importances_) # [310 870 200 389  50 228 467]
+
+# 7) joblib 저장 / 로드
+import joblib
+joblib.dump(final_model, './day18/gbm_model.pkl')
+model = joblib.load('./day18/gbm_model.pkl')     # 다른 .py 파일이나 메서드에서 읽는 상황을 가정
+
+# 8) 예측 — 새 차 두 대
+new_cars = pd.DataFrame([
+    {'year': 2019, 'mileage': 25000, 'brand': 'ford',   'model': 'f-150',  'title_status': 'clean vehicle',     'color': 'white', 'state': 'texas'},
+    {'year': 2014, 'mileage': 85000, 'brand': 'nissan', 'model': 'altima', 'title_status': 'salvage insurance', 'color': 'black', 'state': 'california'},
+])
+for col in cat_cols:
+    new_cars[col] = new_cars[col].astype('category')   # 훈련 때와 같은 열을 범주형으로
+preds = model.predict(new_cars)
+print('서빙 모델 예측 (1번차량) 가격: ', preds[0])   # 27983.48
+print('서빙 모델 예측 (2번차량) 가격: ', preds[1])   # 635.48
+```
+
+**6) 재학습.** `study.optimize`는 인자만 고르고 모델은 남기지 않으므로(목적함수 안의 모델은 함수가 끝나면 사라진다) `best_params`를 풀어 새 모델을 만든다. `**study.best_params`는 day03 가변 매개변수에서 본 **딕셔너리 전개**다 — `{'learning_rate': 0.0655, 'num_leaves': 16, …}`의 키가 LightGBM 인자 이름과 같아서(1-5에서 `suggest_*`의 이름을 인자 이름과 똑같이 맞춘 이유) `LGBMRegressor(learning_rate=0.0655, num_leaves=16, …)`로 그대로 풀린다. 수업 주석의 "`**`리스트 `**`딕셔너리 전개연산자"는 `*리스트`(위치 인자)와 `**딕셔너리`(키워드 인자)의 구분이다. `n_estimators`는 1000이 아니라 `user_attrs`의 **174** — 재학습에는 `eval_set`이 없어 조기 종료가 걸리지 않으니, 폴드 다섯 개가 찾아 준 트리 수를 손으로 넣는다(1-5에서 `set_user_attr`로 메모를 남긴 이유가 여기서 닫힌다). 결과는 훈련 0.802 · 테스트 0.721 — 교차 검증 평균 0.636보다 테스트가 높은 것은 훈련 세트 **전체**(1,964대, 폴드의 1.25배)로 학습해 모델이 더 좋아진 몫이 크다.
+
+`feature_name_`은 LightGBM 고유 속성(사이킷런 공통 `feature_names_in_`과 같은 목록), `feature_importances_`는 **분할에 쓰인 횟수**다. `mileage` 870 · `state` 467 · `model` 389 · `year` 310 · `color` 228 · `brand` 200 · `title_status` 50 — 연속값 `mileage`는 트리마다 여러 번 잘게 쪼개지니 횟수가 가장 많고, `title_status`는 `clean vehicle`/`salvage insurance` 둘뿐이라 **한 번 자르면 끝**이라 50에 그친다. 그런데 2번 차량 예측(아래)에서 보듯 그 한 번이 가격을 가장 크게 가른다 — 횟수 중요도가 낮다고 영향이 작은 것은 아니다. `state` 467이 `brand` 200보다 높은 것도 범주 43개짜리 열이 묶음 분할로 자주 쓰였다는 뜻이지 주(州)가 브랜드보다 가격을 더 설명한다는 뜻은 아니다.
+
+**7) 저장·로드.** day14 연습의 `joblib.dump`·`load` 그대로다. 저장되는 것은 174그루의 트리 구조와 인자, 그리고 **`category` 열의 범주 목록**(`booster_.pandas_categorical`)까지라, 다른 파일에서 `load`만 해도 범주 처리가 그대로 따라온다. `./day18/gbm_model.pkl`은 상대 경로여서 어디서 실행하느냐에 따라 위치가 달라진다 — 수업처럼 저장소 루트(`2026_Python/`)에서 돌리면 `day18/` 안에 생긴다(약 270 KB).
+
+**8) 예측.** 새 자료도 훈련 때와 **같은 열·같은 타입**으로 맞추는 것이 핵심이다 — 범주 다섯 열을 `astype('category')`로 바꿔 넘긴다. 결과는 2019년식 포드 F-150(2만 5천 마일 · clean) **27,983달러**, 2014년식 닛산 알티마(8만 5천 마일 · salvage insurance) **635달러**다(이 노트에서 재현, 수업 주석과 일치). 첫 값은 자료 안의 clean F-150 219대 평균 28,197달러와 거의 같다. 둘째 값이 눈에 띄게 낮은 것은 `title_status='salvage insurance'` 때문이다 — 자료 안의 salvage 122대는 평균 3,117 · 중앙값 1,812달러이고 25달러짜리도 있어, 트리가 "salvage면 왼쪽" 한 번으로 그 묶음의 아주 낮은 잎에 떨어뜨린다. 거기에 닛산 salvage 차들이 600~7,000달러대였던 것이 겹쳐 635가 나왔다. 즉 **모델은 이 차가 `altima`라는 것보다 `salvage`라는 것을 더 크게 본다** — 1-7 앞 단락의 `title_status` 분할 횟수 50이 "영향이 작다"는 뜻이 아니라는 증거다. 실제 서비스라면 2번 차의 예측은 "사고 이력 차량 — 가격대 수백~수천 달러" 정도로 읽어야 하고, 점 추정 하나로 쓰기엔 자료 안 salvage 가격의 퍼짐(25~3만 달러)이 너무 크다.
+
+새 자료의 `astype('category')`는 **새 DataFrame 안의 값만으로** 범주 목록을 만든다 — `brand`는 `['ford', 'nissan']` 둘뿐이라 코드 0·1인데, 훈련 때 `brand`의 포드는 8번 · 닛산은 24번이었다. 그래도 예측이 맞게 나오는 것은 LightGBM이 저장해 둔 훈련 때 범주 목록으로 새 자료의 범주를 **다시 맞춰 주기** 때문이다(이 노트에서 확인 — 두 방식의 예측값이 같다). 그 보정에 기대지 않고 `new_cars[col].astype(X_train[col].dtype)`로 훈련 때의 `CategoricalDtype`을 그대로 꽂는 것이 어디서나 통하는 안전한 방식인데, 그 길은 다음 연습 노트에서 쓴다.
+
+## 2. 추가로 알면 좋은 활용법
+
+### 2-1. 트리 수를 1000으로 두면 — 조기 종료 없는 재학습의 함정
+
+```python
+# 같은 best_params, 트리만 1000그루 — eval_set이 없으니 끝까지 쌓는다
+m1000 = LGBMRegressor(**study.best_params, n_estimators=1000, subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)
+m1000.fit(X_train, Y_train)
+print(m1000.score(X_train, Y_train), m1000.score(X_test, Y_test))   # 0.933 / 0.709
+
+# 참고 — 174그루 + 고정 인자까지 다시 적은 재학습
+best = LGBMRegressor(**study.best_params, n_estimators=174, subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)
+best.fit(X_train, Y_train)
+print(best.score(X_train, Y_train), best.score(X_test, Y_test))     # 0.803 / 0.723
 from sklearn.metrics import mean_absolute_error
 print(mean_absolute_error(Y_test, best.predict(X_test)))           # 약 4,260달러
 ```
 
-`study.optimize`는 **인자만 고르고 모델은 남기지 않는다.** 목적함수 안에서 만든 모델은 함수가 끝나면 사라지므로, `best_params`를 풀어 새 모델을 만들고 훈련 세트 전체로 다시 학습한다. 이때 `n_estimators`를 `user_attrs`의 174로 두는 것이 1-5에서 메모를 남긴 이유다 — 재학습에는 `eval_set`이 없으니 조기 종료가 작동하지 않고, 1000으로 두면 끝까지 쌓는다. 실제로 1000그루로 두고 돌리면 훈련 0.933 · 테스트 0.709로 **훈련만 오르고 테스트는 내려간다**(이 노트에서 확인) — 조기 종료가 막아 주던 과적합이 그대로 돌아온다. 목적함수에서 `suggest_*`로 뽑지 않고 고정한 인자(`subsample_freq=1`·`verbose`·`random_state`)는 `best_params`에 없으므로 다시 적어 준다.
+1-7의 재학습에서 `n_estimators`만 1000으로 바꿔 돌리면 훈련 0.933 · 테스트 0.709로 **훈련만 오르고 테스트는 내려간다**(이 노트에서 확인) — 조기 종료가 막아 주던 과적합이 그대로 돌아온다. `user_attrs`의 174를 넣는 한 줄이 그 차이다.
+
+한 가지 일반 주의 — 목적함수 안에 `suggest_*`가 아니라 **고정값으로 적은 인자**(`subsample_freq=1` 등)는 `best_params`에 들어 있지 않다. 재학습에서 `**best_params`만 풀면 그 인자들은 LightGBM 기본값으로 돌아가고, 특히 `subsample_freq`가 기본 0이면 `subsample=0.999`가 있어도 행 표본 추출은 **꺼진 채** 학습된다. 교차 검증에서 고른 조합을 재학습에 그대로 재현하려면 고정 인자도 함께 적어 주는 편이 안전하다 — 위 코드처럼 `subsample_freq=1`을 다시 적으면 1-7의 0.802 / 0.721이 0.803 / 0.723으로 아주 조금 달라지는데, 이 자료에선 `subsample`이 0.999라 거의 전 행을 쓰므로 차이가 작다.
 
 테스트 R² 0.723은 가격의 72 %를 설명한다는 뜻이고, MAE 4,260달러는 평균 1만 9천 달러짜리 차에서 20 %쯤 빗나간다는 뜻이다. 기본 `LGBMRegressor()`(100그루 · 보폭 0.1 · `num_leaves` 31)는 훈련 0.889 · 테스트 0.729라 테스트 점수는 비슷하고 훈련-테스트 차이는 튠 모델이 8점 · 기본이 16점이다 — 튜닝이 테스트 점수를 끌어올리기보다 **과적합 폭을 줄인 쪽**으로 작동했다. 2,456대의 작은 자료에서 교차검증 1~2점은 폴드 운에 가까워, 튜닝이 항상 테스트 점수를 올리는 것은 아니라는 것을 다시 본다(day16 의료비에서 교차검증 0.82 · 테스트 0.88이었던 것과 같은 종류의 차이). `vin`·`condition`을 뺀 7열로는 이 정도가 한계라서, 1-2의 도메인 특성이 다음 손댈 곳이다.
 
@@ -262,12 +310,14 @@ tuner.run(); tuner.best_params
 - `MedianPruner`·`trial.report`·`TrialPruned`, `timeout`·`n_jobs`·`storage='sqlite:///…'`(스터디 저장·이어 돌리기)
 - `LightGBMTunerCV`·`optuna-integration`
 - `categorical_feature`·`cat.codes`·`TargetEncoder`·CatBoost `cat_features`
+- `**best_params` 딕셔너리 전개·`feature_name_` vs `feature_names_in_`·`importance_type='gain'`, `joblib`로 저장되는 `pandas_categorical`, 새 자료 `astype(X_train[col].dtype)`
 - 특성 공학 — 차령 `2020 − year`·연평균 주행거리·브랜드별 평균 가격, `TransformedTargetRegressor(func=np.log1p)` 로그 타깃
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day18/s-12.py` — `pd.read_csv(URL)` 미국 중고차 `USA_cars_datasets.csv`(2,499대 × 13열) → `df[df['price'] > 0]`(가격 0인 43대 제외 → 2,456대) → `num_cols = ['year', 'mileage']`·`cat_cols = ['brand', 'model', 'title_status', 'color', 'state']`·도메인 계산식 특성 주석 → `for col in cat_cols: df[col] = df[col].astype('category')`(원-핫 대신 판다스 카테고리 타입) → `X = df[num_cols + cat_cols]`·`Y = df['price']`·`train_test_split(test_size=0.2, random_state=42)` → `import optuna`·`optuna.logging.set_verbosity(optuna.logging.WARNING)` → 4) `def objective(trial)`: `KFold(n_splits=5, shuffle=True, random_state=42)` → `for train_idx, val_idx in cv.split(X_train, Y_train)`: `iloc`로 폴드 자르기 → `LGBMRegressor(n_estimators=1000, learning_rate=suggest_float(0.01~0.1), num_leaves=suggest_int(10~30), max_depth=suggest_int(3~10), min_child_samples=suggest_int(10~50), subsample=suggest_float(0.6~1.0), colsample_bytree=suggest_float(0.6~1.0), subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)` → `fit(eval_set=[(X_val, Y_val)], callbacks=[early_stopping(50, verbose=False)])` → 폴드별 `score`(R²)·`best_iteration_` 저장 → `trial.set_user_attr('best_n_estimators', int(np.mean(best_iterations)))` → `return np.mean(cv_r2_scores)` → 3) `TPESampler(seed=42)`·`create_study(direction='maximize', sampler=sampler)` → `study.optimize(objective, n_trials=20)` → 5) `study.best_params`·`study.best_trial.user_attrs['best_n_estimators']`(수업 결과 주석: `{'learning_rate': 0.0655, 'num_leaves': 16, 'max_depth': 6, 'min_child_samples': 50, 'subsample': 0.9990, 'colsample_bytree': 0.9939}` · 최적 트리 174). 이 노트에서 돌린 결과(optuna 5.0 · lightgbm 4.7, 수업 주석과 일치): 훈련 1,964 · 테스트 492, 기본 `LGBMRegressor` `category` 7열 테스트 R² 0.729 · MAE 4,141 / 원-핫 243열 0.663 / 수치 2열만 0.191, 20회 × 5폴드 약 11초 → `best_value` 0.6360 · 19번째 시도 · 폴드별 R² `[0.596, 0.669, 0.645, 0.638, 0.632]` · 폴드별 `best_iteration_` `[174, 173, 125, 164, 237]`, 무작위 10번 0.606~0.633 vs TPE 10번 0.62~0.636(`subsample` 0.6대 시도가 모두 0.61 아래 → TPE가 0.9 위로 좁힘), 인자 중요도 `subsample` 0.74 · `max_depth` 0.002, 최고 조합 + 174그루 재학습 훈련 0.803 · 테스트 0.723 · MAE 4,260 / 같은 조합 1000그루 0.933 · 0.709 / 기본 모델 0.889 · 0.729
+- `KDT_2026/2026_Python/day18/s-12.py` — `pd.read_csv(URL)` 미국 중고차 `USA_cars_datasets.csv`(2,499대 × 13열) → `df[df['price'] > 0]`(가격 0인 43대 제외 → 2,456대) → `num_cols = ['year', 'mileage']`·`cat_cols = ['brand', 'model', 'title_status', 'color', 'state']`·도메인 계산식 특성 주석 → `for col in cat_cols: df[col] = df[col].astype('category')`(원-핫 대신 판다스 카테고리 타입) → `X = df[num_cols + cat_cols]`·`Y = df['price']`·`train_test_split(test_size=0.2, random_state=42)` → `import optuna`·`optuna.logging.set_verbosity(optuna.logging.WARNING)` → 4) `def objective(trial)`: `KFold(n_splits=5, shuffle=True, random_state=42)` → `for train_idx, val_idx in cv.split(X_train, Y_train)`: `iloc`로 폴드 자르기 → `LGBMRegressor(n_estimators=1000, learning_rate=suggest_float(0.01~0.1), num_leaves=suggest_int(10~30), max_depth=suggest_int(3~10), min_child_samples=suggest_int(10~50), subsample=suggest_float(0.6~1.0), colsample_bytree=suggest_float(0.6~1.0), subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)` → `fit(eval_set=[(X_val, Y_val)], callbacks=[early_stopping(50, verbose=False)])` → 폴드별 `score`(R²)·`best_iteration_` 저장 → `trial.set_user_attr('best_n_estimators', int(np.mean(best_iterations)))` → `return np.mean(cv_r2_scores)` → 3) `TPESampler(seed=42)`·`create_study(direction='maximize', sampler=sampler)` → `study.optimize(objective, n_trials=20)` → 5) `study.best_params`·`study.best_trial.user_attrs['best_n_estimators']`(수업 결과 주석: `{'learning_rate': 0.0655, 'num_leaves': 16, 'max_depth': 6, 'min_child_samples': 50, 'subsample': 0.9990, 'colsample_bytree': 0.9939}` · 최적 트리 174). 이 노트에서 돌린 결과(optuna 5.0 · lightgbm 4.7, 수업 주석과 일치): 훈련 1,964 · 테스트 492, 기본 `LGBMRegressor` `category` 7열 테스트 R² 0.729 · MAE 4,141 / 원-핫 243열 0.663 / 수치 2열만 0.191, 20회 × 5폴드 약 11초 → `best_value` 0.6360 · 19번째 시도 · 폴드별 R² `[0.596, 0.669, 0.645, 0.638, 0.632]` · 폴드별 `best_iteration_` `[174, 173, 125, 164, 237]`, 무작위 10번 0.606~0.633 vs TPE 10번 0.62~0.636(`subsample` 0.6대 시도가 모두 0.61 아래 → TPE가 0.9 위로 좁힘), 인자 중요도 `subsample` 0.74 · `max_depth` 0.002, 최고 조합 + 174그루 재학습 훈련 0.803 · 테스트 0.723 · MAE 4,260 / 같은 조합 1000그루 0.933 · 0.709 / 기본 모델 0.889 · 0.729. **수업 5h 추가분**: 6) `final_model = LGBMRegressor(random_state=42, verbose=-1, n_jobs=-1, **study.best_params, n_estimators=optimal_model)` → `fit(X_train, Y_train)` → `score` 훈련 0.8019 · 테스트 0.7206 · `feature_name_`·`feature_importances_` `[310 870 200 389 50 228 467]`(수업 주석, 이 노트에서 재현) → 7) `joblib.dump(final_model, './day18/gbm_model.pkl')`·`joblib.load` → 8) `new_cars` DataFrame 두 대(2019 ford f-150 clean white texas · 2014 nissan altima salvage insurance black california) → `for col in cat_cols: astype('category')` → `model.predict` **27,983.48 · 635.48**달러(수업 주석과 일치 — clean F-150 219대 평균 28,197 · salvage 122대 평균 3,117·중앙값 1,812, `astype(X_train[col].dtype)`으로 바꿔도 같은 값)
+- `KDT_2026/2026_Python/day18/gbm_model.pkl` — 7)에서 `joblib.dump`로 저장된 최종 모델(바이너리, 약 270 KB)
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · [[AI day17 XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · [[KDT_2026 학습 지도]]
