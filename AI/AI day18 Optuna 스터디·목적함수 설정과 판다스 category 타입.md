@@ -10,7 +10,7 @@ tags: [학습, ai, python]
 > 실습 파일: `day18/s-12.py`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · 다음: (아직 없음)
 
-`s-11.py`가 LightGBM 인자 아홉 개를 **손으로** 채우고 조기 종료로 트리 수만 자료에 맡기는 데서 끝났다면, `s-12.py`는 그 인자들을 **자동으로 고르는 도구** Optuna를 꺼내는 첫 파일이다. 자료도 과제도 바뀐다 — 와인 분류 대신 미국 중고차 2,499대(`USA_cars_datasets.csv`)의 **가격을 맞히는 회귀**이고, 특성에 수치형 둘(`year`·`mileage`)과 범주형 다섯(`brand`·`model`·`title_status`·`color`·`state`)이 섞여 있다. 이 파일에서 새로 배운 것은 셋이다. ① 가격이 0인 행을 걸러내는 한 줄, ② 범주형 다섯 열을 원-핫 인코딩이 아니라 **판다스 `category` 타입**으로 바꿔 LightGBM에 그대로 넘기는 방식, ③ `optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))` → `study.optimize(objective, n_trials=20)`로 이어지는 **Optuna의 세 조각(목적함수·스터디·optimize)**. 이번 파일은 목적함수 `objective(trial)`의 몸통이 `pass`로 비어 있는 **골격 단계**라서, 이 노트는 그 골격이 무엇을 받아 무엇을 돌려줘야 하는지를 정리하고, 몸통을 채워 실제로 돌린 결과(이 노트에서 확인 — optuna 5.0 · lightgbm 4.7)를 뒤에 붙인다. 몸통을 채우는 수업분이 들어오면 그 부분을 보강한다.
+`s-11.py`가 LightGBM 인자 아홉 개를 **손으로** 채우고 조기 종료로 트리 수만 자료에 맡기는 데서 끝났다면, `s-12.py`는 그 인자들을 **자동으로 고르는 도구** Optuna를 꺼내는 첫 파일이다. 자료도 과제도 바뀐다 — 와인 분류 대신 미국 중고차 2,499대(`USA_cars_datasets.csv`)의 **가격을 맞히는 회귀**이고, 특성에 수치형 둘(`year`·`mileage`)과 범주형 다섯(`brand`·`model`·`title_status`·`color`·`state`)이 섞여 있다. 이 파일에서 새로 배운 것은 셋이다. ① 가격이 0인 행을 걸러내는 한 줄, ② 범주형 다섯 열을 원-핫 인코딩이 아니라 **판다스 `category` 타입**으로 바꿔 LightGBM에 그대로 넘기는 방식, ③ `optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))` → `study.optimize(objective, n_trials=20)`로 이어지는 **Optuna의 세 조각(목적함수·스터디·optimize)**. 수업 앞 시간(3h)에는 목적함수 `objective(trial)`의 몸통이 `pass`로 비어 있는 **골격**까지였고, 뒤 시간(4h)에 몸통이 채워진다 — 4) `KFold(5)`로 훈련 세트를 다시 다섯 번 쪼개 폴드마다 `LGBMRegressor`를 `trial.suggest_*` 인자로 만들고 `early_stopping`으로 학습한 뒤 R² 평균을 돌려주는 목적함수, 그리고 폴드별 `best_iteration_`의 평균을 `trial.set_user_attr('best_n_estimators', …)`로 시도에 적어 두고 5) `study.best_params`·`study.best_trial.user_attrs`로 꺼내는 마무리. 이 노트는 그 세 조각과 목적함수 몸통을 순서대로 정리하고, 같은 코드를 돌려 나온 숫자(이 노트에서 확인 — optuna 5.0 · lightgbm 4.7, 수업 주석의 결과와 일치)를 뒤에 붙인다.
 
 ## 1. 배운 내용
 
@@ -66,15 +66,15 @@ LightGBM은 DataFrame의 `category` 열을 **자동으로 범주형으로 인식
 import optuna
 optuna.logging.set_verbosity(optuna.logging.WARNING)   # 시도마다 찍는 INFO 로그를 끄고 경고만
 
-def objective(trial):      # 3) 목적함수 — trial을 받아 점수 하나를 돌려준다 (몸통은 다음 수업분)
-    pass
+def objective(trial):      # 4) 목적함수 — trial을 받아 점수 하나를 돌려준다 (몸통은 1-5)
+    ...
 
-sampler = optuna.samplers.TPESampler(seed=42)          # 2) 다음 후보를 고르는 전략 + 재현용 씨앗
-study = optuna.create_study(direction='maximize', sampler=sampler)   # 회귀 R²를 쓸 예정이라 최대화
-study.optimize(objective, n_trials=20)                 # 1) 목적함수를 20번 부른다
+sampler = optuna.samplers.TPESampler(seed=42)          # 3) 다음 후보를 고르는 전략 + 재현용 씨앗
+study = optuna.create_study(direction='maximize', sampler=sampler)   #    회귀 R²를 쓸 예정이라 최대화
+study.optimize(objective, n_trials=20)                 #    목적함수를 20번 부른다
 ```
 
-`pip install optuna` 뒤 쓰는 Optuna는 **하이퍼파라미터 자동 탐색** 라이브러리다. day14의 `GridSearchCV`가 "격자에 적힌 조합을 전부 돌려 보는" 방식이었다면, Optuna는 "한 조합을 돌려 점수를 보고 → 그 결과를 참고해 다음 조합을 고른다"를 반복한다. 코드는 세 조각으로 나뉘고, 수업 주석의 번호 1)·2)·3)이 그 셋이다.
+`pip install optuna` 뒤 쓰는 Optuna는 **하이퍼파라미터 자동 탐색** 라이브러리다. day14의 `GridSearchCV`가 "격자에 적힌 조합을 전부 돌려 보는" 방식이었다면, Optuna는 "한 조합을 돌려 점수를 보고 → 그 결과를 참고해 다음 조합을 고른다"를 반복한다. 코드는 세 조각으로 나뉜다 — 수업 주석 번호로는 2) 로그 설정, 4) 목적함수, 3) 스터디 생성과 `optimize`다.
 
 | 조각 | 코드 | 역할 |
 | --- | --- | --- |
@@ -88,104 +88,132 @@ study.optimize(objective, n_trials=20)                 # 1) 목적함수를 20�
 
 **`set_verbosity(WARNING)`** 는 LightGBM의 `verbose=-1`과 같은 자리의 설정이다. 기본 INFO 레벨이면 시도마다 `Trial 3 finished with value: 0.55 and parameters: {…}` 한 줄씩 20줄이 찍히므로, 경고만 남기고 끈다.
 
-### 1-5. 목적함수 안에서 일어나는 일 — `trial.suggest_*`
-
-골격만 있는 목적함수의 몸통에는 보통 세 단계가 들어간다. 이 자료에 맞춰 채우면 이런 모양이다(이 노트에서 작성·확인).
+### 1-5. 목적함수 몸통 — 폴드마다 `suggest_*`로 모델을 만들고 조기 종료로 학습
 
 ```python
-from lightgbm import LGBMRegressor
-from sklearn.model_selection import KFold, cross_val_score
-kf = KFold(n_splits=5, shuffle=True, random_state=42)
+from lightgbm import LGBMRegressor, early_stopping
+import numpy as np
 
 def objective(trial):
-    params = dict(                                                             # ① 후보 뽑기
-        n_estimators=trial.suggest_int('n_estimators', 100, 1000, step=100),
-        learning_rate=trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-        num_leaves=trial.suggest_int('num_leaves', 7, 63),
-        max_depth=trial.suggest_int('max_depth', 3, 10),
-        min_child_samples=trial.suggest_int('min_child_samples', 5, 50),
-        subsample=trial.suggest_float('subsample', 0.5, 1.0), subsample_freq=1,
-        colsample_bytree=trial.suggest_float('colsample_bytree', 0.5, 1.0),
-        reg_lambda=trial.suggest_float('reg_lambda', 1e-3, 10.0, log=True),
-        verbose=-1, random_state=42, n_jobs=-1,
-    )
-    model = LGBMRegressor(**params)                                            # ② 모델 만들기
-    return cross_val_score(model, X_train, Y_train, cv=kf, scoring='r2').mean()  # ③ 점수 하나 반환
+    # 4-1 교차 검증 KFold — 훈련 세트 안에서 다시 훈련용/검증용으로 다섯 번 나눈다
+    from sklearn.model_selection import KFold
+    cv = KFold(n_splits=5, shuffle=True, random_state=42)
+    cv_r2_scores = []        # 폴드별 검증 점수
+    best_iterations = []     # 폴드별 최적 트리 번호
+    for train_idx, val_idx in cv.split(X_train, Y_train):
+        X_tr, X_val = X_train.iloc[train_idx], X_train.iloc[val_idx]
+        Y_tr, Y_val = Y_train.iloc[train_idx], Y_train.iloc[val_idx]
+        model = LGBMRegressor(
+            n_estimators=1000,                                             # 상한만 — 트리 수는 조기 종료가 정한다
+            learning_rate=trial.suggest_float('learning_rate', 0.01, 0.1), # trial.suggest_XXX('이름', 시작, 끝)
+            num_leaves=trial.suggest_int('num_leaves', 10, 30),
+            max_depth=trial.suggest_int('max_depth', 3, 10),
+            min_child_samples=trial.suggest_int('min_child_samples', 10, 50),
+            subsample=trial.suggest_float('subsample', 0.6, 1.0),
+            colsample_bytree=trial.suggest_float('colsample_bytree', 0.6, 1.0),
+            subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1,       # class_weight는 회귀라 없음
+        )
+        # 4-2 폴드별 학습 — 검증 폴드를 eval_set으로 두고 50번 개선 없으면 멈춤
+        model.fit(X_tr, Y_tr, eval_set=[(X_val, Y_val)],
+                  callbacks=[early_stopping(stopping_rounds=50, verbose=False)])
+        # 4-3 폴드별 성능 저장
+        cv_r2_scores.append(model.score(X_val, Y_val))
+        best_iterations.append(model.best_iteration_)
+    trial.set_user_attr('best_n_estimators', int(np.mean(best_iterations)))  # 폴드별 최적 트리 수의 평균을 시도에 적어 둔다
+    return np.mean(cv_r2_scores)                                             # 검증 R² 평균 하나를 돌려준다
 ```
 
-| `suggest_*` | 뽑는 것 | 예 |
+몸통은 수업 주석의 4-1·4-2·4-3 세 단계다. 한 시도(`trial`)가 들어오면 ① `KFold`로 훈련 세트를 다섯 번 나누고, ② 폴드마다 `trial.suggest_*`가 뽑아 준 인자로 `LGBMRegressor`를 만들어 **그 폴드의 검증 묶음을 `eval_set`으로** 조기 종료 학습을 하고, ③ 폴드별 R²와 멈춘 트리 번호를 모아 **평균 R² 하나**를 돌려준다. day14의 `cross_val_score` 한 줄이 하던 일을 `for train_idx, val_idx in cv.split(…)`으로 직접 푼 모양인데, 그렇게 손으로 쪼갠 이유가 바로 `eval_set`이다 — 폴드마다 검증 묶음을 따로 쥐고 있어야 `early_stopping`에 넘길 수 있고, `cross_val_score`는 그 묶음을 밖으로 내주지 않는다. `cv.split`이 돌려주는 것은 **행 번호 배열**이라 `X_train.iloc[…]`로 잘라야 한다(`loc`가 아니라 `iloc` — `train_test_split`을 거친 `X_train`의 인덱스는 0부터 이어지지 않는다).
+
+| `suggest_*` | 뽑는 것 | 이 파일의 범위 |
 | --- | --- | --- |
-| `suggest_int(name, low, high, step=)` | 정수 | `n_estimators` 100~1000을 100 단위로, `num_leaves` 7~63 |
-| `suggest_float(name, low, high, log=)` | 실수. `log=True`면 **로그 눈금**으로 뽑아 0.01~0.1 구간과 0.1~0.3 구간을 고르게 본다 | `learning_rate`, `reg_lambda` |
-| `suggest_categorical(name, [a, b, c])` | 목록 중 하나 | `boosting_type`, `'balanced'`/`None` |
+| `suggest_float(name, low, high)` | 실수 | `learning_rate` 0.01~0.1 · `subsample` 0.6~1.0 · `colsample_bytree` 0.6~1.0 |
+| `suggest_int(name, low, high)` | 정수 | `num_leaves` 10~30 · `max_depth` 3~10 · `min_child_samples` 10~50 |
+| `suggest_categorical(name, [a, b, c])` | 목록 중 하나 (이 파일엔 없음) | `boosting_type`, `'balanced'`/`None` 같은 선택지 |
 
-`GridSearchCV`의 `param_grid`가 "값의 **목록**"이었다면 `suggest_*`는 "값의 **범위**"다 — 격자는 `learning_rate: [0.01, 0.05, 0.1]` 셋만 보지만 Optuna는 0.01~0.3 사이 어느 값이든 뽑을 수 있다. 점수는 day14처럼 **교차 검증 평균**을 돌려주는 것이 안전하다. `X_test`로 점수를 내면 테스트 세트가 인자 선택에 참여하게 되어(앞 노트 2-1의 `eval_set` 문제와 같다) 최종 점수가 후해진다. 앞 노트의 아홉 인자 중 `class_weight`만 빠진 것은 회귀라서 클래스가 없기 때문이고, 대신 L2 규제 `reg_lambda`를 넣었다. `suggest_*`의 첫 인자(이름)는 `best_params` 딕셔너리의 키가 되므로 LightGBM 인자 이름과 **똑같이** 맞춰 두면 `LGBMRegressor(**study.best_params)`로 바로 풀 수 있다.
+`GridSearchCV`의 `param_grid`가 "값의 **목록**"이었다면 `suggest_*`는 "값의 **범위**"다 — 격자는 `learning_rate: [0.01, 0.05, 0.1]` 셋만 보지만 Optuna는 0.01~0.1 사이 어느 값이든 뽑을 수 있다. 앞 노트의 아홉 인자 중 **`n_estimators`는 탐색하지 않고 1000으로 고정**한 것이 이 파일의 선택이다 — 트리 수는 폴드마다 조기 종료가 자료에서 알아내므로 Optuna가 고를 인자에서 빠지고, 탐색 공간이 한 차원 줄어든다. `class_weight`가 빠진 것은 회귀라서 클래스가 없기 때문이다. `suggest_*`의 첫 인자(이름)는 `best_params` 딕셔너리의 키가 되므로 LightGBM 인자 이름과 **똑같이** 맞춰 두면 `LGBMRegressor(**study.best_params)`로 바로 풀 수 있다.
 
-### 1-6. 돌려 보면 — 20번 시도의 기록
+**`trial.set_user_attr`** 가 이 몸통에서 새로 나온 메서드다. 목적함수는 숫자 하나만 돌려줄 수 있는데, 조기 종료가 찾아낸 트리 수는 그 숫자에 들어가지 않는다. 그래서 폴드 다섯 개의 `best_iteration_` 평균을 **시도의 메모장**(`user_attrs` 딕셔너리)에 적어 두고, 스터디가 끝난 뒤 `study.best_trial.user_attrs['best_n_estimators']`로 꺼낸다. 점수와 함께 "이 조합이면 트리를 몇 그루 세워야 하는가"까지 남기는 장치라, 2-1의 최종 모델에서 `n_estimators`를 1000이 아니라 이 값으로 둔다. 점수는 **훈련 세트 안의 교차 검증**이고 `X_test`는 손대지 않는다 — 테스트 세트로 점수를 내면 테스트가 인자 선택에 참여해(앞 노트 2-1의 `eval_set` 문제와 같다) 최종 점수가 후해진다.
 
-위 목적함수로 `n_trials=20`을 돌린 결과다(이 노트에서 확인, 22초).
-
-| 시도 | 교차검증 R² | `learning_rate` | `num_leaves` | `n_estimators` | |
-| --- | --- | --- | --- | --- | --- |
-| 0 | 0.506 | 0.254 | 48 | 400 | 무작위 구간(0~9) 시작 |
-| 2 | 0.594 | 0.060 | 31 | 400 | |
-| 6 | 0.630 | 0.019 | 62 | 600 | |
-| **8** | **0.638** | **0.063** | **15** | **300** | **최고 — `best_trial.number = 8`** |
-| 9 | 0.591 | 0.160 | 47 | 100 | 무작위 구간 끝 |
-| 12 | 0.630 | 0.019 | 30 | 700 | TPE 구간(10~19) — 보폭 0.01~0.03대로 몰림 |
-| 15 | 0.628 | 0.028 | 27 | 600 | |
-| 17 | 0.633 | 0.015 | 60 | 700 | |
-| 18 | 0.628 | 0.012 | 42 | 900 | |
+### 1-6. 돌려 보면 — 20번 시도와 `best_params`·`user_attrs`
 
 ```python
-print(study.best_value)    # 0.6377
-print(study.best_params)   # {'n_estimators': 300, 'learning_rate': 0.0633, 'num_leaves': 15, 'max_depth': 9,
-                           #  'min_child_samples': 8, 'subsample': 0.9934, 'colsample_bytree': 0.8861, 'reg_lambda': 0.0062}
+sampler = optuna.samplers.TPESampler(seed=42)
+study = optuna.create_study(direction='maximize', sampler=sampler)
+study.optimize(objective, n_trials=20)                 # 20번 × 5폴드 = LightGBM 100번 학습, 약 11초
+
+print('최적 하이퍼파라미터:', study.best_params)
+# {'learning_rate': 0.0655, 'num_leaves': 16, 'max_depth': 6, 'min_child_samples': 50, 'subsample': 0.9990, 'colsample_bytree': 0.9939}
+print('최적 트리: ', study.best_trial.user_attrs['best_n_estimators'])   # 174
+print(study.best_value, study.best_trial.number)                          # 0.6360, 19
 ```
 
-읽히는 것이 셋이다. ① 무작위 10번 중 최고가 0.638(8번)이고 TPE 10번은 0.628~0.633에서 **그 근처를 맴돈다** — 20번은 TPE가 힘을 쓰기엔 짧고, 이 자료는 `learning_rate` 0.02~0.06 · 트리 300~700 구간이 넓게 평평해서 어느 조합이든 0.63 근처다. 50번으로 늘려도 최고는 여전히 8번(0.638)이었다. ② 기본 `LGBMRegressor()`의 교차검증 R²는 **0.619**이고 Optuna 최고가 0.638 — 2점 차이다. 테스트에서는 기본 0.729 · 튠 0.722로 **오히려 비슷하거나 조금 낮다.** 2,456대의 작은 자료에서 교차검증 2점은 폴드 운에 가까워, 튜닝이 항상 테스트 점수를 올리는 것은 아니라는 것을 다시 본다(day16 의료비에서 교차검증 0.82 · 테스트 0.88이었던 것과 같은 종류의 차이). ③ `best_params`의 `learning_rate=0.063 · num_leaves=15 · n_estimators=300`은 앞 노트의 수업 값(0.05 · 15 · 조기 종료 310그루)과 거의 같다 — 손으로 고른 값과 자동 탐색이 **같은 자리**에 닿았다는 것이 오히려 교훈이다. `seed=0`으로 바꾸면 최고 0.631 · `num_leaves=40`으로 조합은 달라지되 점수는 비슷하다 — 씨앗이 바뀌면 `best_params`는 바뀌고, 그래서 재현을 위해 `seed=42`를 박아 둔다.
+수업 주석에 적힌 결과와 같은 숫자가 나온다(이 노트에서 확인) — `TPESampler(seed=42)`·`KFold(random_state=42)`·`random_state=42`를 다 박아 둔 덕에 다른 컴퓨터에서도 재현된다. 20번 시도의 기록은 이렇다.
+
+| 시도 | 교차검증 R² | `best_n_estimators` | `learning_rate` | `num_leaves` | `subsample` | |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 0.607 | 267 | 0.044 | 29 | 0.66 | 무작위 구간(0~9) 시작 |
+| 1 | 0.606 | 601 | 0.015 | 28 | 0.61 | 보폭이 작아 트리 601그루 |
+| 5 | 0.629 | 385 | 0.065 | 13 | 0.99 | |
+| 8 | 0.633 | 202 | 0.059 | 13 | 0.98 | 무작위 구간 최고 |
+| 9 | 0.610 | 321 | 0.064 | 29 | 0.62 | 무작위 구간 끝 |
+| 11 | 0.630 | 118 | 0.073 | 16 | 0.99 | TPE 구간(10~19) — `subsample`이 0.9 이상으로 몰림 |
+| 12 | 0.634 | 202 | 0.059 | 15 | 1.00 | |
+| 15 | 0.633 | 285 | 0.045 | 11 | 0.98 | |
+| 16 | 0.633 | 267 | 0.033 | 17 | 0.97 | |
+| **19** | **0.636** | **174** | **0.066** | **16** | **1.00** | **최고 — `best_trial.number = 19`** |
+
+19번 시도의 폴드별 R²는 `[0.596, 0.669, 0.645, 0.638, 0.632]`, 폴드별 `best_iteration_`은 `[174, 173, 125, 164, 237]`이라 평균 174가 `best_n_estimators`로 적혔다. 읽히는 것이 셋이다. ① 무작위 10번은 0.606~0.633 사이에 흩어져 있고 TPE 10번은 0.62~0.636으로 **좁게 모인다** — `subsample`이 0.6대였던 시도(0·1·6·9번)가 하나같이 0.61 아래라, TPE가 11번째부터 `subsample`을 0.9 위로만 뽑은 것이 보인다(행이 2천 개뿐이라 절반만 쓰면 모자란다). 최고가 **마지막 19번**에서 나온 것도 TPE가 끝까지 좋은 쪽을 좁혀 갔다는 뜻이다. ② `best_params`의 `learning_rate=0.066 · num_leaves=16`은 앞 노트에서 손으로 고른 수업 값(0.05 · 15)과 거의 같은 자리이고, `min_child_samples=50`은 범위의 **끝값**이다 — 끝값에 걸리면 범위를 더 열어 볼 신호다(50 위에서 더 좋아질 수도 있다). ③ 트리 수는 174로, 앞 노트 와인 분류에서 조기 종료가 멈춘 310그루보다 적다 — 보폭이 0.066으로 조금 크고 자료가 작아 손실이 빨리 바닥에 닿는다.
 
 ## 2. 추가로 알면 좋은 활용법
 
-### 2-1. 최고 조합으로 최종 모델 만들기
+### 2-1. 최고 조합으로 최종 모델 만들기 — `best_params` + `user_attrs`
 
 ```python
-best = LGBMRegressor(**study.best_params, subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)
-best.fit(X_train, Y_train)
-print(best.score(X_train, Y_train), best.score(X_test, Y_test))   # 0.886 / 0.722
+best = LGBMRegressor(**study.best_params,
+                     n_estimators=study.best_trial.user_attrs['best_n_estimators'],   # 174
+                     subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)
+best.fit(X_train, Y_train)                                 # 훈련 세트 전체로 재학습 — eval_set 없이 174그루
+print(best.score(X_train, Y_train), best.score(X_test, Y_test))   # 0.803 / 0.723
 from sklearn.metrics import mean_absolute_error
-print(mean_absolute_error(Y_test, best.predict(X_test)))           # 약 4,250달러
+print(mean_absolute_error(Y_test, best.predict(X_test)))           # 약 4,260달러
 ```
 
-`study.optimize`는 **인자만 고르고 모델은 남기지 않는다.** 목적함수 안에서 만든 모델은 함수가 끝나면 사라지므로, `best_params`를 풀어 새 모델을 만들고 훈련 세트 전체로 다시 학습한다 — 앞 노트 2-3의 "`best_iteration_`으로 `n_estimators`를 고정해 재학습"과 같은 마무리다. 목적함수에서 `suggest_*`로 뽑지 않고 고정한 인자(`subsample_freq=1`·`verbose`·`random_state`)는 `best_params`에 없으므로 다시 적어 준다. 테스트 R² 0.72는 가격의 72 %를 설명한다는 뜻이고, MAE 4,250달러는 평균 1만 9천 달러짜리 차에서 20 %쯤 빗나간다는 뜻이다 — `vin`·`condition`을 뺀 7열로는 이 정도가 한계라서, 1-2의 도메인 특성이 다음 손댈 곳이다.
+`study.optimize`는 **인자만 고르고 모델은 남기지 않는다.** 목적함수 안에서 만든 모델은 함수가 끝나면 사라지므로, `best_params`를 풀어 새 모델을 만들고 훈련 세트 전체로 다시 학습한다. 이때 `n_estimators`를 `user_attrs`의 174로 두는 것이 1-5에서 메모를 남긴 이유다 — 재학습에는 `eval_set`이 없으니 조기 종료가 작동하지 않고, 1000으로 두면 끝까지 쌓는다. 실제로 1000그루로 두고 돌리면 훈련 0.933 · 테스트 0.709로 **훈련만 오르고 테스트는 내려간다**(이 노트에서 확인) — 조기 종료가 막아 주던 과적합이 그대로 돌아온다. 목적함수에서 `suggest_*`로 뽑지 않고 고정한 인자(`subsample_freq=1`·`verbose`·`random_state`)는 `best_params`에 없으므로 다시 적어 준다.
+
+테스트 R² 0.723은 가격의 72 %를 설명한다는 뜻이고, MAE 4,260달러는 평균 1만 9천 달러짜리 차에서 20 %쯤 빗나간다는 뜻이다. 기본 `LGBMRegressor()`(100그루 · 보폭 0.1 · `num_leaves` 31)는 훈련 0.889 · 테스트 0.729라 테스트 점수는 비슷하고 훈련-테스트 차이는 튠 모델이 8점 · 기본이 16점이다 — 튜닝이 테스트 점수를 끌어올리기보다 **과적합 폭을 줄인 쪽**으로 작동했다. 2,456대의 작은 자료에서 교차검증 1~2점은 폴드 운에 가까워, 튜닝이 항상 테스트 점수를 올리는 것은 아니라는 것을 다시 본다(day16 의료비에서 교차검증 0.82 · 테스트 0.88이었던 것과 같은 종류의 차이). `vin`·`condition`을 뺀 7열로는 이 정도가 한계라서, 1-2의 도메인 특성이 다음 손댈 곳이다.
 
 ### 2-2. 스터디 뒤에 읽을 것 — `trials_dataframe`·인자 중요도·시각화
 
 ```python
-df_trials = study.trials_dataframe()                 # 시도별 value·params_*·duration이 한 표로
+df_trials = study.trials_dataframe()                 # 시도별 value·params_*·user_attrs_best_n_estimators·duration이 한 표로
 df_trials.sort_values('value', ascending=False).head()
-optuna.importance.get_param_importances(study)       # {'subsample': 0.82, 'max_depth': 0.11, 'n_estimators': 0.02, …}
+optuna.importance.get_param_importances(study)       # {'subsample': 0.74, 'num_leaves': 0.09, 'colsample_bytree': 0.07, 'learning_rate': 0.07, …}
 optuna.visualization.plot_optimization_history(study)   # 시도 번호 vs 점수 (plotly)
 optuna.visualization.plot_param_importances(study)
 ```
 
-`trials_dataframe()`은 1-6의 표를 그대로 꺼내 주는 메서드고, `get_param_importances`는 "어느 인자가 점수를 많이 움직였나"를 fANOVA로 추정한다 — 이 자료에선 `subsample`이 0.82로 압도적인데, `subsample`을 0.5까지 내린 시도들이 점수를 크게 떨어뜨렸기 때문이다(행이 2천 개뿐이라 절반만 쓰면 모자란다). 거꾸로 `num_leaves`·`min_child_samples`는 거의 0이라 다음 탐색에서 범위를 좁히거나 고정해도 된다. 시각화는 plotly 기반이라 주피터에서 바로 열리고, `.show()`로 브라우저에 띄울 수도 있다.
+`trials_dataframe()`은 1-6의 표를 그대로 꺼내 주는 메서드고, `set_user_attr`로 적은 값도 `user_attrs_best_n_estimators` 열로 함께 나온다. `get_param_importances`는 "어느 인자가 점수를 많이 움직였나"를 fANOVA로 추정한다 — 이 스터디에선 `subsample`이 0.74로 압도적인데, 1-6에서 본 대로 `subsample`을 0.6대로 뽑은 시도들이 점수를 크게 떨어뜨렸기 때문이다. 거꾸로 `max_depth`는 0.002로 거의 0이라(`num_leaves` 10~30이 먼저 걸려 깊이가 거의 안 쓰인다 — 앞 노트 1-2의 "`num_leaves`가 깊이보다 먼저 걸림") 다음 탐색에서 범위를 좁히거나 고정해도 된다. 시각화는 plotly 기반이라 주피터에서 바로 열리고, `.show()`로 브라우저에 띄울 수도 있다.
 
 ### 2-3. `direction='minimize'`와 MAE — 지표를 바꾸면 방향도 바뀐다
 
 ```python
+from sklearn.metrics import mean_absolute_error
 def objective_mae(trial):
-    …
-    return -cross_val_score(model, X_train, Y_train, cv=kf, scoring='neg_mean_absolute_error').mean()
+    …  # 1-5와 같은 폴드 루프, 폴드마다
+    cv_mae.append(mean_absolute_error(Y_val, model.predict(X_val)))
+    return np.mean(cv_mae)                              # 작을수록 좋은 숫자
 study2 = optuna.create_study(direction='minimize', sampler=optuna.samplers.TPESampler(seed=42))
-study2.optimize(objective_mae, n_trials=20)   # best_value ≈ 4,635달러
+study2.optimize(objective_mae, n_trials=20)
 ```
 
-사이킷런의 `scoring`은 **클수록 좋게** 통일되어 있어 MAE는 `neg_mean_absolute_error`(음수)로 나온다. 그대로 돌려주면 `maximize`가 맞고, 부호를 뒤집어 양수 MAE를 돌려주려면 `minimize`로 바꿔야 한다 — **돌려주는 숫자의 의미와 `direction`을 짝으로** 본다. 같은 자료에 R² 최대화와 MAE 최소화는 다른 조합을 고를 수 있다(이 노트에선 MAE 쪽이 `n_estimators=900 · learning_rate=0.02`로 더 작은 보폭을 골랐다). 서비스에서 "평균 몇 달러 빗나가는가"가 중요하면 MAE를, 설명력을 보려면 R²를 목적으로 둔다.
+`model.score`는 회귀에서 R²라 "클수록 좋다"로 `maximize`가 맞았다. MAE로 바꾸면 "작을수록 좋다"이므로 `minimize`로 바꿔야 한다 — **돌려주는 숫자의 의미와 `direction`을 짝으로** 본다. 사이킷런 `scoring` 문자열을 쓰면 MAE가 `neg_mean_absolute_error`(음수)로 나오므로 그때는 거꾸로 `maximize`가 맞는다는 점이 헷갈리는 자리다. 같은 자료에 R² 최대화와 MAE 최소화는 다른 조합을 고를 수 있다 — 서비스에서 "평균 몇 달러 빗나가는가"가 중요하면 MAE를, 설명력을 보려면 R²를 목적으로 둔다.
 
-### 2-4. 조기 종료와 함께 — `n_estimators`는 상한만, 보폭은 탐색
+### 2-4. 수업 코드의 짜임 — 조기 종료를 교차 검증 안에 넣은 이유
 
-앞 노트에서 "`learning_rate`는 작게 고정하고 트리 수는 조기 종료에 맡기는" 관례를 적었다. Optuna와 합치면 목적함수 안에서 검증 세트를 따로 떼어 `fit(eval_set=…, callbacks=[early_stopping(50)])`을 걸고, `n_estimators`는 `suggest_int` 대신 큰 상한(2,000)으로 고정하는 식이다. 그러면 `trial`마다 트리 수는 자료가 정하고 Optuna는 나머지 인자만 고르므로 탐색 공간이 한 차원 줄어든다. 교차 검증과 같이 쓰려면 폴드마다 `eval_set`을 떼야 해서 코드가 길어지므로, 수업처럼 `cross_val_score` 한 줄로 가려면 `n_estimators`도 `suggest_int`에 두는 쪽이 간단하다 — 1-5가 그 선택이다.
+앞 노트에서 "`learning_rate`는 작게 고정하고 트리 수는 조기 종료에 맡기는" 관례를 적었다. 이 파일은 그 관례를 Optuna와 합친 꼴이다 — `n_estimators`는 1000 상한으로 고정하고, 폴드마다 `eval_set`을 떼어 `early_stopping(50)`을 걸어 트리 수는 자료가 정하게 두고, Optuna는 나머지 여섯 인자만 고른다. 그래서 `cross_val_score` 한 줄 대신 `cv.split` 루프를 손으로 돌리고, 조기 종료가 찾은 트리 수를 `set_user_attr`로 따로 챙긴다.
+
+이 짜임의 대가는 **폴드마다 멈춘 자리가 다르다**는 점이다(19번 시도에서 125~237그루). 평균 174는 그 다섯 값의 타협이고, 최종 모델은 훈련 세트 전체(폴드보다 25 % 많은 행)로 학습하므로 조금 더 많은 트리가 맞을 수도 있다. 더 정확히 하려면 ① 재학습 때 `X_test` 말고 훈련 세트의 일부를 다시 떼어 `eval_set`으로 조기 종료를 한 번 더 걸거나, ② 트리 수까지 `suggest_int`로 탐색하고 조기 종료 없이 `cross_val_score`로 가는 길이 있다. 둘 다 한 번씩 돌려 보면 어느 쪽이 이 자료에 맞는지 보인다.
 
 ### 2-5. 시간 제한과 중간 끊기 — `timeout`·`n_jobs`·Pruner
 
@@ -207,7 +235,7 @@ study = optuna.create_study(direction='maximize', pruner=optuna.pruners.MedianPr
 | 무작위 탐색 | `RandomizedSearchCV` | 범위에서 무작위 `n_iter`개 | 같은 횟수면 격자보다 보통 낫다(중요 인자의 값이 더 다양) |
 | 베이지안·순차 탐색 | **Optuna TPE**, scikit-optimize, Hyperopt | 앞 시도의 점수 분포를 보고 좋을 확률이 높은 곳을 | 횟수 대비 효율 최고. 단 처음 몇 번은 무작위, 짧은 탐색(≤ 20)에선 차이가 작다 |
 
-1-6에서 20번 중 무작위 10번과 TPE 10번이 비슷했던 것은 세 번째 줄의 "단" 그대로다. Optuna의 강점은 **수백 번**을 돌릴 때, 그리고 인자 사이에 조건이 있을 때(`boosting_type='dart'`면 `drop_rate`도 뽑기 — `suggest_categorical` 결과에 따라 다음 `suggest_*`를 바꾸는 **동적 탐색 공간**) 드러난다. 격자 탐색은 그런 조건을 표현할 수 없다.
+1-6에서 TPE 10번이 `subsample`을 0.9 위로 좁혀 들어가 마지막 시도에서 최고를 낸 것이 세 번째 줄의 "앞 시도의 점수 분포를 보고"이고, 그래도 무작위 구간 최고(0.633)와 0.003 차이밖에 안 난 것이 "단" 쪽이다. Optuna의 강점은 **수백 번**을 돌릴 때, 그리고 인자 사이에 조건이 있을 때(`boosting_type='dart'`면 `drop_rate`도 뽑기 — `suggest_categorical` 결과에 따라 다음 `suggest_*`를 바꾸는 **동적 탐색 공간**) 드러난다. 격자 탐색은 그런 조건을 표현할 수 없다.
 
 ### 3-2. LightGBM 전용 자동 튜너 — `optuna.integration.lightgbm`
 
@@ -227,6 +255,8 @@ tuner.run(); tuner.best_params
 
 - `trial.suggest_int`·`suggest_float(log=True)`·`suggest_categorical` — 탐색 공간 적는 법, 동적 탐색 공간
 - `study.best_params`·`best_value`·`best_trial`·`trials_dataframe()`·`get_param_importances`
+- `trial.set_user_attr`·`user_attrs` — 점수 외의 결과(최적 트리 수 등)를 시도에 적어 두기, `study.set_user_attr`
+- `KFold.split`이 돌려주는 인덱스와 `iloc`, `cross_val_score`로는 못 하는 폴드별 `eval_set` 조기 종료
 - `optuna.visualization` — `plot_optimization_history`·`plot_param_importances`·`plot_slice`
 - `TPESampler(n_startup_trials, multivariate=True)`·`RandomSampler`·`GridSampler`·`CmaEsSampler`
 - `MedianPruner`·`trial.report`·`TrialPruned`, `timeout`·`n_jobs`·`storage='sqlite:///…'`(스터디 저장·이어 돌리기)
@@ -236,7 +266,7 @@ tuner.run(); tuner.best_params
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day18/s-12.py` — `pd.read_csv(URL)` 미국 중고차 `USA_cars_datasets.csv`(2,499대 × 13열) → `df[df['price'] > 0]`(가격 0인 43대 제외 → 2,456대) → `num_cols = ['year', 'mileage']`·`cat_cols = ['brand', 'model', 'title_status', 'color', 'state']`·도메인 계산식 특성 주석 → `for col in cat_cols: df[col] = df[col].astype('category')`(원-핫 대신 판다스 카테고리 타입) → `X = df[num_cols + cat_cols]`·`Y = df['price']`·`train_test_split(test_size=0.2, random_state=42)` → `import optuna`·`optuna.logging.set_verbosity(optuna.logging.WARNING)` → `def objective(trial): pass`(3) 목적함수·콜백 골격) → `TPESampler(seed=42)`·`create_study(direction='maximize', sampler=sampler)`(2) 회귀 R² 최대화 예정) → `study.optimize(objective, n_trials=20)`(1) 반복 수만큼 목적함수 실행). 이 노트에서 돌린 결과(optuna 5.0 · lightgbm 4.7 · `random_state=42`): 훈련 1,964 · 테스트 492, 기본 `LGBMRegressor` `category` 7열 테스트 R² 0.729 · MAE 4,141 / 원-핫 243열 0.663 / 수치 2열만 0.191, 목적함수(8인자 `suggest_*` + `KFold(5)` `cross_val_score(r2)`) 20회 22초 → `best_value` 0.6377 · 8번째 시도 · `{'n_estimators': 300, 'learning_rate': 0.0633, 'num_leaves': 15, 'max_depth': 9, 'min_child_samples': 8, 'subsample': 0.9934, 'colsample_bytree': 0.8861, 'reg_lambda': 0.0062}`, 기본 모델 교차검증 0.619, 최고 조합 재학습 훈련 0.886 · 테스트 0.722 · MAE 4,248, 인자 중요도 `subsample` 0.82, `seed=0`이면 0.631 · `num_leaves=40`, 50회도 최고는 8번째 그대로, MAE 최소화 스터디 4,635달러
+- `KDT_2026/2026_Python/day18/s-12.py` — `pd.read_csv(URL)` 미국 중고차 `USA_cars_datasets.csv`(2,499대 × 13열) → `df[df['price'] > 0]`(가격 0인 43대 제외 → 2,456대) → `num_cols = ['year', 'mileage']`·`cat_cols = ['brand', 'model', 'title_status', 'color', 'state']`·도메인 계산식 특성 주석 → `for col in cat_cols: df[col] = df[col].astype('category')`(원-핫 대신 판다스 카테고리 타입) → `X = df[num_cols + cat_cols]`·`Y = df['price']`·`train_test_split(test_size=0.2, random_state=42)` → `import optuna`·`optuna.logging.set_verbosity(optuna.logging.WARNING)` → 4) `def objective(trial)`: `KFold(n_splits=5, shuffle=True, random_state=42)` → `for train_idx, val_idx in cv.split(X_train, Y_train)`: `iloc`로 폴드 자르기 → `LGBMRegressor(n_estimators=1000, learning_rate=suggest_float(0.01~0.1), num_leaves=suggest_int(10~30), max_depth=suggest_int(3~10), min_child_samples=suggest_int(10~50), subsample=suggest_float(0.6~1.0), colsample_bytree=suggest_float(0.6~1.0), subsample_freq=1, verbose=-1, random_state=42, n_jobs=-1)` → `fit(eval_set=[(X_val, Y_val)], callbacks=[early_stopping(50, verbose=False)])` → 폴드별 `score`(R²)·`best_iteration_` 저장 → `trial.set_user_attr('best_n_estimators', int(np.mean(best_iterations)))` → `return np.mean(cv_r2_scores)` → 3) `TPESampler(seed=42)`·`create_study(direction='maximize', sampler=sampler)` → `study.optimize(objective, n_trials=20)` → 5) `study.best_params`·`study.best_trial.user_attrs['best_n_estimators']`(수업 결과 주석: `{'learning_rate': 0.0655, 'num_leaves': 16, 'max_depth': 6, 'min_child_samples': 50, 'subsample': 0.9990, 'colsample_bytree': 0.9939}` · 최적 트리 174). 이 노트에서 돌린 결과(optuna 5.0 · lightgbm 4.7, 수업 주석과 일치): 훈련 1,964 · 테스트 492, 기본 `LGBMRegressor` `category` 7열 테스트 R² 0.729 · MAE 4,141 / 원-핫 243열 0.663 / 수치 2열만 0.191, 20회 × 5폴드 약 11초 → `best_value` 0.6360 · 19번째 시도 · 폴드별 R² `[0.596, 0.669, 0.645, 0.638, 0.632]` · 폴드별 `best_iteration_` `[174, 173, 125, 164, 237]`, 무작위 10번 0.606~0.633 vs TPE 10번 0.62~0.636(`subsample` 0.6대 시도가 모두 0.61 아래 → TPE가 0.9 위로 좁힘), 인자 중요도 `subsample` 0.74 · `max_depth` 0.002, 최고 조합 + 174그루 재학습 훈련 0.803 · 테스트 0.723 · MAE 4,260 / 같은 조합 1000그루 0.933 · 0.709 / 기본 모델 0.889 · 0.729
 
 ## 관련 노트
 
