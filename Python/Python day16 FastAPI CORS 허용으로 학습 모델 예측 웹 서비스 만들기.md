@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/total_practice/AppStart.py, ML_pracitce/total_practice/Controller.py, ML_pracitce/total_practice/Service.py, ML_pracitce/total_practice/static/index.html, ML_pracitce/total_practice/static/app.js, ML_pracitce/total_practice/static/style.css
+원본: KDT_2026/2026_Python/ML_practice/total_practice/AppStart.py, ML_practice/total_practice/Controller.py, ML_practice/total_practice/Service.py, ML_practice/total_practice/static/index.html, ML_practice/total_practice/static/app.js, ML_practice/total_practice/static/style.css
 작성일: 2026-11-12
 tags: [학습, python]
 ---
 
 # Python day16 — FastAPI CORS 허용으로 학습 모델 예측 웹 서비스 만들기
 
-> 실습 파일: `ML_pracitce/total_practice/AppStart.py`, `Controller.py`, `Service.py`, `static/index.html`, `static/app.js`, `static/style.css`
+> 실습 파일: `ML_practice/total_practice/AppStart.py`, `Controller.py`, `Service.py`, `static/index.html`, `static/app.js`, `static/style.css`
 > 허브: [[Python 정리본 인덱스]] · 이전: [[Python day16 FastAPI APIRouter로 컨트롤러·서비스 파일 분리]] · 다음: (아직 없음)
 
 앞 노트의 세 파일 구조(`AppStart` → `Controller` → `Service`)를 그대로 가져와, 서비스가 들고 있는 것을 **판다스 표 두 줄에서 학습이 끝난 머신러닝 모델**로 바꾼 종합 실습이다. 모델은 같은 폴더의 `sci.py`가 의료보험 자료로 학습해 `insurance_pipe.pkl`·`insurance_metrics.pkl`로 저장해 둔 것이고(그쪽은 AI 폴더의 "AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습"에 정리, 학습 지도 경유), 이 노트는 그 `.pkl`을 **읽어서 웹 화면까지 연결하는 쪽**만 다룬다. 새로 등장하는 것은 셋이다. `joblib.load`를 서비스 생성자에 두는 것, `CORSMiddleware`로 **다른 출처에서 열린 화면이 API를 부를 수 있게 허용**하는 것, 그리고 브라우저 쪽에서 `axios.post`로 `http://127.0.0.1:8000/api/predict`를 부르는 작은 프론트다. 화면(`static/index.html`)은 FastAPI가 내주지 않고 **따로 연다** — 탐색기에서 더블클릭하거나 VS Code Live Server로 띄우면 되고, 그래서 서버와 화면의 주소(출처)가 달라지며 CORS가 필요해진다. 처음 정리할 때는 `StaticFiles`로 화면까지 FastAPI 한 서버에서 내주는 모양이었는데, 수업 코드가 CORS 방식으로 바뀌어 그쪽은 2-3에 대안으로 남겼다. 지금까지 `/docs` 화면으로만 눌러 보던 API를 처음으로 **진짜 화면**이 부른다.
@@ -17,7 +17,7 @@ tags: [학습, python]
 ### 1-1. 폴더 한 장 — 누가 무엇을 만들고 누가 읽는가
 
 ```text
-ML_pracitce/total_practice/
+ML_practice/total_practice/
 ├── sci.py                   # 학습 스크립트 → .pkl 두 개 생성 (AI 노트)
 ├── insurance.csv            # 학습 자료
 ├── insurance_pipe.pkl       # 전처리+다항+릿지 파이프라인
@@ -41,8 +41,8 @@ import joblib
 
 class InsuranceService:
     def __init__(self):
-        self.model   = joblib.load('./ML_pracitce/total_practice/insurance_pipe.pkl')
-        self.metrics = joblib.load('./ML_pracitce/total_practice/insurance_metrics.pkl')
+        self.model   = joblib.load('./ML_practice/total_practice/insurance_pipe.pkl')
+        self.metrics = joblib.load('./ML_practice/total_practice/insurance_metrics.pkl')
 ```
 
 | 조각 | 뜻 |
@@ -284,7 +284,7 @@ app.js    결과 카드 표시 — "$16,459 / 월 평균 $1,372 / 모델 성능 
 
 ### 1-10. 실행 — 프로세스 둘, 작업 폴더 하나
 
-`Service.py`의 `.pkl` 경로가 `./ML_pracitce/total_practice/…`로 시작하므로, 서버는 **`2026_Python` 루트에서** `python ML_pracitce/total_practice/AppStart.py`로 띄우는 것을 전제한다. 한편 `import Controller`는 실행한 스크립트의 폴더(`total_practice`)를 검색 경로에 넣으므로 그대로 찾힌다. 즉 "상대 경로 문자열은 작업 폴더 기준, 모듈 import는 스크립트 폴더 기준"이라는 두 규칙이 한 파일에서 함께 작동한다. 서버가 뜨면 `/docs`에 `POST /api/predict` 하나가 보이고, 화면은 **따로** `static/index.html`을 열어 쓴다. 서버만 켜고 `http://127.0.0.1:8000/`에 들어가면 `{"detail":"Not Found"}`가 뜨는 것이 정상이다 — 이 서버는 화면을 내주지 않는다.
+`Service.py`의 `.pkl` 경로가 `./ML_practice/total_practice/…`로 시작하므로, 서버는 **`2026_Python` 루트에서** `python ML_practice/total_practice/AppStart.py`로 띄우는 것을 전제한다. 한편 `import Controller`는 실행한 스크립트의 폴더(`total_practice`)를 검색 경로에 넣으므로 그대로 찾힌다. 즉 "상대 경로 문자열은 작업 폴더 기준, 모듈 import는 스크립트 폴더 기준"이라는 두 규칙이 한 파일에서 함께 작동한다. 서버가 뜨면 `/docs`에 `POST /api/predict` 하나가 보이고, 화면은 **따로** `static/index.html`을 열어 쓴다. 서버만 켜고 `http://127.0.0.1:8000/`에 들어가면 `{"detail":"Not Found"}`가 뜨는 것이 정상이다 — 이 서버는 화면을 내주지 않는다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -318,7 +318,7 @@ BASE = Path(__file__).resolve().parent            # total_practice/
 self.model = joblib.load(BASE / 'insurance_pipe.pkl')
 ```
 
-`./ML_pracitce/...` 상대 경로는 작업 폴더가 바뀌면 깨진다. `__file__` 기준으로 만들면 VS Code 실행 버튼이든 터미널이든 어디서 띄워도 같은 파일을 가리킨다. 배포(도커 등)에서 작업 폴더를 통제하기 어려울 때 특히 유용하다.
+`./ML_practice/...` 상대 경로는 작업 폴더가 바뀌면 깨진다. `__file__` 기준으로 만들면 VS Code 실행 버튼이든 터미널이든 어디서 띄워도 같은 파일을 가리킨다. 배포(도커 등)에서 작업 폴더를 통제하기 어려울 때 특히 유용하다.
 
 ### 2-3. 화면까지 한 서버에서 — `StaticFiles` 마운트 (CORS가 필요 없는 길)
 
@@ -328,7 +328,7 @@ from fastapi.staticfiles import StaticFiles
 import Controller
 app.include_router(Controller.router)
 
-app.mount("/", StaticFiles(directory="./ML_pracitce/total_practice/static", html=True))
+app.mount("/", StaticFiles(directory="./ML_practice/total_practice/static", html=True))
 ```
 
 CORS 대신 **화면을 FastAPI가 직접 내주면** 출처가 하나라 미들웨어가 필요 없다. `StaticFiles`는 폴더 하나를 "파일 그대로 내주는" 작은 앱으로 만들고, `html=True`면 `/`에서 `index.html`을 찾아 준다. 이때 `app.js`의 주소는 `axios.post("/api/predict", item)` 상대 주소로 바꾼다. 주의할 것은 순서 — `/`에 마운트한 정적 앱은 자기 아래 모든 주소를 가로채므로 **`include_router` 뒤에** 써야 `/api/predict`가 먼저 걸린다. 미들웨어는 순서가 상관없지만 마운트는 상관있다. 두 방식의 차이는 이렇다.
@@ -440,12 +440,12 @@ axios 없이 브라우저 내장 `fetch`로도 같은 일을 한다. 헤더와 `
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/AppStart.py` — `app = FastAPI()`, `uvicorn.run('AppStart:app', host="127.0.0.1", port=8000, reload=True)`, `app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])`, `import Controller` → `app.include_router(Controller.router)`
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/Controller.py` — `router = APIRouter(prefix="/api")`, `from Service import result_service`, `@router.post("/predict")`의 `item: dict` → `result_service.predict(item)`
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/Service.py` — `class InsuranceService`: 생성자에서 `joblib.load`로 `insurance_pipe.pkl`·`insurance_metrics.pkl`, `predict()`가 `pd.DataFrame([{age·sex·bmi·children·smoker·region}])`(`int`·`float` 변환) → `model.predict(sample)[0]` → `{'charge', 'monthly', 'r2', 'cv_r2'}` 반환, 모듈 끝 `result_service = InsuranceService()`
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/static/index.html` — 나이·성별·키·몸무게·BMI 표시·자녀 수·흡연·지역 폼(`value`는 영문 범주), 숨긴 결과 카드(`#charge`·`#monthly`·`#metric`), axios 1.7.9 CDN + `app.js`. 브라우저가 직접 여는 파일
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/static/app.js` — `calcBmi()`(kg ÷ m², 소수 1자리)·`input` 이벤트로 갱신, `money()` 천 단위 쉼표, `submit`에서 `preventDefault` → `item` 객체 → 나이 18~64·BMI 16~53·자녀 0~5 범위 검사(`alert` 후 `return`) → 버튼 잠금 → `await axios.post("http://127.0.0.1:8000/api/predict", item)` → 결과 꽂기 → `catch`에서 `alert`
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/static/style.css` — 카드·`.row` flex 2열·`.hidden { display: none }`·버튼 `:disabled` 색
+- `KDT_2026/2026_Python/ML_practice/total_practice/AppStart.py` — `app = FastAPI()`, `uvicorn.run('AppStart:app', host="127.0.0.1", port=8000, reload=True)`, `app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])`, `import Controller` → `app.include_router(Controller.router)`
+- `KDT_2026/2026_Python/ML_practice/total_practice/Controller.py` — `router = APIRouter(prefix="/api")`, `from Service import result_service`, `@router.post("/predict")`의 `item: dict` → `result_service.predict(item)`
+- `KDT_2026/2026_Python/ML_practice/total_practice/Service.py` — `class InsuranceService`: 생성자에서 `joblib.load`로 `insurance_pipe.pkl`·`insurance_metrics.pkl`, `predict()`가 `pd.DataFrame([{age·sex·bmi·children·smoker·region}])`(`int`·`float` 변환) → `model.predict(sample)[0]` → `{'charge', 'monthly', 'r2', 'cv_r2'}` 반환, 모듈 끝 `result_service = InsuranceService()`
+- `KDT_2026/2026_Python/ML_practice/total_practice/static/index.html` — 나이·성별·키·몸무게·BMI 표시·자녀 수·흡연·지역 폼(`value`는 영문 범주), 숨긴 결과 카드(`#charge`·`#monthly`·`#metric`), axios 1.7.9 CDN + `app.js`. 브라우저가 직접 여는 파일
+- `KDT_2026/2026_Python/ML_practice/total_practice/static/app.js` — `calcBmi()`(kg ÷ m², 소수 1자리)·`input` 이벤트로 갱신, `money()` 천 단위 쉼표, `submit`에서 `preventDefault` → `item` 객체 → 나이 18~64·BMI 16~53·자녀 0~5 범위 검사(`alert` 후 `return`) → 버튼 잠금 → `await axios.post("http://127.0.0.1:8000/api/predict", item)` → 결과 꽂기 → `catch`에서 `alert`
+- `KDT_2026/2026_Python/ML_practice/total_practice/static/style.css` — 카드·`.row` flex 2열·`.hidden { display: none }`·버튼 `:disabled` 색
 
 ## 관련 노트
 

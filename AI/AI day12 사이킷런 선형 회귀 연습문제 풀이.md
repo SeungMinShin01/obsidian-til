@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/practice1.py
+원본: KDT_2026/2026_Python/ML_practice/practice1.py
 작성일: 2026-11-04
 tags: [학습, ai, python]
 ---
 
 # AI day12 — 사이킷런 선형 회귀 연습문제 풀이
 
-> 실습 파일: `ML_pracitce/practice1.py`
+> 실습 파일: `ML_practice/practice1.py`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · 다음: [[AI day13 다항 회귀 제곱항 추가와 PolynomialFeatures]]
 
 day12 수업에서 물고기 길이로 무게를 맞히던 뼈대를 **다른 자료에 그대로 옮겨 보는** 연습이다. 재료는 시본에 내장된 `tips` 데이터셋 — 식당 손님 244팀의 식사 총액(`total_bill`)·팁(`tip`)·성별·흡연 여부·요일·시간대·인원이 들어 있고, 이번에는 **식사 총액 하나로 팁을 맞히는** 단순 선형 회귀다. 문제는 다섯 단계(자료 준비 → 분할 → 학습·파라미터 확인 → 평가·새 손님 예측 → 시각화·한계 분석)로 짜여 있고, 수업 `s-01.py`의 1)~12) 번호와 거의 1:1로 대응한다. 풀고 나면 `read_csv` 자리에 `sns.load_dataset`이 들어간 것 말고는 **코드가 한 줄도 바뀌지 않는다**는 것, 그리고 같은 뼈대라도 자료가 달라지면 R²가 0.82에서 0.54로 뚝 떨어진다는 것이 눈에 들어온다 — 팁은 식사 총액만으로는 절반밖에 설명되지 않는다.
@@ -235,7 +235,7 @@ print(result.summary())
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice1.py` — 사이킷런 선형 회귀 연습문제: 문제 1 `sns.load_dataset('tips')` → `info()`·`feature = ['total_bill']`(2차원)·`target = 'tip'`(1차원), 문제 2 `train_test_split(…, test_size=0.2, random_state=42)` 네 변수 언패킹, 문제 3 `LinearRegression()` → `fit` → `"기울기:"` `coef_`·`"y절편:"` `intercept_` 출력, 문제 4 `predict(X_test)` → `r2_score`·`np.sqrt(mean_squared_error)` RMSE 산출(소수 둘째 자리)과 $30·$100 신규 손님 팁 예측, 문제 5 `plt.rc` 한글 폰트 설정 → 테스트 세트 산점도(`label="실제 데이터"`) + 식사비 5~100달러 회귀선(`label="회귀선"`) + 식사비 50달러 붉은 예측점(`label="$50 예측"`) → `title`·`xlabel`·`ylabel`·`legend`·`show`, 한계점 분석(지문)
+- `KDT_2026/2026_Python/ML_practice/practice1.py` — 사이킷런 선형 회귀 연습문제: 문제 1 `sns.load_dataset('tips')` → `info()`·`feature = ['total_bill']`(2차원)·`target = 'tip'`(1차원), 문제 2 `train_test_split(…, test_size=0.2, random_state=42)` 네 변수 언패킹, 문제 3 `LinearRegression()` → `fit` → `"기울기:"` `coef_`·`"y절편:"` `intercept_` 출력, 문제 4 `predict(X_test)` → `r2_score`·`np.sqrt(mean_squared_error)` RMSE 산출(소수 둘째 자리)과 $30·$100 신규 손님 팁 예측, 문제 5 `plt.rc` 한글 폰트 설정 → 테스트 세트 산점도(`label="실제 데이터"`) + 식사비 5~100달러 회귀선(`label="회귀선"`) + 식사비 50달러 붉은 예측점(`label="$50 예측"`) → `title`·`xlabel`·`ylabel`·`legend`·`show`, 한계점 분석(지문)
 
 ## 관련 노트
 

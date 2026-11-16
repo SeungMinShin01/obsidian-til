@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py, ML_pracitce/total_practice/insurance.csv, ML_pracitce/total_practice/insurance_pipe.pkl, ML_pracitce/total_practice/insurance_metrics.pkl
+원본: KDT_2026/2026_Python/ML_practice/total_practice/sci.py, ML_practice/total_practice/insurance.csv, ML_practice/total_practice/insurance_pipe.pkl, ML_practice/total_practice/insurance_metrics.pkl
 작성일: 2026-11-12
 tags: [학습, ai, python]
 ---
 
 # AI day16 — 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습
 
-> 실습 파일: `ML_pracitce/total_practice/sci.py`, `ML_pracitce/total_practice/insurance.csv`
+> 실습 파일: `ML_practice/total_practice/sci.py`, `ML_practice/total_practice/insurance.csv`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 다중 분류 파이프라인 연습문제 풀이]] · 다음: [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]]
 
 day12부터 day15까지 조각조각 배운 도구를 **한 파일에 처음부터 끝까지** 다시 쓰는 종합 실습이다. 자료는 캐글의 의료보험 데이터 `insurance.csv`(1,338명 × 나이·성별·BMI·자녀 수·흡연·거주 지역 → 연간 의료비 `charges`)이고, 과제는 회귀 — 사람 정보로 **1년 의료비(달러)를 맞히기**다. 흐름은 "자료 살피기 → 중복 제거·공백 정리 → 수치형 표준화 + 범주형 원-핫 → 다항 항 → 릿지 → K-Fold 그리드서치 → `.pkl` 두 개 저장"이고, 마지막에 저장한 모델은 같은 폴더의 FastAPI 서버(`AppStart.py`·`Service.py`)가 읽어 웹 화면에서 예측에 쓴다. 이 노트는 그중 **모델을 만드는 쪽**(`sci.py`)만 다루고, 서버와 화면 쪽은 Python 폴더의 "Python day16 FastAPI CORS 허용으로 학습 모델 예측 웹 서비스 만들기"에 따로 정리한다(학습 지도 경유).
@@ -18,7 +18,7 @@ day12부터 day15까지 조각조각 배운 도구를 **한 파일에 처음부�
 
 ```python
 import pandas as pd
-df = pd.read_csv('./ML_pracitce/total_practice/insurance.csv')
+df = pd.read_csv('./ML_practice/total_practice/insurance.csv')
 
 print(df.shape)                      # (1338, 7)
 print(df.head())
@@ -174,14 +174,14 @@ print('test  r2 : ', best_model.score(X_test,  Y_test))    # 0.8828
 ```python
 import joblib
 
-joblib.dump(best_model, './ML_pracitce/total_practice/insurance_pipe.pkl')
+joblib.dump(best_model, './ML_practice/total_practice/insurance_pipe.pkl')
 
 metrics = {
     'test_r2'     : round(best_model.score(X_test, Y_test), 4),   # 0.8828
     'cv_r2'       : round(float(grid.best_score_), 4),            # 0.8198
     'best_params' : grid.best_params_                             # {'model__alpha': 1.0, 'poly__degree': 2}
 }
-joblib.dump(metrics, './ML_pracitce/total_practice/insurance_metrics.pkl')
+joblib.dump(metrics, './ML_practice/total_practice/insurance_metrics.pkl')
 print(metrics)
 ```
 
@@ -194,7 +194,7 @@ print(metrics)
 
 ### 1-9. 경로 — 어디서 실행하는가
 
-파일 안의 경로가 전부 `./ML_pracitce/total_practice/…`로 시작한다. 즉 이 스크립트는 `total_practice` 폴더가 아니라 **`2026_Python` 저장소 루트에서 실행**하는 것을 전제한다(VS Code의 터미널이 열리는 자리). 저장도 같은 기준이라 `.pkl` 두 개가 `total_practice` 안에 생기고, 서버 쪽 `Service.py`도 같은 경로 문자열로 읽는다. 실행 위치가 다르면 `FileNotFoundError`가 나는데, 이는 코드가 아니라 작업 폴더 문제다 — day16 FastAPI 노트의 `import Controller`가 작업 폴더에 묶이는 것과 같은 성질이다.
+파일 안의 경로가 전부 `./ML_practice/total_practice/…`로 시작한다. 즉 이 스크립트는 `total_practice` 폴더가 아니라 **`2026_Python` 저장소 루트에서 실행**하는 것을 전제한다(VS Code의 터미널이 열리는 자리). 저장도 같은 기준이라 `.pkl` 두 개가 `total_practice` 안에 생기고, 서버 쪽 `Service.py`도 같은 경로 문자열로 읽는다. 실행 위치가 다르면 `FileNotFoundError`가 나는데, 이는 코드가 아니라 작업 폴더 문제다 — day16 FastAPI 노트의 `import Controller`가 작업 폴더에 묶이는 것과 같은 성질이다.
 
 ### 1-10. 흐름 한 장 — 이 실습에 모인 노트들
 
@@ -308,9 +308,9 @@ PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge())])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`, 끝에 `handle_unknown='ignore'` 메모. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance.csv` — 1,338행 × `age`·`sex`·`bmi`·`children`·`smoker`·`region`·`charges`, 결측 0, 중복 1
-- `KDT_2026/2026_Python/ML_pracitce/total_practice/insurance_pipe.pkl`·`insurance_metrics.pkl` — 학습 산출물(파이프라인·지표 딕셔너리), FastAPI 서버가 읽는다
+- `KDT_2026/2026_Python/ML_practice/total_practice/sci.py` — `pd.read_csv` → `shape`·`head`·`info`·`isnull().sum()`·중복 행 수(`shape[0] - drop_duplicates().shape[0]`)·`describe`·세 문자 열 `value_counts` → `drop_duplicates().reset_index(drop=True)`·`str.strip()` 세 줄 → `X = df.drop(columns=['charges'])`·`Y = df['charges']` → `train_test_split(0.2, 42)` → `ColumnTransformer([('num', StandardScaler(), 수치 3열), ('cat', OneHotEncoder(drop='first', sparse_output=False), 범주 3열)])` → `Pipeline([('pp', …), ('poly', PolynomialFeatures(include_bias=False)), ('model', Ridge())])` → `param_grid={'poly__degree': [1, 2, 3], 'model__alpha': [0.01, 0.1, 1.0, 10.0, 100.0]}`·`KFold(5, shuffle, 42)`·`GridSearchCV(scoring='r2', n_jobs=-1)` → `best_params_`·`best_score_`·훈련/테스트 `score` → `joblib.dump(best_model, 'insurance_pipe.pkl')`·`joblib.dump(metrics, 'insurance_metrics.pkl')`, 끝에 `handle_unknown='ignore'` 메모. 결과(이 노트에서 확인): `{'model__alpha': 1.0, 'poly__degree': 2}`, 교차검증 R² 0.8198, 훈련 0.834, 테스트 0.8828
+- `KDT_2026/2026_Python/ML_practice/total_practice/insurance.csv` — 1,338행 × `age`·`sex`·`bmi`·`children`·`smoker`·`region`·`charges`, 결측 0, 중복 1
+- `KDT_2026/2026_Python/ML_practice/total_practice/insurance_pipe.pkl`·`insurance_metrics.pkl` — 학습 산출물(파이프라인·지표 딕셔너리), FastAPI 서버가 읽는다
 
 ## 관련 노트
 

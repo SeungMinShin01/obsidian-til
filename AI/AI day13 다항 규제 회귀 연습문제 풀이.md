@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/practice2.py, ML_pracitce/student_dataset_10000_rows.csv
+원본: KDT_2026/2026_Python/ML_practice/practice2.py, ML_practice/student_dataset_10000_rows.csv
 작성일: 2026-11-09
 tags: [학습, ai, python]
 ---
 
 # AI day13 — 다항 규제 회귀 연습문제 풀이
 
-> 실습 파일: `ML_pracitce/practice2.py`, `ML_pracitce/student_dataset_10000_rows.csv`
+> 실습 파일: `ML_practice/practice2.py`, `ML_practice/student_dataset_10000_rows.csv`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · 다음: [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]]
 
 day13 수업의 흐름 — 다항 특성 확장 → 표준화 → 선형·릿지·라쏘 세 모델 비교 — 를 **다른 자료에 통째로 옮겨 보는** 연습이다. 재료는 캐글의 학생 성적 데이터(1만 명 × 공부 시간·출석률·수면 시간·인터넷 사용·과제 완료 수·이전 점수·시험 점수·취업 여부)이고, 수치형 6개로 시험 점수(`exam_score`)를 맞힌다. 수업과 달리 차수는 `degree=2`, 규제 강도는 `alpha=1.0`으로 **고정**되어 있어 "고르기"는 없고 "같은 조건에서 세 모델이 어떻게 다른가"에 집중한다. 마지막에 상위권·하위권 학생 한 명씩을 지어내어 세 모델에 넣어 보는데, 선형·릿지는 거의 같은 답을 내고 라쏘만 10점 넘게 다른 답을 낸다 — 라쏘가 특성 27개 중 17개를 지워 버린 결과다.
@@ -18,7 +18,7 @@ day13 수업의 흐름 — 다항 특성 확장 → 표준화 → 선형·릿지
 
 ```python
 import pandas as pd
-df = pd.read_csv('./ML_pracitce/student_dataset_10000_rows.csv')
+df = pd.read_csv('./ML_practice/student_dataset_10000_rows.csv')
 df.info()
 
 feature = ['study_hours', 'attendance', 'sleep_hours', 'internet_usage', 'assignments_completed', 'previous_score']
@@ -259,8 +259,8 @@ print(lasso_cv.alpha_, lasso_cv.score(X_test_scaled, Y_test))
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice2.py` — 다항 규제 회귀 연습문제: 문제 1 캐글 학생 성적 CSV `read_csv` → `info()`, 수치형 6열 `feature` 리스트·`target = 'exam_score'`, 문제 2 `train_test_split(…, test_size=0.2, random_state=42)`, 문제 3 `PolynomialFeatures(degree=2, include_bias=False)` 학습 세트 `fit` → `transform` 둘(6 → 27), `StandardScaler` 다항 학습 세트 `fit` → `transform` 둘, 문제 4 `LinearRegression()`·`Ridge(alpha=1.0, random_state=42)`·`Lasso(alpha=1.0, random_state=42)` 각각 `fit` → `score` 학습·테스트 R² 비교 출력, 문제 5 상위권·하위권 샘플 2행 `pd.DataFrame(columns=feature)` → `poly.transform` → `ss.transform` → 세 모델 `predict` 비교 출력
-- `KDT_2026/2026_Python/ML_pracitce/student_dataset_10000_rows.csv` — 학생 10,000명 × 8열(`study_hours`·`attendance`·`sleep_hours`·`internet_usage`·`assignments_completed`·`previous_score`·`exam_score`·`placement_status`), 결측 없음, 시험 점수 만점 3,520명
+- `KDT_2026/2026_Python/ML_practice/practice2.py` — 다항 규제 회귀 연습문제: 문제 1 캐글 학생 성적 CSV `read_csv` → `info()`, 수치형 6열 `feature` 리스트·`target = 'exam_score'`, 문제 2 `train_test_split(…, test_size=0.2, random_state=42)`, 문제 3 `PolynomialFeatures(degree=2, include_bias=False)` 학습 세트 `fit` → `transform` 둘(6 → 27), `StandardScaler` 다항 학습 세트 `fit` → `transform` 둘, 문제 4 `LinearRegression()`·`Ridge(alpha=1.0, random_state=42)`·`Lasso(alpha=1.0, random_state=42)` 각각 `fit` → `score` 학습·테스트 R² 비교 출력, 문제 5 상위권·하위권 샘플 2행 `pd.DataFrame(columns=feature)` → `poly.transform` → `ss.transform` → 세 모델 `predict` 비교 출력
+- `KDT_2026/2026_Python/ML_practice/student_dataset_10000_rows.csv` — 학생 10,000명 × 8열(`study_hours`·`attendance`·`sleep_hours`·`internet_usage`·`assignments_completed`·`previous_score`·`exam_score`·`placement_status`), 결측 없음, 시험 점수 만점 3,520명
 
 ## 관련 노트
 

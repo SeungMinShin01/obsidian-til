@@ -1,13 +1,13 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/ML_pracitce/practice5.py
+원본: KDT_2026/2026_Python/ML_practice/practice5.py
 작성일: 2026-11-11
 tags: [학습, ai, python]
 ---
 
 # AI day15 — 다중 분류 파이프라인 연습문제 풀이
 
-> 실습 파일: `ML_pracitce/practice5.py`
+> 실습 파일: `ML_practice/practice5.py`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day15 ColumnTransformer·OneHotEncoder로 범주형 특성 파이프라인]] · 다음: [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]]
 
 day14~15에 나온 도구를 **한 파일에 전부 모으는** 연습이다. 재료는 시본 내장 `diamonds`(53,940개 × 10열)에서 5,000개를 뽑은 표본이고, 맞힐 것은 다이아몬드의 **커팅 등급 `cut`** 다섯 가지(Fair·Good·Very Good·Premium·Ideal)다. 지시문 일곱 단계가 그대로 지금까지의 노트 순서다 — 적재·분리(`stratify`) → `ColumnTransformer`로 수치형 표준화 + 범주형 원-핫 → `Pipeline`에 `LogisticRegression` → 4대 지표와 혼동 행렬 → `StratifiedKFold` + `GridSearchCV(scoring='f1_macro')`로 `C` 탐색 → `joblib`로 저장·복원하고 **원본 형태의 새 표본 한 줄**을 바로 추론. 펭귄(`s-08.py`)에서는 모든 점수가 1.0이라 "돌아가는지"만 봤는데, 이번엔 매크로 F1이 **0.50 → 0.54**에서 멈추고 `Good` 등급의 재현율이 0.08에 그친다. 그래서 처음으로 "파이프라인이 돌아가는데도 점수가 낮으면 어디를 봐야 하나"를 생각하게 되는 자료다. 아래 숫자는 풀이 코드의 흐름을 그대로 돌려 확인한 값이다.
@@ -232,7 +232,7 @@ Fair < Good < Very Good < Premium < Ideal은 명목 범주가 아니라 **서열
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_pracitce/practice5.py` — "PythonML Practice5: 다중 분류" 지시문 단계 1~7과 풀이 코드: 1 `sns.load_dataset('diamonds')` → `sample(n=5000, random_state=42).reset_index(drop=True)` → `Y = df['cut']`·`X = df.drop(columns=['cut'])`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=Y)`, 3 `num_features` 7열 `StandardScaler` + `cat_features` 2열 `OneHotEncoder(drop='first', sparse_output=False)`를 `ColumnTransformer`로 묶은 `preprocessor`, 4 `Pipeline([('preprocessor', …), ('model', LogisticRegression(max_iter=1000, random_state=42))])`에 원본 DataFrame 그대로 `fit`, 5 `predict`·`predict_proba`·`classes_`·`accuracy_score`·`precision_score`/`recall_score`/`f1_score(average='macro')`·`ConfusionMatrixDisplay.from_predictions`·`plt.show()`, 6 `param_grid={'model__C': [0.01, 0.1, 1.0, 10.0]}`·`StratifiedKFold(5, shuffle, 42)`·`GridSearchCV(scoring='f1_macro', n_jobs=1)`·`best_params_`·`best_score_`·`best_estimator_`로 `classification_report`, 7 `joblib.dump`/`load('./diamond_pipeline.pkl')`·원본 형태 한 줄 `sample` DataFrame → `predict`·`np.round(predict_proba, 3)`·`np.max(proba)*100`. 결과(이 노트에서 확인): 정확도 0.629·매크로 F1 0.503 → `C=10` 0.536, 표본 예측 Ideal 80.3 %. 피클은 실행 폴더 기준 `./diamond_pipeline.pkl`에 생긴다
+- `KDT_2026/2026_Python/ML_practice/practice5.py` — "PythonML Practice5: 다중 분류" 지시문 단계 1~7과 풀이 코드: 1 `sns.load_dataset('diamonds')` → `sample(n=5000, random_state=42).reset_index(drop=True)` → `Y = df['cut']`·`X = df.drop(columns=['cut'])`, 2 `train_test_split(test_size=0.2, random_state=42, stratify=Y)`, 3 `num_features` 7열 `StandardScaler` + `cat_features` 2열 `OneHotEncoder(drop='first', sparse_output=False)`를 `ColumnTransformer`로 묶은 `preprocessor`, 4 `Pipeline([('preprocessor', …), ('model', LogisticRegression(max_iter=1000, random_state=42))])`에 원본 DataFrame 그대로 `fit`, 5 `predict`·`predict_proba`·`classes_`·`accuracy_score`·`precision_score`/`recall_score`/`f1_score(average='macro')`·`ConfusionMatrixDisplay.from_predictions`·`plt.show()`, 6 `param_grid={'model__C': [0.01, 0.1, 1.0, 10.0]}`·`StratifiedKFold(5, shuffle, 42)`·`GridSearchCV(scoring='f1_macro', n_jobs=1)`·`best_params_`·`best_score_`·`best_estimator_`로 `classification_report`, 7 `joblib.dump`/`load('./diamond_pipeline.pkl')`·원본 형태 한 줄 `sample` DataFrame → `predict`·`np.round(predict_proba, 3)`·`np.max(proba)*100`. 결과(이 노트에서 확인): 정확도 0.629·매크로 F1 0.503 → `C=10` 0.536, 표본 예측 Ideal 80.3 %. 피클은 실행 폴더 기준 `./diamond_pipeline.pkl`에 생긴다
 
 ## 관련 노트
 
