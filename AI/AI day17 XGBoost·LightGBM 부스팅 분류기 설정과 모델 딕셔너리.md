@@ -8,9 +8,9 @@ tags: [학습, ai, python]
 # AI day17 — XGBoost·LightGBM 부스팅 분류기 설정과 모델 딕셔너리
 
 > 실습 파일: `day17/s-10.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · 다음: [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]]
 
-`s-09.py`는 결정 트리 한 그루에서 시작해 랜덤 포레스트 — 트리 100그루를 **독립적으로** 길러 평균을 내는 배깅 앙상블 — 로 끝났다. `s-10.py`는 같은 와인 자료를 같은 방식으로 나눈 뒤 앙상블의 **다른 갈래인 부스팅**으로 넘어간다. 사이킷런 밖의 두 라이브러리 `xgboost`·`lightgbm`에서 `XGBClassifier`·`LGBMClassifier`를 가져오고, 둘을 **이름을 키로 한 딕셔너리**에 담아 같은 인자(`n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1`)로 묶어 둔다. 수업 파일은 이 딕셔너리를 만드는 데서 끝나고 `fit`·`score`는 아직 없다 — 이 노트에서는 딕셔너리를 그대로 돌려 본 결과(`random_state=42`)를 앞 노트의 트리·숲 숫자와 나란히 놓고, 인자 하나하나가 무엇을 뜻하는지를 정리한다.
+`s-09.py`는 결정 트리 한 그루에서 시작해 랜덤 포레스트 — 트리 100그루를 **독립적으로** 길러 평균을 내는 배깅 앙상블 — 로 끝났다. `s-10.py`는 같은 와인 자료를 같은 방식으로 나눈 뒤 앙상블의 **다른 갈래인 부스팅**으로 넘어간다. 사이킷런 밖의 두 라이브러리 `xgboost`·`lightgbm`에서 `XGBClassifier`·`LGBMClassifier`를 가져오고, 둘을 **이름을 키로 한 딕셔너리**에 담아 같은 인자(`n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1`)로 묶어 둔 뒤, `for name, model in models.items()` 루프 하나로 두 모델을 차례로 학습한다. 루프 안에서는 `time.time()`으로 **학습 소요 시간**을 재고, 훈련·테스트 정확도에 **`f1_score(average="macro")`**까지 네 숫자를 찍는다. 이 노트는 그 결과(`random_state=42`)를 앞 노트의 트리·숲 숫자와 나란히 놓고, 인자 하나하나가 무엇을 뜻하는지를 정리한다. 수업 코드의 주석은 `n_estimators`를 **1,000~3,000으로 두고 최적 모델을 찾은 뒤 중간 종료**하는 것을 권장하므로, 수업 값 100그루의 결과 옆에 1,000그루 결과도 같이 적는다.
 
 ## 1. 배운 내용
 
@@ -48,42 +48,42 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 
 ```python
 from xgboost import XGBClassifier
-XGBClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1)
+XGBClassifier(n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1)
 ```
 
 | 인자 | 뜻 | 수업 값 | 기본값 |
 | --- | --- | --- | --- |
-| `n_estimators` | 쌓을 트리 수 = 보정 횟수 | 1000 | 100 |
+| `n_estimators` | 쌓을 트리 수 = 보정 횟수 | 100 (주석 권장 1,000~3,000 + 중간 종료) | 100 |
 | `learning_rate` | 트리 하나의 출력을 얼마나 반영할지 (보폭, `eta`) | 0.05 | 0.3 |
 | `max_depth` | 각 트리의 최대 깊이 | 4 | 6 |
 | `random_state` | 열·행 부분 추출의 씨앗 | 42 | 0 |
 | `n_jobs` | 한 트리를 기를 때 쓸 코어 수 | -1 (전부) | 전부 |
 
-`n_estimators`와 `learning_rate`는 **짝으로** 읽어야 한다. 보폭이 0.05면 트리 하나가 답을 5 %씩만 고치므로 1,000그루가 있어야 충분히 다가가고, 보폭이 0.3이면 100그루로 비슷한 자리에 닿는다. 수업 값 `1000 × 0.05`는 "작게 여러 번"이고 기본값 `100 × 0.3`은 "크게 몇 번"이다. 작게 여러 번이 보통 더 매끄럽게 수렴하고 과대적합도 덜한 대신 느리다. 이 노트에서 하나씩 바꿔 보면 이렇다(나머지는 수업 값 고정).
+`n_estimators`와 `learning_rate`는 **짝으로** 읽어야 한다. 보폭이 0.05면 트리 하나가 답을 5 %씩만 고치므로 1,000그루가 있어야 충분히 다가가고, 보폭이 0.3이면 100그루로 비슷한 자리에 닿는다. 주석이 권장하는 `1000~3000 × 0.05`는 "작게 여러 번"이고 XGBoost 기본값 `100 × 0.3`은 "크게 몇 번"이다. 수업 값 `100 × 0.05`는 그 사이의 "작게 몇 번" — 보정이 아직 덜 끝난 자리라 테스트 0.855로, 같은 보폭의 1,000그루(0.869)에도, 같은 100그루에 보폭 0.3을 준 것(0.867)에도 못 미친다. 작게 여러 번이 보통 더 매끄럽게 수렴하고 과대적합도 덜한 대신 느리다. 이 노트에서 하나씩 바꿔 보면 이렇다(`n_estimators` 열은 나머지를 수업 값에, `learning_rate`·`max_depth` 열은 `n_estimators=1000`에 고정).
 
 | `n_estimators` | 훈련 | 테스트 | | `learning_rate` | 훈련 | 테스트 | | `max_depth` | 훈련 | 테스트 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 10 | 0.754 | 0.754 | | 0.01 | 0.886 | 0.857 | | 1 | 0.872 | 0.860 |
 | 50 | 0.877 | 0.852 | | **0.05** | 0.918 | 0.869 | | 2 | 0.884 | 0.855 |
-| 100 | 0.880 | 0.855 | | 0.1 | 0.949 | 0.877 | | 3 | 0.897 | 0.865 |
+| **100** (수업) | 0.880 | 0.855 | | 0.1 | 0.949 | 0.877 | | 3 | 0.897 | 0.865 |
 | 300 | 0.893 | 0.864 | | 0.3 | 0.985 | 0.874 | | **4** | 0.918 | 0.869 |
-| **1000** | 0.918 | 0.869 | | 1.0 | 0.998 | 0.869 | | 6 | 0.957 | 0.879 |
+| 1000 (주석 권장) | 0.918 | 0.869 | | 1.0 | 0.998 | 0.869 | | 6 | 0.957 | 0.879 |
 | 3000 | 0.959 | 0.871 | | | | | | 8 | 0.984 | 0.882 |
 
-읽히는 것이 세 가지다. ① 10그루 × 0.05는 아직 0.754 — 보정이 열 번 × 5 %라 답에 못 닿았다(랜덤 포레스트는 10그루로 0.80이었다). ② 트리를 3,000까지 늘리면 훈련은 0.96으로 계속 오르지만 테스트는 0.87에서 멈춘다 — **늘릴수록 훈련 자료를 외우기 시작**하는 것이 배깅과의 차이다. ③ `learning_rate=1.0`은 훈련 0.998 — 보폭이 크면 한 트리가 오차를 통째로 삼켜 외운다. `max_depth=1`(질문 하나짜리 트리, 스텀프)만 1,000그루 쌓아도 0.86이 나오는 것이 "약한 학습기를 많이"라는 말의 뜻이다.
+읽히는 것이 세 가지다. ① 10그루 × 0.05는 아직 0.754 — 보정이 열 번 × 5 %라 답에 못 닿았다(랜덤 포레스트는 10그루로 0.80이었다). 수업 값 100그루(0.855)도 아직 오르막 중간이고, 300그루에서 0.864, 1,000그루에서 0.869로 완만해진다. ② 트리를 3,000까지 늘리면 훈련은 0.96으로 계속 오르지만 테스트는 0.87에서 멈춘다 — **늘릴수록 훈련 자료를 외우기 시작**하는 것이 배깅과의 차이다. ③ `learning_rate=1.0`은 훈련 0.998 — 보폭이 크면 한 트리가 오차를 통째로 삼켜 외운다. `max_depth=1`(질문 하나짜리 트리, 스텀프)만 1,000그루 쌓아도 0.86이 나오는 것이 "약한 학습기를 많이"라는 말의 뜻이다.
 
 ### 1-4. `LGBMClassifier` — 같은 인자, 그리고 `verbose=-1`
 
 ```python
 from lightgbm import LGBMClassifier
-LGBMClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1, verbose=-1)
+LGBMClassifier(n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1, verbose=-1)
 ```
 
 인자 이름이 XGBoost와 같아서 같은 값을 그대로 넣는다 — 두 라이브러리 모두 **사이킷런 추정기 규약**을 따르는 래퍼 클래스를 제공해서 `fit`·`score`·`predict_proba`·`feature_importances_`·`GridSearchCV`가 그대로 된다. 다른 점은 둘이다.
 
-**`verbose=-1`** — LightGBM은 학습 중 `[LightGBM] [Info] …`·`[Warning] …` 줄을 표준 출력에 찍는다. `-1`이면 치명적 오류만, `0`이면 경고까지, `1`(기본)이면 정보까지 보인다. 1,000그루 학습에서 로그가 수십 줄 나오므로 수업 코드가 꺼 둔 것이다. XGBoost는 `verbosity`라는 다른 이름이고 기본이 조용하다.
+**`verbose=-1`** — LightGBM은 학습 중 `[LightGBM] [Info] …`·`[Warning] …` 줄을 표준 출력에 찍는다. `-1`이면 치명적 오류만, `0`이면 경고까지, `1`(기본)이면 정보까지 보인다. 100그루 학습에서도 로그가 여러 줄 나오므로 수업 코드가 꺼 둔 것이다. 수업 주석이 두 기본값을 같이 적어 두었다 — `learning_rate`는 0.1, `max_depth`는 **-1(제한 없음)** 이라 LightGBM을 기본값으로 두면 깊이 제한 없이 자라 과대적합에 주의해야 한다. XGBoost는 `verbosity`라는 다른 이름이고 기본이 조용하다.
 
-**트리를 키우는 방향** — XGBoost는 깊이 단위로(level-wise) 한 층을 꽉 채우고 다음 층으로 가고, LightGBM은 **손실을 가장 많이 줄이는 리프 하나를 골라** 거기만 가른다(leaf-wise). 그래서 LightGBM의 본래 제한 인자는 `max_depth`가 아니라 **`num_leaves`**(기본 31)이고, `max_depth=4`를 주면 리프가 최대 2⁴ = 16개라 `num_leaves=31`은 닿지 않는 상한이 된다. 같은 `max_depth=4`를 줘도 두 모델의 트리 모양이 다른 이유다. 또 LightGBM은 연속값을 미리 **히스토그램 구간(기본 255개)** 으로 묶어 분할 후보를 찾으므로 큰 자료에서 눈에 띄게 빠르다 — 6,497병에서는 둘 다 0.3초라 차이가 없다.
+**트리를 키우는 방향** — XGBoost는 깊이 단위로(level-wise) 한 층을 꽉 채우고 다음 층으로 가고, LightGBM은 **손실을 가장 많이 줄이는 리프 하나를 골라** 거기만 가른다(leaf-wise). 그래서 LightGBM의 본래 제한 인자는 `max_depth`가 아니라 **`num_leaves`**(기본 31)이고, `max_depth=4`를 주면 리프가 최대 2⁴ = 16개라 `num_leaves=31`은 닿지 않는 상한이 된다. 같은 `max_depth=4`를 줘도 두 모델의 트리 모양이 다른 이유다. 또 LightGBM은 연속값을 미리 **히스토그램 구간(기본 255개)** 으로 묶어 분할 후보를 찾으므로 큰 자료에서 눈에 띄게 빠르다 — 6,497병 × 100그루에서는 둘 다 0.05초 안팎이라 차이가 없다(1,000그루로 늘리면 0.34초 · 0.25초로 LightGBM이 조금 앞선다).
 
 | | XGBoost | LightGBM |
 | --- | --- | --- |
@@ -98,43 +98,79 @@ LGBMClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=
 
 ```python
 models = {
-    "XGBoost":  XGBClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1),
-    "LightGBM": LGBMClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1, verbose=-1),
+    "XGBoost":  XGBClassifier(n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1),
+    "LightGBM": LGBMClassifier(n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1, verbose=-1),
 }
 ```
 
 `s-09.py`에서는 모델을 바꿀 때마다 `model = …`을 **덮어썼다**. 그래서 트리와 숲의 점수를 나란히 보려면 출력 주석을 거슬러 읽어야 했다. 딕셔너리는 그 불편을 없애는 관용구다 — **표시용 이름을 키, 아직 학습하지 않은 모델 객체를 값**으로 두면, 뒤에 올 코드는 이름을 몰라도 된다.
 
 ```python
+import time
+from sklearn.metrics import f1_score
 for name, model in models.items():
-    model.fit(X_train, Y_train)
-    print(name, "Train Acc :", model.score(X_train, Y_train), "Test Acc :", model.score(X_test, Y_test))
+    start = time.time()                    # 학습 시작 시각
+    model.fit(X_train, Y_train)            # 학습
+    end = time.time() - start              # 소요 시간 = 지금 - 시작
+    Y_pred = model.predict(X_test)         # 예측
+    print("============= 모델명 : ", name)
+    print("> 학습 소요시간: ", end, "초")
+    print("> train acc: ", model.score(X_train, Y_train))
+    print("> test acc: ", model.score(X_test, Y_test))
+    print("> f1 score: ", f1_score(Y_test, Y_pred, average="macro"))
 ```
 
 모델을 하나 더 비교하고 싶으면 루프는 두고 **딕셔너리에 한 줄만 추가**한다. 앞 노트의 `RandomForestClassifier`나 `DecisionTreeClassifier`를 같은 딕셔너리에 넣으면 네 모델이 한 표로 나온다. 학습된 모델도 딕셔너리 안 객체에 그대로 남으므로 루프가 끝난 뒤 `models["XGBoost"].feature_importances_`처럼 이름으로 꺼내 쓸 수 있다. day16 의료비 실습에서 `param_grid`를 딕셔너리로 적었던 것과 같은 발상이고, 사이킷런 추정기가 전부 같은 `fit`·`score`를 갖기 때문에 성립한다.
 
-### 1-6. 돌려 보면 — 트리·숲·부스팅 한 표
+### 1-6. 학습 시간과 F1 — 루프가 찍는 네 숫자
 
-딕셔너리를 1-5의 루프로 돌리고, 앞 두 노트의 모델을 같은 분할에서 다시 학습해 나란히 두었다(이 노트에서 확인, `random_state=42`).
+루프 몸통은 모델마다 네 줄을 찍는다. 정확도 둘은 앞 노트 그대로이고, 새로 붙은 것이 **소요 시간**과 **F1**이다.
 
-| 모델 | 훈련 | 테스트 | 학습 시간 | 레드 재현율 | 혼동행렬 `[[레드→레드, 레드→화이트], [화이트→레드, 화이트→화이트]]` |
-| --- | --- | --- | --- | --- | --- |
-| 결정 트리 (제한 없음) | 0.998 | 0.865 | 0.01초 | — | — |
-| 결정 트리 `max_depth=3` | 0.846 | 0.841 | 0.01초 | 0.625 | — |
-| 랜덤 포레스트 `max_depth=3, balanced` | 0.785 | 0.774 | 0.23초 | 0.859 | `[[275, 45], [249, 731]]` |
-| 랜덤 포레스트 (제한 없음) | 0.998 | **0.889** | 0.30초 | — | — |
-| **XGBoost** `1000 × 0.05, depth 4` | 0.918 | 0.869 | 0.28초 | 0.719 | `[[230, 90], [80, 900]]` |
-| **LightGBM** `1000 × 0.05, depth 4` | 0.929 | 0.875 | 0.28초 | 0.738 | `[[236, 84], [79, 901]]` |
-
-수업 인자 그대로의 두 부스팅은 테스트 0.87 안팎으로 **제한 없는 결정 트리(0.865)보다 조금 낫고, 제한 없는 랜덤 포레스트(0.889)에는 못 미친다.** "부스팅이 항상 이긴다"가 아니라는 것이 이 표의 첫 교훈이다 — 특성이 셋뿐이고 표본이 6천인 작은 자료에서는 깊은 숲이 이미 충분하고, 부스팅은 `max_depth=4`에 묶여 있다(1-3의 표에서 깊이 8이면 0.882까지 오른다). 둘째, 부스팅은 **훈련 0.92 · 테스트 0.87로 격차 5점** — 1,000그루를 쌓았는데도 숲의 11점보다 작다. 얕은 트리 × 작은 보폭이 과대적합을 누른 결과다. 셋째, 레드 재현율은 0.72~0.74로 가중치 없는 모델답게 화이트 쪽으로 기울어 있다 — 앞 노트의 `class_weight`에 해당하는 인자는 2-3에 적었다.
-
-### 1-7. 설치와 가져오기
-
-```
-pip install xgboost lightgbm
+```python
+start = time.time()            # 1970-01-01 기준 경과 초 (float)
+model.fit(X_train, Y_train)
+end = time.time() - start      # 두 시각의 차 = fit에 걸린 초
 ```
 
-둘 다 사이킷런에 **들어 있지 않은** 별도 패키지다. `from xgboost import XGBClassifier`·`from lightgbm import LGBMClassifier`가 `ModuleNotFoundError`를 내면 설치가 안 된 것이고, 설치 뒤에도 `import` 줄은 파일 맨 위가 아니라 분할 다음에 있어도 된다(수업 코드가 그렇다). 회귀용은 `XGBRegressor`·`LGBMRegressor`로, 앞 노트의 `DecisionTreeClassifier`/`DecisionTreeRegressor` 짝과 같은 규칙이다.
+`time.time()`은 호출 순간의 시각을 초 단위 실수로 준다. 학습 **전후로 두 번** 불러 빼면 `fit`에 걸린 시간이고, 변수 이름이 `end`여도 담긴 값은 "끝 시각"이 아니라 **차이**다. 부스팅은 트리를 **직렬**로 쌓으므로 시간이 트리 수에 거의 비례한다 — 100그루 0.05초가 1,000그루면 0.3초가 된다. 정확도가 같은 두 모델이면 빠른 쪽을 고르게 되므로, 모델을 비교하는 루프에는 시간을 같이 재 두는 편이 안전하다. 짧은 구간을 더 정밀하게 재려면 벽시계 대신 단조 증가 시계인 `time.perf_counter()`를 같은 자리에 쓴다.
+
+```python
+Y_pred = model.predict(X_test)
+f1_score(Y_test, Y_pred, average="macro")     # XGBoost 0.800 · LightGBM 0.807
+```
+
+`score`는 정답 배열만 주면 안에서 예측까지 하지만, `f1_score`는 **예측 결과 배열을 직접** 받으므로 `predict`를 먼저 한 번 돌려 둔다. F1은 클래스 하나에 대해 정밀도와 재현율의 조화평균이고, 이진 분류에서 `average`를 생략하면 **양성(1 = 화이트) 한 클래스의 F1**만 나온다(0.905). `average="macro"`는 레드의 F1과 화이트의 F1을 **따로 구해 단순 평균**한다 — 표본이 3배 많은 화이트의 F1이 평균을 끌고 가지 못하게 하는 셈이라, day15의 `classification_report` 맨 아래 `macro avg` 줄이 바로 이 값이다. 이 자료에서 정확도는 0.86인데 macro F1이 0.80으로 낮은 것은 레드 쪽 F1이 낮다는 뜻이고, 혼동행렬을 열어 보면 레드 재현율 0.67이 그 원인이다. 불균형 자료에서는 정확도 하나보다 이 숫자를 같이 보는 편이 안전하다. `average="weighted"`는 클래스 표본 수로 가중 평균해 정확도에 가까워진다.
+
+| `average` | 계산 | 이 자료 (XGBoost 100그루) |
+| --- | --- | --- |
+| `'binary'` (기본) | `pos_label=1` 클래스의 F1만 | 0.905 (화이트) |
+| `'macro'` | 클래스별 F1의 단순 평균 | **0.800** |
+| `'weighted'` | 클래스별 F1을 표본 수로 가중 평균 | 0.851 |
+
+### 1-7. 돌려 보면 — 트리·숲·부스팅 한 표
+
+딕셔너리를 1-5의 루프로 돌리고, 앞 두 노트의 모델을 같은 분할·같은 루프에서 다시 학습해 나란히 두었다(이 노트에서 확인, `random_state=42`, 2코어). 주석이 권장한 1,000그루도 같은 인자로 함께 돌렸다.
+
+| 모델 | 훈련 | 테스트 | F1(macro) | 학습 시간 | 레드 재현율 | 혼동행렬 `[[레드→레드, 레드→화이트], [화이트→레드, 화이트→화이트]]` |
+| --- | --- | --- | --- | --- | --- | --- |
+| 결정 트리 (제한 없음) | 0.998 | 0.865 | 0.816 | 0.01초 | 0.706 | `[[226, 94], [81, 899]]` |
+| 결정 트리 `max_depth=3` | 0.846 | 0.841 | 0.778 | 0.01초 | 0.625 | `[[200, 120], [87, 893]]` |
+| 랜덤 포레스트 `max_depth=3, balanced` | 0.785 | 0.774 | 0.742 | 0.21초 | 0.859 | `[[275, 45], [249, 731]]` |
+| 랜덤 포레스트 (제한 없음) | 0.998 | **0.889** | **0.849** | 0.22초 | 0.756 | `[[242, 78], [66, 914]]` |
+| **XGBoost** `100 × 0.05, depth 4` (수업) | 0.880 | 0.855 | 0.800 | 0.05초 | 0.666 | `[[213, 107], [81, 899]]` |
+| **LightGBM** `100 × 0.05, depth 4` (수업) | 0.880 | 0.861 | 0.807 | 0.04초 | 0.675 | `[[216, 104], [77, 903]]` |
+| XGBoost `1000 × 0.05, depth 4` (주석 권장) | 0.918 | 0.869 | 0.822 | 0.34초 | 0.719 | `[[230, 90], [80, 900]]` |
+| LightGBM `1000 × 0.05, depth 4` (주석 권장) | 0.929 | 0.875 | 0.830 | 0.25초 | 0.738 | `[[236, 84], [79, 901]]` |
+
+수업 인자 그대로(100그루)의 두 부스팅은 테스트 0.855 · 0.861, macro F1 0.80 — **제한 없는 결정 트리(0.865)에도 조금 못 미치고, 제한 없는 랜덤 포레스트(0.889)와는 3점 차**다. 학습 시간은 0.05초로 숲의 1/4이니 "빠르지만 아직 덜 자란" 상태이고, 주석이 권장하는 1,000그루로 올리면 0.869 · 0.875로 트리를 넘어서지만 숲에는 여전히 못 미친다. "부스팅이 항상 이긴다"가 아니라는 것이 이 표의 첫 교훈이다 — 특성이 셋뿐이고 표본이 6천인 작은 자료에서는 깊은 숲이 이미 충분하고, 부스팅은 `max_depth=4`에 묶여 있다(1-3의 표에서 깊이 8이면 0.882까지 오른다). 둘째, 훈련·테스트 격차: 100그루 부스팅은 **0.880 · 0.855로 격차 2점**, 1,000그루도 5점 — 숲의 11점보다 작다. 얕은 트리 × 작은 보폭이 과대적합을 누른 결과다. 셋째, 레드 재현율은 0.67~0.74로 가중치 없는 모델답게 화이트 쪽으로 기울어 있고, 그래서 정확도 0.86보다 macro F1 0.80이 낮다 — 앞 노트의 `class_weight`에 해당하는 인자는 2-3에 적었다.
+
+### 1-8. 설치와 가져오기
+
+```
+pip install lightgbm xgboost catboost
+```
+
+둘 다 사이킷런에 **들어 있지 않은** 별도 패키지다. 수업 주석은 세 번째 부스팅 라이브러리 CatBoost까지 한 줄로 설치하는데, 이 파일에서 가져다 쓰는 것은 앞의 둘이고 CatBoost는 3-3에 적었다. `from xgboost import XGBClassifier`·`from lightgbm import LGBMClassifier`가 `ModuleNotFoundError`를 내면 설치가 안 된 것이고, 설치 뒤에도 `import` 줄은 파일 맨 위가 아니라 분할 다음에 있어도 된다(수업 코드가 그렇다). 회귀용은 `XGBRegressor`·`LGBMRegressor`로, 앞 노트의 `DecisionTreeClassifier`/`DecisionTreeRegressor` 짝과 같은 규칙이다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -156,16 +192,16 @@ lgbm.fit(X_tr, Y_tr, eval_set=[(X_va, Y_va)], callbacks=[lgb.early_stopping(50, 
 print(lgbm.best_iteration_)                # 244
 ```
 
-1-3의 표에서 트리를 늘릴수록 훈련만 오르는 것을 봤다. 조기 종료는 **훈련 자료에서 따로 떼어 둔 검증 세트**의 손실을 트리를 하나 더할 때마다 재고, 50그루 동안 나아지지 않으면 거기서 멈추는 장치다. 이 자료에서는 XGBoost가 142그루, LightGBM이 244그루에서 멈춘다 — 수업의 1,000은 넉넉한 상한이었던 셈이다. 검증 세트를 **테스트 세트로 쓰면 안 된다**(테스트가 학습에 개입해 점수가 부풀어진다). 두 라이브러리의 호출 방식이 다른 것이 이 자리에서 가장 자주 헷갈린다: XGBoost는 생성자 인자, LightGBM은 `fit`의 `callbacks`.
+1-3의 표에서 트리를 늘릴수록 훈련만 오르는 것을 봤다. 조기 종료는 **훈련 자료에서 따로 떼어 둔 검증 세트**의 손실을 트리를 하나 더할 때마다 재고, 50그루 동안 나아지지 않으면 거기서 멈추는 장치다. 이 자료에서는 XGBoost가 142그루, LightGBM이 244그루에서 멈춘다 — 수업 주석의 "권장 1,000~3,000(최적 모델 탐색 후 중간 종료)"이 가리키는 장치가 바로 이것이고, 수업 값 100은 그 멈춤 지점에 못 미친 채 끝난 셈이다. 검증 세트를 **테스트 세트로 쓰면 안 된다**(테스트가 학습에 개입해 점수가 부풀어진다). 두 라이브러리의 호출 방식이 다른 것이 이 자리에서 가장 자주 헷갈린다: XGBoost는 생성자 인자, LightGBM은 `fit`의 `callbacks`.
 
 ### 2-2. `feature_importances_` — 두 라이브러리가 다른 것을 센다
 
 ```python
-models["XGBoost"].feature_importances_    # [0.186 0.647 0.167]   ← gain 비율 (합 1)
-models["LightGBM"].feature_importances_   # [3473 3367 3978]      ← 분할에 쓰인 횟수
+models["XGBoost"].feature_importances_    # [0.165 0.697 0.138]   ← gain 비율 (합 1)
+models["LightGBM"].feature_importances_   # [407 495 433]         ← 분할에 쓰인 횟수
 ```
 
-같은 속성 이름인데 **의미가 다르다.** XGBoost 래퍼의 기본(`importance_type='gain'`)은 그 특성으로 가른 분할이 손실을 줄인 양의 비율이라 앞 노트의 사이킷런 숲과 같은 눈으로 읽을 수 있고, 여기서도 당도 0.65가 1등이다. LightGBM 래퍼의 기본(`importance_type='split'`)은 **그 특성이 분할에 쓰인 횟수**라서 세 값이 비슷하게 나오고 pH가 가장 크다 — 당도로 한 번 크게 가르고 pH·알코올로 잘게 다듬었다는 뜻이지 pH가 가장 중요하다는 뜻이 아니다. `LGBMClassifier(importance_type='gain')`으로 만들면 XGBoost와 같은 기준이 된다. 라이브러리를 섞어 중요도를 비교할 때는 **기준을 먼저 맞춘다.**
+같은 속성 이름인데 **의미가 다르다.** XGBoost 래퍼의 기본(`importance_type='gain'`)은 그 특성으로 가른 분할이 손실을 줄인 양의 비율이라 앞 노트의 사이킷런 숲과 같은 눈으로 읽을 수 있고, 여기서도 당도 0.70이 1등이다. LightGBM 래퍼의 기본(`importance_type='split'`)은 **그 특성이 분할에 쓰인 횟수**라서 세 값이 비슷하게 나온다 — 100그루에서는 당도 495 · pH 433 · 알코올 407이고, 1,000그루로 늘리면 `[3473 3367 3978]`로 pH가 가장 커진다. 당도로 한 번 크게 가른 뒤 pH·알코올로 잘게 다듬는 분할이 쌓인다는 뜻이지 pH가 가장 중요하다는 뜻이 아니다. `LGBMClassifier(importance_type='gain')`으로 만들면 XGBoost와 같은 기준이 된다. 라이브러리를 섞어 중요도를 비교할 때는 **기준을 먼저 맞춘다.**
 
 ### 2-3. 불균형 — `scale_pos_weight`와 `class_weight`
 
@@ -191,7 +227,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 HistGradientBoostingClassifier(random_state=42).fit(X_train, Y_train).score(X_test, Y_test)   # 0.875
 ```
 
-사이킷런 안에도 LightGBM과 같은 히스토그램 방식 부스팅이 있다. 기본값 그대로 테스트 0.875로 수업 인자의 LightGBM과 같고, 결측값을 알아서 다루며 설치가 필요 없다. 옛 `GradientBoostingClassifier`(기본값 0.858)는 정확 탐색이라 큰 자료에서 느리다. 외부 라이브러리가 막힌 환경이라면 이쪽이 대안이다.
+사이킷런 안에도 LightGBM과 같은 히스토그램 방식 부스팅이 있다. 기본값(100그루 × 0.1, `max_leaf_nodes=31`) 그대로 테스트 0.875로 1,000그루 LightGBM과 같고 수업 값 100그루(0.861)보다 높으며, 결측값을 알아서 다루며 설치가 필요 없다. 옛 `GradientBoostingClassifier`(기본값 0.858)는 정확 탐색이라 큰 자료에서 느리다. 외부 라이브러리가 막힌 환경이라면 이쪽이 대안이다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -227,8 +263,8 @@ HistGradientBoostingClassifier(random_state=42).fit(X_train, Y_train).score(X_te
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day17/s-10.py` — `pd.read_csv(URL)` 와인 자료 → `X`(알코올·당도·pH)·`Y`(class) → `train_test_split(test_size=0.2, random_state=42, stratify=Y)` → `from lightgbm import LGBMClassifier`·`from xgboost import XGBClassifier` → `{"XGBoost": XGBClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1), "LightGBM": LGBMClassifier(…같은 인자…, verbose=-1)}` 모델 딕셔너리까지 (학습·평가 루프는 아직 없음). 이 노트에서 돌린 결과(`random_state=42`): XGBoost 훈련 0.918 · 테스트 0.869 · 레드 재현율 0.719 · 중요도 `[0.186 0.647 0.167]` / LightGBM 0.929 · 0.875 · 0.738 · 분할 횟수 `[3473 3367 3978]` / 조기 종료 142·244그루 / `HistGradientBoostingClassifier` 0.875 / 제한 없는 랜덤 포레스트 0.889
+- `KDT_2026/2026_Python/day17/s-10.py` — `pd.read_csv(URL)` 와인 자료 → `X`(알코올·당도·pH)·`Y`(class) → `train_test_split(test_size=0.2, random_state=42, stratify=Y)` → `from lightgbm import LGBMClassifier`·`from xgboost import XGBClassifier` → `{"XGBoost": XGBClassifier(n_estimators=100, learning_rate=0.05, max_depth=4, random_state=42, n_jobs=-1), "LightGBM": LGBMClassifier(…같은 인자…, verbose=-1)}` 모델 딕셔너리(주석: `n_estimators` 권장 1,000~3,000 + 중간 종료, LightGBM 기본 `learning_rate` 0.1·`max_depth` -1) → `import time`·`from sklearn.metrics import f1_score` → `for name, model in models.items()`: `start = time.time()` → `fit` → `end = time.time() - start` → `predict` → 모델명·학습 소요시간·train acc·test acc·`f1_score(average="macro")` 출력. 이 노트에서 돌린 결과(`random_state=42`): XGBoost 100그루 훈련 0.880 · 테스트 0.855 · macro F1 0.800 · 0.05초 · 레드 재현율 0.666 · 중요도 `[0.165 0.697 0.138]` / LightGBM 100그루 0.880 · 0.861 · 0.807 · 0.04초 · 0.675 · 분할 횟수 `[407 495 433]` / 1,000그루면 0.869 · 0.875 / 조기 종료 142·244그루 / `HistGradientBoostingClassifier` 0.875 / 제한 없는 랜덤 포레스트 0.889
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day17 랜덤 포레스트로 와인 분류와 class_weight·max_features]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[KDT_2026 학습 지도]]
