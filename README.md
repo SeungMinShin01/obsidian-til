@@ -140,7 +140,7 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 | `2026-11-16` | [AI - 회전으로 넣는 상대 위치](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%ED%9A%8C%EC%A0%84%EC%9C%BC%EB%A1%9C%20%EB%84%A3%EB%8A%94%20%EC%83%81%EB%8C%80%20%EC%9C%84%EC%B9%98.md) | 기술 블로그 정리 |
 | `2026-11-16` | [뉴스 - 2026-11-12 정답지가 있으면 에이전트는 혼자 일했고, ZDR은 계약서에만 있었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-12%20%EC%A0%95%EB%8B%B5%EC%A7%80%EA%B0%80%20%EC%9E%88%EC%9C%BC%EB%A9%B4%20%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94%20%ED%98%BC%EC%9E%90%20%EC%9D%BC%ED%96%88%EA%B3%A0%2C%20ZDR%EC%9D%80%20%EA%B3%84%EC%95%BD%EC%84%9C%EC%97%90%EB%A7%8C%20%EC%9E%88%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
 
-<sub>마지막 자동 갱신: 2026-11-17 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-18 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
