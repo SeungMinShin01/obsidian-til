@@ -115,20 +115,24 @@ plt.show()
 
 중간의 "판다스 복습" 주석도 이 줄을 위한 것이다. 파이썬 리스트는 `list_2[:1]`처럼 **행 방향 슬라이싱만** 되고, `list_2[:, 1]`처럼 쉼표로 행·열을 동시에 자르는 문법은 넘파이 배열·판다스가 제공한다(day06 넘파이 인덱싱). `X_train_scaled`가 `ndarray`라서 `[:, 4]`가 되는 것이고, 표준화 전 `X_train`(DataFrame)이었다면 `X_train['G3']` 또는 `.iloc[:, 4]`로 썼어야 한다.
 
-### 1-6. 최적 K 찾기 — SSE 엘보우
+### 1-6. 최적 K 찾기 — SSE 엘보우와 실루엣
 
 ```python
+from sklearn.metrics import silhouette_score
 sse_list = []
+sil_list = []
 for k in range(2, 20):                                  # K = 2 ~ 19
     k_model = KMeans(n_clusters=k, random_state=42)     # K마다 모델을 새로 만든다
     preds = k_model.fit_predict(X_train_scaled)         # fit + predict 한 번에
     sse_list.append(k_model.inertia_)                   # 각 샘플과 자기 중심점 거리 제곱의 합
-plt.plot(range(2, 20), sse_list, marker='o')
-plt.show()
-# 엘보우 지점(기울기가 완만하게 꺾이는 변곡점) 5 ~ 10
+    sil_list.append(silhouette_score(X_train_scaled, preds))   # 응집도 + 분리도
+plt.plot(range(2, 20), sse_list, marker='o'); plt.show()   # SSE — 엘보우 지점(완만하게 꺾이는 변곡점)
+plt.plot(range(2, 20), sil_list, marker='o'); plt.show()   # 실루엣 — 높을수록 이상적
 ```
 
-지도학습이라면 K를 `GridSearchCV`에 넣고 R²·F1이 가장 높은 값을 고르면 끝인데, 군집은 정답이 없으니 **그룹이 얼마나 단단히 뭉쳤나** 자체를 점수로 쓴다. 그것이 **`inertia_`** = SSE(Sum of Squared Errors) — 모든 학생에 대해 "자기 그룹 중심점까지 거리²"를 더한 값이다. 작을수록 각 그룹이 중심 둘레에 촘촘히 모였다는 뜻이다.
+주석의 제목이 "최적의 K 찾기 vs 지도학습(F1 분류 / R² 회귀)"인 이유가 이 절의 핵심이다. 정답이 있을 때의 F1·R² 자리에 군집은 **두 지표를 같은 반복문에서 함께 모은다** — 안으로 얼마나 뭉쳤는지(SSE)와 다른 그룹과 얼마나 떨어졌는지(실루엣).
+
+지도학습이라면 K를 `GridSearchCV`에 넣고 R²·F1이 가장 높은 값을 고르면 끝인데, 군집은 정답이 없으니 먼저 **그룹이 얼마나 단단히 뭉쳤나** 자체를 점수로 쓴다. 그것이 **`inertia_`** = SSE(Sum of Squared Errors) — 모든 학생에 대해 "자기 그룹 중심점까지 거리²"를 더한 값이다. 작을수록 각 그룹이 중심 둘레에 촘촘히 모였다는 뜻이다.
 
 문제는 SSE가 K를 늘리면 **무조건 줄어든다**는 것이다(K = 387이면 학생마다 중심점이 하나씩이라 0). 그래서 최솟값이 아니라 **줄어드는 속도가 꺾이는 지점(엘보우, 팔꿈치)** 을 고른다. 이 노트에서 돌린 값(`random_state=42`)은 이렇다.
 
@@ -146,9 +150,9 @@ plt.show()
 | 10 | 417.0 | 25 | 0.279 |
 | 11~19 | 381 → 248 | 10~36 | 0.28~0.31 |
 
-K=2에서 3으로 가며 700 → 212로 한 번 크게 꺾이고, 그 뒤 5~10 사이에서 줄어드는 양이 136 → 25로 완만해진다. 수업 주석의 "엘보우 5~10"이 이 구간이다. 엘보우는 **눈으로 읽는 기준**이라 사람마다 3이라 할 수도, 5라 할 수도 있다 — 그래서 주석이 두 번째 기준을 함께 적어 두었다.
+K=2에서 3으로 가며 700 → 212로 한 번 크게 꺾이고, 그 뒤 5~10 사이에서 줄어드는 양이 136 → 25로 완만해진다. 수업 주석의 "엘보우 5~10"이 이 구간이다. 엘보우는 **눈으로 읽는 기준**이라 사람마다 3이라 할 수도, 5라 할 수도 있다 — 그래서 두 번째 기준을 같은 반복문에서 함께 구한다.
 
-**실루엣(silhouette)** 은 주석에만 있고 코드에는 없는데, 뜻은 "각 점이 **자기 그룹 안의 점들과는 얼마나 가깝고, 가장 가까운 다른 그룹과는 얼마나 먼가**"를 −1~1로 잰 값이다. 1에 가까우면 그룹이 서로 뚜렷이 떨어졌고, 0 근처면 경계가 흐리고, 음수면 다른 그룹에 더 가까운 점이 많다는 뜻. `sklearn.metrics.silhouette_score(X_train_scaled, preds)`로 구한다. 이 자료에서는 K=2가 0.32로 가장 높고 나머지는 0.26~0.31에서 평평하다 — 다섯 열 안에서 학생들이 **뚜렷한 덩어리로 갈라지지 않는** 자료라는 뜻이다(실루엣 0.5 이상이 "확실히 갈린다"로 읽힌다). SSE는 "안으로 뭉침"만, 실루엣은 "밖과의 거리"까지 보니 둘을 같이 놓고 읽는 것이 주석의 "두 차트 해석하여 최적의 K 해석"이다.
+**실루엣(silhouette)** 은 "각 점이 **자기 그룹 안의 점들과는 얼마나 가깝고(응집도), 가장 가까운 다른 그룹과는 얼마나 먼가(분리도)**"를 −1~1로 잰 값이다. 1에 가까우면 그룹이 서로 뚜렷이 떨어졌고, 0 근처면 경계가 흐리고, 음수면 다른 그룹에 더 가까운 점이 많다는 뜻. `sklearn.metrics.silhouette_score(X, 라벨)`에 **표준화된 특성과 그 K에서 나온 라벨**을 넣어 구하므로, `fit_predict`가 돌려준 `preds`를 바로 넘기면 된다(K=1은 "다른 그룹"이 없어 정의되지 않으니 반복이 2부터 시작하는 이유가 하나 더 생긴다). 이 자료에서는 K=2가 0.32로 가장 높고 나머지는 0.26~0.31에서 평평하다 — 다섯 열 안에서 학생들이 **뚜렷한 덩어리로 갈라지지 않는** 자료라는 뜻이다(실루엣 0.5 이상이 "확실히 갈린다"로 읽힌다). SSE는 "안으로 뭉침"만, 실루엣은 "밖과의 거리"까지 보니 둘을 같이 놓고 읽는 것이 주석의 "두 차트 해석하여 최적의 K 해석"이다.
 
 ### 1-7. 최적 K로 다시 군집하기
 
@@ -177,16 +181,21 @@ from sklearn.cluster import HDBSCAN
 model = HDBSCAN(min_cluster_size=15, min_samples=5)
 pred = model.fit_predict(X_train_scaled)
 print(pred)   # 0, 1, 2, 3 … 그리고 -1
+
+X_train['hdb_cluster'] = pred                   # 라벨을 원본 DataFrame 열로 붙이고
+print(X_train['hdb_cluster'].value_counts())    # 그룹별 인원 세기
 ```
 
-마지막 다섯 줄은 군집의 다른 갈래, **밀도 기반**이다. KMeans는 "그룹 K개를 반드시 만들고 모든 점을 어딘가에 넣는다"는 모델인데, HDBSCAN(Hierarchical Density-Based Spatial Clustering of Applications with Noise)은 **점이 빽빽하게 모인 곳**을 그룹으로 보고, 어디에도 빽빽하지 않은 점은 **노이즈(-1)** 로 남겨 둔다. 그래서 그룹 수 K가 입력이 아니라 **출력**이고, 대신 "그룹으로 인정할 최소 인원"을 준다.
+마지막 단락은 군집의 다른 갈래, **밀도 기반**이다. KMeans는 "그룹 K개를 반드시 만들고 모든 점을 어딘가에 넣는다"는 모델인데, HDBSCAN(Hierarchical Density-Based Spatial Clustering of Applications with Noise)은 **점이 빽빽하게 모인 곳**을 그룹으로 보고, 어디에도 빽빽하지 않은 점은 **노이즈(-1)** 로 남겨 둔다. 그래서 그룹 수 K가 입력이 아니라 **출력**이고, 대신 "그룹으로 인정할 최소 인원"을 준다.
 
 | 인자 | 뜻 | 수업 값 |
 | --- | --- | --- |
 | `min_cluster_size` | 이보다 작은 뭉침은 그룹으로 인정하지 않는다 | 15 |
 | `min_samples` | 한 점이 "빽빽한 곳에 있다"고 보려면 반경 안에 이웃이 몇 개여야 하나 — 클수록 보수적이고 노이즈가 늘어난다 | 5 |
 
-이 노트에서 돌린 결과는 그룹 **4개 + 노이즈 46명**이고, 그룹별 평균을 보면 KMeans와 전혀 다른 기준으로 갈라졌다.
+`print(pred)`는 387개 숫자의 나열이라 그룹이 몇 개고 각각 몇 명인지 한눈에 안 들어온다. 그래서 라벨 배열을 **원본 DataFrame의 새 열**(`hdb_cluster`)로 붙이고 `value_counts()`로 센다 — day08 판다스에서 쓰던 그 `value_counts`다. 열로 붙여 두면 뒤에 `groupby('hdb_cluster').mean()`으로 그룹별 평균까지 바로 이어진다(2-2). 이때 `X_train`이 `df`에서 열을 골라낸 뒤 `train_test_split`으로 다시 잘린 조각이라, 열을 추가할 때 판다스가 "원본의 복사본인지 뷰인지" 경고(`SettingWithCopyWarning`)를 낼 수 있다. 조각을 만들 때 `.copy()`를 붙여 두거나 `X_train.assign(hdb_cluster=pred)`로 새 DataFrame을 받는 편이 안전하다.
+
+이 노트에서 돌린 결과는 그룹 **4개 + 노이즈 46명**이고(`value_counts()`가 2: 180 · 3: 85 · 1: 56 · −1: 46 · 0: 20 순으로 보여 준다), 그룹별 평균을 보면 KMeans와 전혀 다른 기준으로 갈라졌다.
 
 | 라벨 | 인원 | 공부시간 | 결석 | G1 | G2 | G3 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -207,9 +216,10 @@ print(pred)   # 0, 1, 2, 3 … 그리고 -1
    → StandardScaler fit(학습)·transform(둘)          ← 거리 계산이라 필수
    → KMeans(n_clusters=3).fit → predict → 그룹 번호(뜻은 cluster_centers_에서)
    → scatter(G3, absences, c=labels) 2D로 눌러 보기
-   → for k in 2~19: KMeans(k).fit_predict → inertia_ 모아 엘보우 (+ 실루엣)
+   → for k in 2~19: KMeans(k).fit_predict → inertia_(SSE)·silhouette_score 모아 두 곡선
    → KMeans(n_clusters=5).fit_predict 최종
    → HDBSCAN(min_cluster_size, min_samples).fit_predict → 그룹 + 노이즈(-1)
+   → X_train['hdb_cluster'] = pred → value_counts()로 그룹별 인원
 ```
 
 ## 2. 추가로 알면 좋은 활용법
@@ -227,22 +237,16 @@ summary = X_train.assign(cluster=train_labels).groupby('cluster').agg(['mean', '
 
 `cluster_centers_`는 표준화된 좌표라 그대로는 읽기 어렵다. 스케일러의 `inverse_transform`으로 원 단위에 되돌리거나, 원본 DataFrame에 라벨 열을 붙여 `groupby`로 평균·인원을 보면 1-4·1-7의 표가 바로 나온다. 군집 결과를 보고서에 쓸 때는 "그룹 2"가 아니라 "성적 급락·결석 적음 그룹(67명)"처럼 **중심점에서 읽은 이름**으로 부른다.
 
-### 2-3. 실루엣 코드와 두 지표를 한 그림에
+### 2-3. 두 지표를 한 그림에 — subplot과 실루엣 그림
 
 ```python
-from sklearn.metrics import silhouette_score
-sil_list = []
-for k in range(2, 20):
-    km = KMeans(n_clusters=k, random_state=42, n_init=10)
-    labels = km.fit_predict(X_train_scaled)
-    sse_list.append(km.inertia_)
-    sil_list.append(silhouette_score(X_train_scaled, labels))   # K=1은 정의되지 않아 2부터
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 ax[0].plot(range(2, 20), sse_list, marker='o'); ax[0].set_title('SSE (elbow)')
 ax[1].plot(range(2, 20), sil_list, marker='o'); ax[1].set_title('silhouette')
+ax[0].set_xlabel('K'); ax[1].set_xlabel('K'); plt.tight_layout(); plt.show()
 ```
 
-주석에만 있던 실루엣을 같은 반복문에 넣으면 두 곡선이 한 번에 나온다. `silhouette_samples`로 점마다의 값을 꺼내 그룹별로 막대를 그린 **실루엣 그림**도 자주 쓰는 진단이다 — 폭이 좁고 음수가 섞인 그룹은 경계가 흐린 그룹이다. 비슷한 역할의 지표로 `calinski_harabasz_score`(클수록 좋음)·`davies_bouldin_score`(작을수록 좋음)가 있다.
+수업 코드는 `plt.show()`를 두 번 불러 창을 따로 띄우는데, 엘보우와 실루엣은 **같은 K축 위에서 나란히 읽는 것**이라 `subplots(1, 2)`로 한 그림에 두면 "SSE는 아직 줄고 있는데 실루엣은 벌써 평평해졌다" 같은 대비가 바로 보인다. 그리고 K 후보를 두세 개로 좁힌 뒤에는 `silhouette_samples`로 점마다의 값을 꺼내 그룹별로 막대를 그린 **실루엣 그림**도 자주 쓰는 진단이다 — 폭이 좁고 음수가 섞인 그룹은 경계가 흐린 그룹이다. 비슷한 역할의 지표로 `calinski_harabasz_score`(클수록 좋음)·`davies_bouldin_score`(작을수록 좋음)가 있다.
 
 ### 2-4. `Pipeline`으로 묶고, 새 학생 배정하기
 
@@ -291,7 +295,7 @@ KMeans는 그룹이 **둥글고(구형) 크기가 비슷하다**고 가정한다
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day19/s-13.py` — 지도/비지도 요약 주석 → `pd.read_csv(URL, sep=';')`(UCI 학생 성적 395 × 33) → `X = df[['studytime', 'absences', 'G1', 'G2', 'G3']]`(타깃 없음) → `train_test_split(X, test_size=0.02, random_state=42)` 둘만 반환(387 / 8) → `StandardScaler` `fit_transform`(학습)·`transform`(테스트) → `KMeans(n_clusters=3).fit` → `predict` 앞 10명·테스트 8명 → `scatter(G3, absences, c=labels)` + 테스트 빨간 별 → `for k in range(2, 20)` `KMeans(k, random_state=42).fit_predict` → `inertia_` 리스트 → 엘보우 `plot` → `KMeans(n_clusters=5).fit_predict` → `HDBSCAN(min_cluster_size=15, min_samples=5).fit_predict`
+- `KDT_2026/2026_Python/day19/s-13.py` — 지도/비지도 요약 주석 → `pd.read_csv(URL, sep=';')`(UCI 학생 성적 395 × 33) → `X = df[['studytime', 'absences', 'G1', 'G2', 'G3']]`(타깃 없음) → `train_test_split(X, test_size=0.02, random_state=42)` 둘만 반환(387 / 8) → `StandardScaler` `fit_transform`(학습)·`transform`(테스트) → `KMeans(n_clusters=3).fit` → `predict` 앞 10명·테스트 8명 → `scatter(G3, absences, c=labels)` + 테스트 빨간 별 → `for k in range(2, 20)` `KMeans(k, random_state=42).fit_predict` → `inertia_`·`silhouette_score` 리스트 → 엘보우·실루엣 `plot` 둘 → `KMeans(n_clusters=5).fit_predict` → `HDBSCAN(min_cluster_size=15, min_samples=5).fit_predict` → `X_train['hdb_cluster'] = pred` → `value_counts`로 그룹별 인원 (2026-11-18 수업 후반 추가분 보강)
 
 ## 관련 노트
 
