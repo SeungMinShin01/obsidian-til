@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day18 — LightGBM·Optuna 의료비 회귀 연습문제 풀이
 
 > 실습 파일: `ML_practice/pratice6.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]] · 다음: [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]]
 
 `s-12.py`의 중고차 가격 흐름을 **자료만 바꿔 처음부터 끝까지 다시 쓰는** 연습이다. 재료는 day16 종합 실습에서 다항 릿지로 맞혔던 그 의료보험 자료 `insurance.csv`(1,338명 × 나이·BMI·자녀 수·성별·흡연·지역 → 연간 의료비 `charges`)이고, 이번엔 원-핫·표준화·다항 항 없이 **범주 열을 `category` 타입으로 표시만 하고 LightGBM에 그대로** 넣는다. 지시문 여섯 단계가 곧 `s-12.py`의 1)~8) 순서다 — 적재·`category` 변환·X/Y 분리 → 8:2 분할 → `objective(trial)` 안에 `KFold(5)` + `early_stopping` → `TPESampler(seed=42)` 스터디 20회 → `best_params` + `best_n_estimators`로 최종 모델 → `joblib` 저장·로드·신규 고객 2명 예측. 지시문이 건 목표는 **테스트 R² 0.85 이상**이고, 이 노트에서 돌린 결과(optuna 5.1 · lightgbm 4.7)는 0.883이다. 자료 크기가 중고차(2,456대 · 7특성)보다 작고 특성도 여섯뿐이라 20회 × 5폴드가 4.5초면 끝나고, 결과 숫자가 수업 파일보다 훨씬 **평평하게** 나온다 — 그 평평함을 읽는 것이 이 연습의 후반부다.
 
@@ -255,4 +255,4 @@ study.optimize(objective, n_trials=30)    # 어제 20회에 이어 30회 더
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day18 Optuna 스터디·목적함수 설정과 판다스 category 타입]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day16 의료비 데이터 전처리와 ColumnTransformer·다항 릿지 그리드서치 실습]] · [[AI day14 파이프라인·그리드서치·joblib 연습문제 풀이]] · [[KDT_2026 학습 지도]]
