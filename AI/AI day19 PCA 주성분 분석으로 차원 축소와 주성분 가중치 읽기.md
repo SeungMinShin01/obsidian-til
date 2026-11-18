@@ -1,16 +1,16 @@
 ---
 출처: Claude 분석
-원본: KDT_2026/2026_Python/day19/s-13.py(6단계 PCA 부분)
+원본: KDT_2026/2026_Python/day19/s-13.py(6~9단계 PCA·라벨링 부분)
 작성일: 2026-11-18
 tags: [학습, ai, python]
 ---
 
 # AI day19 — PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기
 
-> 실습 파일: `day19/s-13.py` (6단계 `PCA` 부분)
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · 다음: (아직 없음)
+> 실습 파일: `day19/s-13.py` (6~9단계 `PCA`·라벨링 부분)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · 다음: [[AI day19 KMeans·PCA 통신사 고객 등급화 연습문제 풀이]]
 
-앞 노트의 산점도에서 계속 걸리던 문제가 하나 있었다. 학생은 공부 시간·결석·G1·G2·G3 **다섯 차원**의 점인데 화면은 2차원이라, 다섯 열 중 둘(G3·결석)만 골라 찍고 나머지 셋은 버려야 했다. 수업 6단계는 그 답이다 — 열 둘을 **고르는** 대신, 다섯 열을 섞어 **분산이 가장 큰 새 축 두 개**를 만들어 그 위에 점을 다시 찍는 **PCA(주성분 분석, Principal Component Analysis)**. day12 용어표의 비지도학습 세 갈래(군집·토픽·주성분) 중 마지막 칸이 이 노트에서 열린다. 코드는 짧다 — `PCA(n_components=2)` → `fit_transform` → `components_` 읽기 → 축소된 2차원 좌표에 다시 `HDBSCAN` — 그런데 `components_`를 읽는 법이 이 날의 핵심이라 그 부분을 길게 적는다. 숫자는 수업 주석의 값과 이 노트에서 다시 돌린 값(scikit-learn 1.9)을 같이 둔다.
+앞 노트의 산점도에서 계속 걸리던 문제가 하나 있었다. 학생은 공부 시간·결석·G1·G2·G3 **다섯 차원**의 점인데 화면은 2차원이라, 다섯 열 중 둘(G3·결석)만 골라 찍고 나머지 셋은 버려야 했다. 수업 6단계는 그 답이다 — 열 둘을 **고르는** 대신, 다섯 열을 섞어 **분산이 가장 큰 새 축 두 개**를 만들어 그 위에 점을 다시 찍는 **PCA(주성분 분석, Principal Component Analysis)**. day12 용어표의 비지도학습 세 갈래(군집·토픽·주성분) 중 마지막 칸이 이 노트에서 열린다. 코드는 짧다 — `PCA(n_components=2)` → `fit_transform` → `components_` 읽기 → 축소된 2차원 좌표에 다시 `HDBSCAN`, 그리고 수업 후반의 7~9단계(그룹별 G3 평균 → `enumerate`로 등급 라벨링 → 등급별 산점도) — 그런데 `components_`를 읽는 법이 이 날의 핵심이라 그 부분을 길게 적는다. 숫자는 수업 주석의 값과 이 노트에서 다시 돌린 값(scikit-learn 1.9)을 같이 둔다.
 
 ## 1. 배운 내용
 
@@ -111,7 +111,88 @@ print(X_train[['PC1', 'PC2', 'PCA_cluster']].head(10))
 
 PC1 순서(2 > 0 > 1)가 그대로 성적 순서(13.6 > 12.5 > 9.9)다 — 축을 읽은 대로 그룹이 놓였다. 다만 `min_cluster_size=30, min_samples=5`에서 노이즈가 225명으로 절반을 넘는다. 성적 축 위에서 학생들이 "뭉침 세 개"라기보다 **연속된 띠**로 깔려 있어 밀도 기반이 뚜렷한 덩어리만 세 개 집고 나머지를 비운 것이다(앞 노트 실루엣 0.3이 말하던 "뚜렷한 덩어리가 없는 자료"와 같은 말). 노이즈가 많다는 것은 결과가 틀렸다는 뜻이 아니라 **이 자료가 그렇게 생겼다**는 보고이고, 그룹을 억지로 다 채우고 싶으면 `min_samples`를 낮추거나 KMeans로 돌아간다(2-3).
 
-### 1-5. 흐름 한 장
+### 1-5. 7단계 — 이상치를 뺀 그룹별 G3 평균으로 축의 읽기 검증
+
+```python
+# 7) 이상치 제외한 G3 평균 계산
+normal_clusters = X_train[X_train['PCA_cluster'] != -1]           # 이상치 제외
+# pd.groupby('성별')['국어점수'].mean(): 성별/열 그룹/끼리 국어점수/특정 열에 평균/집계
+cluster_means = normal_clusters.groupby('PCA_cluster')['G3'].mean()
+sorted_cluster = cluster_means.sort_values(ascending=True)        # True 오름차순 False 내림차순
+print(sorted_cluster)
+# PCA_cluster     클러스터별 G3 평균점수 == PC1 가중치 : 예측 비교
+# 1     9.873239
+# 0    12.500000
+# 2    13.641509
+```
+
+1-4에서 "PC1 양수면 상, 음수면 하"라고 축을 **읽었다면**, 7단계는 그 읽기가 맞는지 원 단위로 **확인하는** 절차다. 세 줄이 하는 일을 나눠 보면 이렇다.
+
+| 줄 | 하는 일 | 왜 |
+| --- | --- | --- |
+| `X_train[X_train['PCA_cluster'] != -1]` | 불리언 필터로 노이즈(−1) 행을 뺀 표 | 노이즈는 "어느 뭉침에도 안 든 학생"이라 그룹 평균에 섞으면 안 된다 — 225명이 하나의 그룹처럼 평균 9.5로 끼어들어 순서를 흐린다 |
+| `groupby('PCA_cluster')['G3'].mean()` | 그룹 번호별 G3 평균 (day08 전처리 ⑩의 `groupby` 그대로) | 수업 주석의 "성별/열 그룹/끼리 국어점수/특정 열에 평균/집계" — 그룹 열·집계 열·집계 함수 세 자리 |
+| `sort_values(ascending=True)` | 평균이 낮은 그룹부터 | 다음 8단계에서 **순서대로 등급을 매기려고** 미리 줄 세우기 |
+
+결과는 1 → 0 → 2 순서로 9.87 · 12.50 · 13.64다. 1-4 표의 PC1 평균 순서(1: −0.56 → 0: +0.62 → 2: +1.32)와 정확히 같다 — 주석의 "클러스터별 G3 평균점수 == PC1 가중치: 예측 비교"가 이 대조다. PCA 좌표만 보고 읽은 상·중·하가 원 점수로 뒷받침되니, 이제 그룹 번호에 뜻을 붙여도 된다. 이 노트에서 돌린 값도 수업 주석과 소수 여섯 자리까지 같다(HDBSCAN도 PCA도 난수가 없다).
+
+`groupby(...)['G3'].mean()`이 돌려주는 것은 **인덱스가 그룹 번호인 `Series`**라는 점을 기억해 둔다. 그래서 `sort_values` 뒤에도 `.index`에 그룹 번호가 정렬된 순서대로 남고, 8단계가 그 `.index`를 그대로 돈다.
+
+### 1-6. 8단계 — `enumerate`로 등급 딕셔너리 만들고 `replace`로 라벨 열 붙이기
+
+```python
+# 8) 라벨링
+# enumerate( ) # range( )
+labels = {}
+for idx, cluter_id in enumerate(sorted_cluster.index, start=1):
+    labels[cluter_id] = f'Level{idx}'
+labels[-1] = 'Outlier'                     # 이상치는 리스트 가장 뒤에
+# {1: 'Level1', 0: 'Level2', 2: 'Level3', -1: 'Outlier'}
+X_train['pca_cluster_label'] = X_train['PCA_cluster'].replace(labels)
+print(X_train)                             # 군집화한 결과 가지고 추후에 지도학습
+# 지도학습에서 성능 향상 하기 위한 방법: 0)전처리 1)하이퍼파라미터 2) 파생변수
+```
+
+군집 번호는 실행마다 뒤바뀔 수 있고(앞 노트 2-1) 번호 자체에 뜻이 없으니, 번호 대신 **순서가 뜻을 담는 이름**을 붙이는 단계다. 손으로 `{1: 'Level1', 0: 'Level2', …}`를 적지 않고 `enumerate`로 만든다는 점이 핵심인데, 그래야 번호가 바뀌어도 코드를 안 고친다.
+
+| 조각 | 뜻 |
+| --- | --- |
+| `enumerate(sorted_cluster.index, start=1)` | 정렬된 그룹 번호 `[1, 0, 2]`를 돌면서 `(1, 1)`, `(2, 0)`, `(3, 2)`처럼 **(순번, 그룹 번호)** 짝을 준다. day02 `enumerate`의 `start=`로 1부터 — `range(len(...))`로 자리 번호를 만들어 `[i]`로 꺼내는 것과 같은 일을 한 줄로 |
+| `labels[cluter_id] = f'Level{idx}'` | 키 = 그룹 번호, 값 = `Level순번`. G3 평균이 가장 낮은 그룹 1이 `Level1`, 가장 높은 그룹 2가 `Level3` |
+| `labels[-1] = 'Outlier'` | 반복문 밖에서 노이즈 번호를 따로 추가 — 7단계에서 평균을 낼 때 뺐으니 `sorted_cluster.index`에 없고, 그래서 주석의 "이상치는 가장 뒤에" |
+| `X_train['PCA_cluster'].replace(labels)` | 딕셔너리를 **치환표**로 넘겨 열의 번호를 이름으로 바꾼 새 `Series` (day08 전처리 ③의 `replace` 값 치환과 같은 메소드·`map`과 비슷하지만 표에 없는 값은 그대로 둔다) |
+
+완성된 딕셔너리가 `{1: 'Level1', 0: 'Level2', 2: 'Level3', -1: 'Outlier'}`인데, 키 순서(1, 0, 2)가 정렬 순서이고 값 순서(Level1·2·3)가 성적 순서다 — 번호와 등급이 어긋나 보이는 것이 정상이고, 바로 그래서 이 단계가 필요하다. 라벨 열의 인원은 이 노트 기준 Outlier 225 · Level1 71 · Level3 53 · Level2 38이다.
+
+마지막 주석 두 줄이 이 날의 방향을 말해 준다 — "군집화한 결과 가지고 추후에 **지도학습**". 비지도학습으로 만든 `Level1~3` 열은 그 자체가 결론이 아니라, 지도학습 모델에 넣을 **파생변수**가 된다는 뜻이다. 지도학습 성능을 올리는 세 길(0 전처리 · 1 하이퍼파라미터 · 2 파생변수) 중 셋째 자리에 군집 라벨이 들어간다(앞 노트 2-5와 같은 말이고, day18 Optuna가 1번 길이었다).
+
+### 1-7. 9단계 — 등급별로 `scatter`를 겹쳐 그리는 PCA 산점도
+
+```python
+# 9) PCA 시각화
+for lbl in list(labels.values()):
+    sub = X_train[X_train['pca_cluster_label'] == lbl]
+    if lbl == 'Outlier':
+        plt.scatter(sub['PC1'], sub['PC2'], c='red', marker='*', label=lbl)
+    else:
+        plt.scatter(sub['PC1'], sub['PC2'], marker='o', label=lbl)
+plt.legend()
+plt.show()
+# PCA 시각화 하게 되면 특성들을 2가지(2D) 형태 표현 가능하다.
+# 현재 주성분 PC1(G1 G2 G3) , PC2(공부시간,결석일수)
+```
+
+앞 노트 1-9의 "노이즈 마스크로 두 번 `scatter`"를 **등급 수만큼 반복문으로** 일반화한 모양이다. 그리는 법이 바뀐 점을 표로 두면 이렇다.
+
+| 앞 노트 1-9 (`c=라벨`) | 이 단계 (등급별 반복) |
+| --- | --- |
+| x·y가 원래 열 둘(`G3`·`absences`) — 나머지 세 열은 버림 | x·y가 **`PC1`·`PC2`** — 다섯 열의 정보가 75 % 남은 좌표 |
+| `c=라벨 번호`로 색만 자동 배정, 범례 없음 | 등급마다 `scatter`를 한 번씩 → `label=`이 붙어 **`plt.legend()`가 Level1·2·3·Outlier를 보여 줌** |
+| 마스크 둘(노이즈·나머지) | `labels.values()` 순서대로 `Level1 → Level2 → Level3 → Outlier`, `if`로 이상치만 빨간 별 |
+
+반복문 안 `sub = X_train[X_train['pca_cluster_label'] == lbl]`는 1-5의 불리언 필터와 같은 꼴이고, 한 번 그릴 때마다 맷플롯립이 색을 하나씩 돌려 주어 `c=`를 안 적어도 등급마다 다른 색이 된다(day09 선 차트 두 번 겹치기와 같은 원리). 그림을 읽으면 Level1·2·3이 **PC1 축을 따라 왼쪽에서 오른쪽으로** 차례로 놓이고(성적 축이니까), Outlier 별은 그 띠의 가장자리와 PC2 위아래(결석 많음·공부 적음 쪽)에 흩어진다. 마지막 주석 "PC1(G1 G2 G3), PC2(공부시간, 결석일수)"가 두 축의 이름이고, 이 이름은 1-3에서 `components_.T`로 읽어 둔 것이다 — 축을 먼저 읽어야 그림이 설명이 된다.
+
+### 1-8. 흐름 한 장
 
 ```
 X_train_scaled (387 × 5, 표준화)
@@ -120,9 +201,12 @@ X_train_scaled (387 × 5, 표준화)
    → HDBSCAN(30, 5).fit_predict(X_train_pca) → 라벨
    → X_train['PC1'·'PC2'·'PCA_cluster'] 열로 붙여 head(10)
    → 그룹의 뜻 = 그 그룹의 PC1 부호·크기 (양수 상 · 0 중 · 음수 하)
+   → 7) != -1 로 노이즈 빼고 groupby('PCA_cluster')['G3'].mean().sort_values()  ← 읽기를 원 단위로 검증
+   → 8) enumerate(정렬된 index, start=1) 로 {번호: 'Level순번'} + {-1: 'Outlier'} → replace 로 라벨 열
+   → 9) 등급별 scatter(PC1, PC2, label=) 반복 + legend                               ← 라벨 열은 지도학습의 파생변수로
 ```
 
-앞 노트 마지막 줄에 이어 붙이면 day19 전체가 "표준화 → KMeans·엘보우·실루엣 → HDBSCAN → PCA → PCA 위 HDBSCAN"이 된다.
+앞 노트 마지막 줄에 이어 붙이면 day19 전체가 "표준화 → KMeans·엘보우·실루엣 → HDBSCAN → PCA → PCA 위 HDBSCAN → 그룹별 평균으로 등급 라벨링 → 등급별 산점도"가 된다. 7~9단계는 "군집 번호를 **쓸 수 있는 열**로 바꾸는" 뒷정리이고, 이 틀을 자료만 바꿔 다시 쓰는 것이 다음 연습 노트다.
 
 ## 2. 추가로 알면 좋은 활용법
 
@@ -191,8 +275,8 @@ PCA는 **선형** 축만 찾는다 — 자료가 휘어진 띠(초승달·소용
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day19/s-13.py`(6단계) — 고차원·상관계수 주석 → `from sklearn.decomposition import PCA` → `PCA(n_components=2).fit_transform(X_train_scaled)` → `(387, 2)` 좌표 출력 → `pca.components_.T`로 열별 주성분 가중치(PC1 = G1·G2·G3 0.56~0.58 성적 축, PC2 = 결석 +0.78 · 공부시간 −0.61) → `HDBSCAN(min_cluster_size=30, min_samples=5).fit_predict(X_train_pca)` → `X_train['PC1']`·`['PC2']`·`['PCA_cluster']` 열 추가 → `head(10)` → PC1 부호로 그룹을 상·중·하로 읽기
+- `KDT_2026/2026_Python/day19/s-13.py`(6단계) — 고차원·상관계수 주석 → `from sklearn.decomposition import PCA` → `PCA(n_components=2).fit_transform(X_train_scaled)` → `(387, 2)` 좌표 출력 → `pca.components_.T`로 열별 주성분 가중치(PC1 = G1·G2·G3 0.56~0.58 성적 축, PC2 = 결석 +0.78 · 공부시간 −0.61) → `HDBSCAN(min_cluster_size=30, min_samples=5).fit_predict(X_train_pca)` → `X_train['PC1']`·`['PC2']`·`['PCA_cluster']` 열 추가 → `head(10)` → PC1 부호로 그룹을 상·중·하로 읽기 → 7) `X_train[X_train['PCA_cluster'] != -1]`로 노이즈 제외 → `groupby('PCA_cluster')['G3'].mean().sort_values(ascending=True)`(1: 9.87 · 0: 12.50 · 2: 13.64 — PC1 순서와 일치) → 8) `enumerate(sorted_cluster.index, start=1)`로 `{1: 'Level1', 0: 'Level2', 2: 'Level3'}` + `labels[-1] = 'Outlier'` → `X_train['PCA_cluster'].replace(labels)`로 `pca_cluster_label` 열 → 9) `for lbl in labels.values()` 등급별 `scatter(sub['PC1'], sub['PC2'], label=lbl)`(Outlier는 빨간 별) → `legend()`
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[AI day19 KMeans·PCA 통신사 고객 등급화 연습문제 풀이]] · [[KDT_2026 학습 지도]]
