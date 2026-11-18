@@ -8,9 +8,9 @@ tags: [학습, ai, python]
 # AI day19 — KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN
 
 > 실습 파일: `day19/s-13.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · 다음: [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]]
 
-day12부터 day18까지는 전부 **지도학습**이었다. 특성 X와 정답 Y를 같이 넣어 학습하고, 회귀면 R²·분류면 F1로 "얼마나 맞혔나"를 재는 흐름. day19는 처음으로 **정답이 없는** 자료를 다룬다 — 포르투갈 학생 395명의 공부 시간·결석일수·1~3학기 성적(`student-mat.csv`) 다섯 열만 가지고 "비슷한 학생끼리 묶으면 몇 그룹이 나오는가"를 묻는 **비지도학습 군집(클러스터링)** 이다. 쓰는 도구는 `KMeans` 하나가 중심이고, 뒤에 그룹 수 K를 어떻게 고르는지(SSE 엘보우·실루엣), 그리고 K를 미리 정하지 않는 밀도 기반 `HDBSCAN`이 짧게 붙는다. 코드 뼈대는 지금까지와 거의 같은데 `train_test_split`에서 Y가 사라지고, `score` 대신 `inertia_`가 나오고, 평가의 기준이 "정답과 비교"에서 "**뭉침의 모양**"으로 바뀐다. 이 노트는 그 차이를 따라가며, 같은 코드를 돌려 나온 숫자(이 노트에서 확인 — scikit-learn 1.9)를 뒤에 붙인다.
+day12부터 day18까지는 전부 **지도학습**이었다. 특성 X와 정답 Y를 같이 넣어 학습하고, 회귀면 R²·분류면 F1로 "얼마나 맞혔나"를 재는 흐름. day19는 처음으로 **정답이 없는** 자료를 다룬다 — 포르투갈 학생 395명의 공부 시간·결석일수·1~3학기 성적(`student-mat.csv`) 다섯 열만 가지고 "비슷한 학생끼리 묶으면 몇 그룹이 나오는가"를 묻는 **비지도학습 군집(클러스터링)** 이다. 쓰는 도구는 `KMeans` 하나가 중심이고, 뒤에 그룹 수 K를 어떻게 고르는지(SSE 엘보우·실루엣), 그리고 K를 미리 정하지 않는 밀도 기반 `HDBSCAN`이 인자 비교·노이즈 그림과 함께 붙는다(같은 날 6단계 PCA는 다음 노트). 코드 뼈대는 지금까지와 거의 같은데 `train_test_split`에서 Y가 사라지고, `score` 대신 `inertia_`가 나오고, 평가의 기준이 "정답과 비교"에서 "**뭉침의 모양**"으로 바뀐다. 이 노트는 그 차이를 따라가며, 같은 코드를 돌려 나온 숫자(이 노트에서 확인 — scikit-learn 1.9)를 뒤에 붙인다.
 
 ## 1. 배운 내용
 
@@ -178,7 +178,9 @@ K=3에서 187명이던 "중간층"이 **공부 많이 하는데 중간**(49) · 
 
 ```python
 from sklearn.cluster import HDBSCAN
-model = HDBSCAN(min_cluster_size=15, min_samples=5)
+# HDBSCAN(min_cluster_size=군집마다의 최소 데이터 수, min_samples=군집 판별할 때 계산되는 이웃 수)
+# min_cluster_size : 클수록 군집 수 적어진다. min_samples : 클수록 이상치 많아진다.
+model = HDBSCAN(min_cluster_size=30, min_samples=10)   # 수업 중 15, 5 → 30, 10 → 30, 2 로 바꿔 가며 확인
 pred = model.fit_predict(X_train_scaled)
 print(pred)   # 0, 1, 2, 3 … 그리고 -1
 
@@ -186,16 +188,18 @@ X_train['hdb_cluster'] = pred                   # 라벨을 원본 DataFrame 열
 print(X_train['hdb_cluster'].value_counts())    # 그룹별 인원 세기
 ```
 
-마지막 단락은 군집의 다른 갈래, **밀도 기반**이다. KMeans는 "그룹 K개를 반드시 만들고 모든 점을 어딘가에 넣는다"는 모델인데, HDBSCAN(Hierarchical Density-Based Spatial Clustering of Applications with Noise)은 **점이 빽빽하게 모인 곳**을 그룹으로 보고, 어디에도 빽빽하지 않은 점은 **노이즈(-1)** 로 남겨 둔다. 그래서 그룹 수 K가 입력이 아니라 **출력**이고, 대신 "그룹으로 인정할 최소 인원"을 준다.
+다섯째 단락은 군집의 다른 갈래, **밀도 기반**이다. KMeans는 "그룹 K개를 반드시 만들고 모든 점을 어딘가에 넣는다"는 모델인데, HDBSCAN(Hierarchical Density-Based Spatial Clustering of Applications with Noise)은 **점이 빽빽하게 모인 곳**을 그룹으로 보고, 어디에도 빽빽하지 않은 점은 **노이즈(-1)** 로 남겨 둔다. 그래서 그룹 수 K가 입력이 아니라 **출력**이고, 대신 "그룹으로 인정할 최소 인원"을 준다.
 
 | 인자 | 뜻 | 수업 값 |
 | --- | --- | --- |
-| `min_cluster_size` | 이보다 작은 뭉침은 그룹으로 인정하지 않는다 | 15 |
-| `min_samples` | 한 점이 "빽빽한 곳에 있다"고 보려면 반경 안에 이웃이 몇 개여야 하나 — 클수록 보수적이고 노이즈가 늘어난다 | 5 |
+| `min_cluster_size` | 이보다 작은 뭉침은 그룹으로 인정하지 않는다 — **클수록 군집 수가 줄어든다** | 15 → 30 |
+| `min_samples` | 한 점이 "빽빽한 곳에 있다"고 보려면 반경 안에 이웃이 몇 개여야 하나 — **클수록 보수적이고 노이즈(이상치)가 늘어난다** | 5 → 10 → 2 |
+
+수업 주석의 두 줄 "`min_cluster_size`는 클수록 군집 수가 적어진다 · `min_samples`는 클수록 이상치가 많아진다"가 두 인자의 방향을 정리한 문장이다. 같은 자료에 값을 바꿔 돌리면서 그 방향을 눈으로 확인하는 것이 이 단락의 흐름이었다(1-8 뒤쪽 표).
 
 `print(pred)`는 387개 숫자의 나열이라 그룹이 몇 개고 각각 몇 명인지 한눈에 안 들어온다. 그래서 라벨 배열을 **원본 DataFrame의 새 열**(`hdb_cluster`)로 붙이고 `value_counts()`로 센다 — day08 판다스에서 쓰던 그 `value_counts`다. 열로 붙여 두면 뒤에 `groupby('hdb_cluster').mean()`으로 그룹별 평균까지 바로 이어진다(2-2). 이때 `X_train`이 `df`에서 열을 골라낸 뒤 `train_test_split`으로 다시 잘린 조각이라, 열을 추가할 때 판다스가 "원본의 복사본인지 뷰인지" 경고(`SettingWithCopyWarning`)를 낼 수 있다. 조각을 만들 때 `.copy()`를 붙여 두거나 `X_train.assign(hdb_cluster=pred)`로 새 DataFrame을 받는 편이 안전하다.
 
-이 노트에서 돌린 결과는 그룹 **4개 + 노이즈 46명**이고(`value_counts()`가 2: 180 · 3: 85 · 1: 56 · −1: 46 · 0: 20 순으로 보여 준다), 그룹별 평균을 보면 KMeans와 전혀 다른 기준으로 갈라졌다.
+처음 값 `(15, 5)`로 이 노트에서 돌린 결과는 그룹 **4개 + 노이즈 46명**이고(`value_counts()`가 2: 180 · 3: 85 · 1: 56 · −1: 46 · 0: 20 순으로 보여 준다), 그룹별 평균을 보면 KMeans와 전혀 다른 기준으로 갈라졌다.
 
 | 라벨 | 인원 | 공부시간 | 결석 | G1 | G2 | G3 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -207,9 +211,41 @@ print(X_train['hdb_cluster'].value_counts())    # 그룹별 인원 세기
 
 `studytime`이 1·2·3·4 **정수 네 값뿐**이라, 표준화된 공간에서 학생들은 공부 시간 축으로 네 개의 얇은 판에 깔려 있다. 밀도 기반 알고리즘에게는 그 판 하나하나가 "빽빽한 곳"이라 HDBSCAN이 공부 시간 등급 그대로 네 그룹을 돌려준 것이다 — 이산값 열이 섞여 있을 때 밀도 기반이 보이는 전형적인 모습이다. 그리고 KMeans가 "성적 급락 그룹"으로 묶었던 `G3=0` 학생들과 결석 20일 이상 학생들은 어느 판에도 빽빽하지 않아 **노이즈 46명**에 들어갔다(노이즈의 G3 중앙값 0, 결석 평균 11.6). KMeans는 이들을 반드시 어딘가에 넣고, HDBSCAN은 "이상치"라고 따로 떼어 준다 — 같은 자료에서 두 알고리즘이 보는 구조가 이렇게 다르다.
 
-인자를 바꿔 보면(이 노트) `min_cluster_size=5`에서는 작은 뭉침까지 인정해 8그룹, `30`이면 20명짜리 `studytime=4` 판이 그룹 자격을 잃어 3그룹 + 노이즈 66명, `min_samples=15`로 올리면 노이즈가 121명까지 늘어난다. "몇 명부터 그룹인가"를 사람이 정하는 것이라, K 대신 이 두 인자가 HDBSCAN의 하이퍼파라미터다.
+수업에서는 값을 바꿔 가며 `value_counts()`를 세 번 찍었다. 수업 주석의 숫자와 이 노트에서 다시 돌린 값을 같이 두면 두 인자의 방향이 그대로 보인다.
 
-### 1-9. 흐름 한 장
+| `min_cluster_size`, `min_samples` | 그룹 수 | 노이즈 | 그룹별 인원 (이 노트) | 읽는 법 |
+| --- | --- | --- | --- | --- |
+| 15, 5 | 4 | 46 | 180 · 85 · 56 · 20 | `studytime` 1·2·3·4 판 네 개가 전부 그룹 |
+| **30, 10** (수업 최종 코드) | 3 | **95** | 174 · 68 · 50 | 20명짜리 `studytime=4` 판이 30명 문턱에 걸려 탈락 → 그룹 하나 감소, `min_samples` 10으로 "빽빽함" 기준이 엄해져 노이즈 두 배 |
+| 30, 2 | 3 | 33 | 184 · 89 · 81 | 같은 30인데 `min_samples`를 2로 내리니 노이즈가 95 → 33으로 — 판 가장자리 학생이 다시 그룹에 포함 (수업 주석 184 · 89 · 81 · 33과 일치) |
+
+`min_cluster_size`를 15에서 30으로 올리면 그룹이 4 → 3으로 **줄고**, `min_samples`를 10으로 올리면 노이즈가 46 → 95로 **늘고** 2로 내리면 33으로 **준다** — 주석의 두 문장 그대로다. 그 밖에 `min_cluster_size=5`에서는 작은 뭉침까지 인정해 8그룹, `min_samples=15`면 노이즈가 121명까지 늘어난다(이 노트). "몇 명부터 그룹인가"와 "얼마나 빽빽해야 그룹인가"를 사람이 정하는 것이라, K 대신 이 두 인자가 HDBSCAN의 하이퍼파라미터다. `(30, 10)`의 노이즈 95명을 들여다보면 결석 평균 9.9일(최대 75)·G3 하위 사분위가 0점으로, 역시 결석이 많거나 성적이 급락한 학생이 어느 판에도 못 들어간 쪽이다.
+
+### 1-9. 노이즈 마스크로 이상치와 군집을 따로 그리기
+
+```python
+noise_mask = (X_train['hdb_cluster'] == -1)                      # 노이즈면 True
+plt.scatter(X_train.loc[~noise_mask, 'G3'],                      # 군집 학생 — 색 = 그룹
+            X_train.loc[~noise_mask, 'absences'],
+            c=X_train.loc[~noise_mask, 'hdb_cluster'])
+plt.scatter(X_train.loc[noise_mask, 'G3'],                       # 노이즈 학생 — 빨간 별
+            X_train.loc[noise_mask, 'absences'],
+            c='red', marker='*')
+plt.show()
+```
+
+1-5의 산점도와 같은 두 축(G3·결석)인데 그리는 재료가 달라졌다. 1-5는 표준화된 `ndarray`를 `[:, 4]`로 잘랐고, 여기서는 라벨을 열로 붙여 둔 **DataFrame `X_train`을 `.loc[행 조건, 열 이름]`** 으로 자른다(day08 판다스의 `loc` 불리언 필터). 그래서 축 단위도 원 단위(G3 0~20·결석 0~75)다.
+
+| 조각 | 뜻 |
+| --- | --- |
+| `noise_mask = (X_train['hdb_cluster'] == -1)` | 387개 `True`/`False`의 불리언 `Series` — day06 넘파이의 불리언 인덱싱과 같은 발상을 판다스 열에 |
+| `~noise_mask` | `~`로 뒤집어 **노이즈가 아닌** 학생만 (day07의 `~`·`&`·`\|` 논리 연산자) |
+| `c=X_train.loc[~noise_mask, 'hdb_cluster']` | 색에 넘기는 라벨도 **같은 마스크로** 잘라야 x·y와 길이가 맞는다 — 세 인자가 전부 같은 조건으로 잘려야 한다는 점이 이 줄의 핵심 |
+| 두 번째 `scatter(c='red', marker='*')` | 노이즈만 따로 빨간 별 — 1-5에서 테스트 8명을 별로 얹던 것과 같은 겹쳐 그리기 |
+
+KMeans 그림(1-5)에서는 모든 점이 어떤 색이든 가졌는데, 이 그림에서는 **별로 찍힌 점들이 곧 "어느 그룹에도 못 든 학생"** 이다. 결석이 많은 위쪽과 G3가 0인 왼쪽 가장자리에 별이 몰리는 것이 보이고, 그것이 HDBSCAN이 KMeans와 다른 점을 한 장으로 보여 준다 — KMeans는 그 학생들을 "성적 급락 그룹"으로 억지로라도 묶었고, HDBSCAN은 "이상치"로 비워 둔다. 군집 결과를 보고할 때 이 그림 한 장이 "이상치 N명은 따로 봐야 한다"는 근거가 된다.
+
+### 1-10. 흐름 한 장
 
 ```
 읽기(sep=';') → 특성 5열만 (타깃 없음) → train_test_split(X) 둘만 반환 (98 : 2)
@@ -218,8 +254,10 @@ print(X_train['hdb_cluster'].value_counts())    # 그룹별 인원 세기
    → scatter(G3, absences, c=labels) 2D로 눌러 보기
    → for k in 2~19: KMeans(k).fit_predict → inertia_(SSE)·silhouette_score 모아 두 곡선
    → KMeans(n_clusters=5).fit_predict 최종
-   → HDBSCAN(min_cluster_size, min_samples).fit_predict → 그룹 + 노이즈(-1)
+   → HDBSCAN(min_cluster_size, min_samples).fit_predict → 그룹 + 노이즈(-1)   ← (15,5)·(30,10)·(30,2) 바꿔 가며
    → X_train['hdb_cluster'] = pred → value_counts()로 그룹별 인원
+   → noise_mask = (hdb_cluster == -1) → .loc[~mask]는 색으로, .loc[mask]는 빨간 별로 겹쳐 그리기
+   → (이어서) PCA(n_components=2)로 5차원을 2차원으로 → 다음 노트
 ```
 
 ## 2. 추가로 알면 좋은 활용법
@@ -266,7 +304,7 @@ day14에서 배운 파이프라인은 군집에도 똑같이 쓰인다. 스케�
 
 ### 2-6. 그래프의 두 축을 고르는 다른 방법 — PCA
 
-1-5에서 다섯 열 중 둘을 골라 그린 산점도는 나머지 셋을 버린다. `PCA(n_components=2)`로 다섯 열을 **분산이 가장 큰 두 방향**으로 눌러 그리면 다섯 열의 정보를 최대한 살린 2D 그림이 된다 — `pca.fit_transform(X_train_scaled)` 결과의 두 열을 `scatter`에 넣고 `c=labels`로 색을 주는 식이다. 수업 용어표의 "주성분"이 이것이고, 다음 수업에서 다룰 가능성이 큰 도구다.
+1-5에서 다섯 열 중 둘을 골라 그린 산점도는 나머지 셋을 버린다. `PCA(n_components=2)`로 다섯 열을 **분산이 가장 큰 두 방향**으로 눌러 그리면 다섯 열의 정보를 최대한 살린 2D 그림이 된다 — `pca.fit_transform(X_train_scaled)` 결과의 두 열을 `scatter`에 넣고 `c=labels`로 색을 주는 식이다. 수업 용어표의 "주성분"이 이것이고, 같은 날 수업 6단계에서 바로 이어 다뤘다 — `components_.T`로 축의 뜻을 읽고 축소된 좌표에 다시 HDBSCAN을 돌리는 과정은 [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]]에 따로 정리했다.
 
 ## 3. 더 나아가 알면 좋은 것
 
@@ -295,8 +333,8 @@ KMeans는 그룹이 **둥글고(구형) 크기가 비슷하다**고 가정한다
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day19/s-13.py` — 지도/비지도 요약 주석 → `pd.read_csv(URL, sep=';')`(UCI 학생 성적 395 × 33) → `X = df[['studytime', 'absences', 'G1', 'G2', 'G3']]`(타깃 없음) → `train_test_split(X, test_size=0.02, random_state=42)` 둘만 반환(387 / 8) → `StandardScaler` `fit_transform`(학습)·`transform`(테스트) → `KMeans(n_clusters=3).fit` → `predict` 앞 10명·테스트 8명 → `scatter(G3, absences, c=labels)` + 테스트 빨간 별 → `for k in range(2, 20)` `KMeans(k, random_state=42).fit_predict` → `inertia_`·`silhouette_score` 리스트 → 엘보우·실루엣 `plot` 둘 → `KMeans(n_clusters=5).fit_predict` → `HDBSCAN(min_cluster_size=15, min_samples=5).fit_predict` → `X_train['hdb_cluster'] = pred` → `value_counts`로 그룹별 인원 (2026-11-18 수업 후반 추가분 보강)
+- `KDT_2026/2026_Python/day19/s-13.py` — 지도/비지도 요약 주석 → `pd.read_csv(URL, sep=';')`(UCI 학생 성적 395 × 33) → `X = df[['studytime', 'absences', 'G1', 'G2', 'G3']]`(타깃 없음) → `train_test_split(X, test_size=0.02, random_state=42)` 둘만 반환(387 / 8) → `StandardScaler` `fit_transform`(학습)·`transform`(테스트) → `KMeans(n_clusters=3).fit` → `predict` 앞 10명·테스트 8명 → `scatter(G3, absences, c=labels)` + 테스트 빨간 별 → `for k in range(2, 20)` `KMeans(k, random_state=42).fit_predict` → `inertia_`·`silhouette_score` 리스트 → 엘보우·실루엣 `plot` 둘 → `KMeans(n_clusters=5).fit_predict` → `HDBSCAN(min_cluster_size=30, min_samples=10).fit_predict`(15, 5 → 30, 10 → 30, 2로 바꿔 가며 `value_counts` 비교) → `X_train['hdb_cluster'] = pred` → `value_counts`로 그룹별 인원 → `noise_mask = (hdb_cluster == -1)`·`.loc[~mask]`/`.loc[mask]`로 군집(색)·이상치(빨간 별) 겹쳐 그리기 → 6단계 PCA는 다음 노트 (2026-11-18 수업 후반 추가분 두 차례 보강)
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · [[AI day12 사이킷런 단순 선형 회귀로 물고기 무게 예측]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day14 사이킷런 Pipeline으로 다항·표준화·회귀 묶기]] · [[KDT_2026 학습 지도]]
