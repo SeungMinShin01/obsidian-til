@@ -10,7 +10,7 @@ tags: [학습, ai, python]
 > 실습 파일: `ML_practice/practice7.py`
 > 허브: [[AI 정리본 인덱스]] · 이전: [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · 다음: (아직 없음)
 
-`s-13.py`에서 학생 성적으로 밟은 "표준화 → 엘보우·실루엣 → KMeans → PCA → 그룹별 평균으로 등급 라벨링 → PCA 산점도"를 **통신사 고객 자료**로 처음부터 다시 쓰는 연습이다. 지시문은 여섯 단계이고, 자료가 바뀌면서 달라지는 것은 세 가지뿐이다 — 열이 다섯이 아니라 **셋**(`tenure`·`MonthlyCharges`·`TotalCharges`), 자료가 395명이 아니라 **7,032명**, 그리고 군집 알고리즘이 HDBSCAN이 아니라 **KMeans 하나**라 노이즈(−1)가 없다. 그 세 가지가 어디서 코드를 바꾸는지 따라가며 적는다. 숫자는 수업 주석의 값과 이 노트에서 다시 돌린 값(scikit-learn 1.9)을 같이 둔다 — `random_state`를 안 준 KMeans라 번호와 인원이 조금씩 다른데, 그 차이 자체가 이 노트의 한 주제다.
+`s-13.py`에서 학생 성적으로 밟은 "표준화 → 엘보우·실루엣 → KMeans → PCA → 그룹별 평균으로 등급 라벨링 → PCA 산점도"를 **통신사 고객 자료**로 처음부터 다시 쓰는 연습이다. 지시문은 여섯 단계이고, 자료가 바뀌면서 달라지는 것은 세 가지뿐이다 — 열이 다섯이 아니라 **셋**(`tenure`·`MonthlyCharges`·`TotalCharges`), 자료가 395명이 아니라 **7,032명**, 그리고 군집 알고리즘이 HDBSCAN이 아니라 **KMeans 하나**라 노이즈(−1)가 없다. 그 세 가지가 어디서 코드를 바꾸는지 따라가며 적고, 지시문에 없는 한 가지 — PCA 좌표에 다시 KMeans를 돌린 `PCA_cluster` — 도 3차원 군집과 맞대 본다. 숫자는 수업 주석의 값과 이 노트에서 다시 돌린 값(scikit-learn 1.9)을 같이 둔다 — `random_state`를 안 준 KMeans라 번호와 인원이 조금씩 다른데, 그 차이 자체가 이 노트의 한 주제다.
 
 ## 1. 배운 내용
 
@@ -141,23 +141,52 @@ print(sorted_cluster)
 
 `s-13.py` 7단계와 같은 `groupby → mean → sort_values`인데, 이번에는 **`!= -1` 필터가 없다.** KMeans는 모든 점을 어딘가에 넣으니 노이즈가 없고, 그래서 뺄 행도 없다 — HDBSCAN이었다면 그 한 줄이 먼저 와야 한다. 집계 열은 성적 `G3` 대신 **누적 청구액**이다. "매출 기여도가 낮은 군집부터"라는 지시문이 `ascending=True`로 들어갔고, 결과 304 → 1,258 → 1,831 → 5,551달러가 1-4 표의 읽기(신규·저 → 신규·고 → 장기·저 → 장기·고)와 정확히 같다. 이 노트에서는 번호가 1 → 3 → 2 → 0 순으로 304 → 1,249 → 1,825 → 5,537 — 번호는 다르지만 **정렬된 순서의 정체는 같다**.
 
-### 1-7. 단계 5·6의 나머지 — `s-13.py` 8·9단계를 그대로 옮기면
-
-파일에는 단계 5의 둘째·셋째 지시(`label_map` 자동 생성 → `replace`)와 단계 6(등급별 PCA 산점도)이 지시문만 적혀 있다. `s-13.py` 8·9단계와 같은 꼴이라 그 흐름대로 쓰면 이렇게 된다 — 이상치 줄만 빠진다.
+### 1-7. 단계 5의 나머지 — `enumerate(start=1)`로 `label_map` 자동 생성과 `replace`
 
 ```python
 label_map = {}
 for idx, cluster_id in enumerate(sorted_cluster.index, start=1):
-    label_map[cluster_id] = f'Grade{idx}'
-# 이 노트: {1: 'Grade1', 3: 'Grade2', 2: 'Grade3', 0: 'Grade4'}
-# 수업 번호로는 {1: 'Grade1', 0: 'Grade2', 3: 'Grade3', 2: 'Grade4'}
+    label_map[cluster_id] = f"Grade{idx}"
+print(label_map)        # 수업 번호로는 {1: 'Grade1', 0: 'Grade2', 3: 'Grade3', 2: 'Grade4'}
 X['cluster_label'] = X['cluster'].replace(label_map)
+print(X)
+```
 
-for lbl in label_map.values():
+`s-13.py` 8단계와 같은 꼴이고 `labels[-1] = 'Outlier'` 한 줄만 없다 — KMeans라 노이즈 번호가 없으니 예외 라벨도 필요 없다. 핵심은 `sorted_cluster.index`가 **이미 누적 청구액 오름차순으로 정렬된 군집 번호**라는 것이다. 그 순서를 `enumerate(start=1)`로 세면 정렬 순서가 곧 등급 번호가 되고, `replace(label_map)`가 `cluster` 열의 번호를 `Grade1~4` 문자열로 바꿔 새 열에 넣는다. 번호를 손으로 적지 않으니 `random_state` 때문에 군집 번호가 바뀌어도 `Grade1`은 늘 신규·저요금, `Grade4`는 늘 장기·고요금이다 — 1-4에서 본 "번호는 다르고 정체는 같다"를 라벨링이 흡수한다. 이 노트의 번호로는 `{1: 'Grade1', 3: 'Grade2', 2: 'Grade3', 0: 'Grade4'}`처럼 키만 달라지고 값의 순서는 같다.
+
+### 1-8. `X_pca`에 다시 KMeans — `PCA_cluster` 열, 3차원 군집과 2차원 군집 맞대기
+
+```python
+pca_model = KMeans(n_clusters=4, random_state=42)
+pca_pred = pca_model.fit_predict(X_pca)
+X['PCA_cluster'] = pca_pred
+print(X[['PC1', 'PC2', 'PCA_cluster']].head(10))
+```
+
+지시문에는 없는 줄이다. 3단계가 표준화된 **3차원** `X_scaled`로 군집했다면, 이번에는 PCA로 접은 **2차원** `X_pca`에 같은 `KMeans(4)`를 한 번 더 돌려 `PCA_cluster` 열로 붙인다. 산점도는 어차피 PC1·PC2 평면에 그리니 "그 평면에서 직접 군집하면 어떻게 다른가"를 눈으로 맞대 보는 실험이다. 이 노트에서 두 열을 `crosstab`으로 겹쳐 보면 이렇다.
+
+| 3차원 군집(`cluster_label`) | 2차원 군집(`PCA_cluster`)과 겹침 | 넘어간 인원 |
+| --- | --- | --- |
+| Grade1 신규·저요금 1,695 | 한 군집에 1,688 | 7 |
+| Grade2 신규·고요금 2,269 | 한 군집에 2,261 | 8 |
+| Grade3 장기·저요금 1,153 | 한 군집에 1,147 | 6 |
+| Grade4 장기·고요금 1,915 | 한 군집에 1,915 | 0 |
+
+7,032명 중 **21명(0.3 %)**만 옆 그룹으로 넘어갔고, 조정 랜드 지수(ARI)로 재면 0.99다. 이유는 1-5의 98 %에 있다 — PC1·PC2가 분산의 98 %를 담으니 2차원 거리와 3차원 거리가 거의 같고, 같은 거리로 군집하면 같은 묶음이 나온다. 경계에 걸친 스물한 명은 버린 2 %(PC3 방향)의 차이로 갈린 점들이다. `inertia_`는 4,145(3차원) → 3,990(2차원)으로 줄어드는데, 더 잘 나눠서가 아니라 **한 축을 버려 잴 거리 자체가 줄어서**다 — 차원이 다른 공간의 SSE는 서로 비교하지 않는다. 실루엣은 2차원 공간에서 0.470, 3차원에서 0.472로 같다.
+
+두 가지를 같이 적어 둔다. 첫째, **번호는 또 다르다** — `random_state=42`를 줬어도 `cluster`와 `PCA_cluster`는 다른 행렬로 학습한 다른 모델이라 같은 그룹이 다른 번호를 받는다(이 노트에서는 네 그룹의 번호가 우연히 같게 나왔지만, 씨앗이나 자료가 바뀌면 어긋나는 것이 보통이라 믿을 근거가 못 된다). 등급 라벨(`cluster_label`)은 3단계의 `cluster`에서 만든 것이니 `PCA_cluster`를 라벨에 섞으면 안 되고, 2차원 군집에 등급을 붙이려면 1-6·1-7을 `PCA_cluster`로 다시 돌려야 한다. 둘째, `pca_model.cluster_centers_`는 PC 좌표라 1-4처럼 원 단위로 읽으려면 `pca.inverse_transform` → `ss.inverse_transform` **두 번** 되돌려야 하고, 그래도 버린 2 %만큼 복원이 완전하지 않다(이 노트에서 신규·저요금 중심의 누적 청구액이 −130달러로 복원된다). 중심점 해석은 3차원 모델로, 그림은 2차원 모델로 — 두 모델의 쓸모가 갈린다.
+
+### 1-9. 단계 6 — 등급별 PCA 산점도와 `legend`
+
+```python
+for lbl in list(label_map.values()):
     sub = X[X['cluster_label'] == lbl]
     plt.scatter(sub['PC1'], sub['PC2'], marker='o', label=lbl)
-plt.legend(); plt.show()
+plt.legend()
+plt.show()
 ```
+
+`label_map.values()`는 `Grade1 → Grade4` 순서라 범례도 그 순서로 쌓인다. 등급마다 `X[X['cluster_label'] == lbl]`로 행을 골라 PC1·PC2에 찍고, `label=lbl`을 줘야 `plt.legend()`가 등급 이름을 단다. `s-13.py` 9단계와 견주면 이렇다.
 
 | `s-13.py` 8·9단계 | 이 연습 |
 | --- | --- |
@@ -165,9 +194,9 @@ plt.legend(); plt.show()
 | `if lbl == 'Outlier'`로 빨간 별 분기 | 없음 — 네 등급 전부 `marker='o'` |
 | `Level1~3` (성적 하 → 상) | `Grade1~4` (매출 기여 하 → 상) |
 
-`enumerate(start=1)`로 **정렬된 순서가 곧 등급 번호**가 되니, `random_state` 때문에 군집 번호가 바뀌어도 `Grade1`은 늘 신규·저요금, `Grade4`는 늘 장기·고요금이다 — 1-4에서 본 "번호는 다르고 정체는 같다"를 라벨링이 흡수한다. 이것이 번호를 손으로 적지 않고 `enumerate`로 만드는 이유다. 산점도에서는 Grade1 → Grade4가 PC1 축을 따라 왼쪽에서 오른쪽으로 놓이고, Grade2(신규·고요금)는 위쪽·Grade3(장기·저요금)는 아래쪽으로 PC2 방향에서 갈린다.
+산점도에서는 Grade1 → Grade4가 PC1 축을 따라 왼쪽에서 오른쪽으로 놓이고, Grade2(신규·고요금)는 위쪽·Grade3(장기·저요금)는 아래쪽으로 PC2 방향에서 갈린다 — 1-5의 그룹별 PC 평균 (−1.63, −0.27) · (−0.44, +0.87) · (−0.12, −1.30) · (+2.04, −0.01)이 네 덩어리의 중심이다. 색은 `cluster_label`로 칠하지만 1-8의 `PCA_cluster`로 칠해도 스물한 점만 색이 바뀐 거의 같은 그림이 된다.
 
-### 1-8. 흐름 한 장 — 학생 자료와 나란히
+### 1-10. 흐름 한 장 — 학생 자료와 나란히
 
 ```
                  s-13.py (학생 395명 × 5열)              practice7.py (고객 7,032명 × 3열)
@@ -178,6 +207,7 @@ plt.legend(); plt.show()
 4 PCA            5 → 2, 75.8 %, PC1 성적·PC2 생활         3 → 2, 98 %, PC1 가치·PC2 요금−기간
 5 그룹 평균      != -1 제외 → groupby G3 → 오름차순        제외 없음 → groupby TotalCharges → 오름차순
    라벨링        enumerate → Level1~3 + Outlier → replace   enumerate → Grade1~4 → replace
+   (추가)        —                                          X_pca에 KMeans(4) 재군집 → PCA_cluster (21명만 다름)
 6 산점도         등급별 scatter + Outlier 빨간 별            등급별 scatter (별 없음) + legend
 ```
 
@@ -234,7 +264,7 @@ new = pd.DataFrame([[3, 85.0, 255.0], [60, 30.0, 1800.0]], columns=['tenure', 'M
 
 ### 3-3. 군집 수를 데이터가 정하게 — GMM·BIC, HDBSCAN 다시
 
-KMeans는 K를 사람이 고르지만, `GaussianMixture`는 K마다 **BIC/AIC**를 내어 가장 낮은 K를 고를 수 있고 소속 확률(`predict_proba`)까지 준다. 7,032명 자료에 `s-13.py`의 HDBSCAN을 돌리면 밀도 차이로 다른 그림이 나올 텐데, 그때는 1-6의 `!= -1` 줄과 1-7의 `Outlier` 분기가 다시 필요해진다 — 두 파일을 합치면 알고리즘을 바꿔도 되는 한 벌의 코드가 된다.
+KMeans는 K를 사람이 고르지만, `GaussianMixture`는 K마다 **BIC/AIC**를 내어 가장 낮은 K를 고를 수 있고 소속 확률(`predict_proba`)까지 준다. 7,032명 자료에 `s-13.py`의 HDBSCAN을 돌리면 밀도 차이로 다른 그림이 나올 텐데, 그때는 1-6의 `!= -1` 줄과 1-7·1-9의 `Outlier` 라벨·분기가 다시 필요해진다 — 두 파일을 합치면 알고리즘을 바꿔도 되는 한 벌의 코드가 된다.
 
 ### 3-4. 다음에 볼 키워드
 
@@ -248,7 +278,7 @@ KMeans는 K를 사람이 고르지만, `GaussianMixture`는 K마다 **BIC/AIC**�
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/ML_practice/practice7.py` — IBM Telco 고객 7,043명 CSV(URL) → `to_numeric(errors='coerce')`·`dropna(subset=['TotalCharges'])` 7,032명 → `tenure`·`MonthlyCharges`·`TotalCharges` 세 열 → 단계 1 `StandardScaler().fit_transform(X)` → 단계 2 `range(2, 11)` 반복문에서 `fit_predict`·`inertia_`·`silhouette_score` 두 리스트 → 선 그래프 두 장(엘보우 4) → 단계 3 `KMeans(n_clusters=4).fit_predict` → `X['cluster']`·`value_counts()`(2279 · 1902 · 1695 · 1156) → 단계 4 `PCA(n_components=2).fit_transform` → `components_.T`(PC1 셋 다 양수 0.49~0.67 가치 축, PC2 월 요금 +0.79 · 기간 −0.61) → `X['PC1']`·`['PC2']` → 단계 5 `groupby('cluster')['TotalCharges'].mean().sort_values(ascending=True)`(304 → 1,258 → 1,831 → 5,551달러) · 단계 5 라벨링·단계 6 산점도는 지시문 단계
+- `KDT_2026/2026_Python/ML_practice/practice7.py` — IBM Telco 고객 7,043명 CSV(URL) → `to_numeric(errors='coerce')`·`dropna(subset=['TotalCharges'])` 7,032명 → `tenure`·`MonthlyCharges`·`TotalCharges` 세 열 → 단계 1 `StandardScaler().fit_transform(X)` → 단계 2 `range(2, 11)` 반복문에서 `fit_predict`·`inertia_`·`silhouette_score` 두 리스트 → 선 그래프 두 장(엘보우 4) → 단계 3 `KMeans(n_clusters=4).fit_predict` → `X['cluster']`·`value_counts()`(2279 · 1902 · 1695 · 1156) → 단계 4 `PCA(n_components=2).fit_transform` → `components_.T`(PC1 셋 다 양수 0.49~0.67 가치 축, PC2 월 요금 +0.79 · 기간 −0.61) → `X['PC1']`·`['PC2']` → 단계 5 `groupby('cluster')['TotalCharges'].mean().sort_values(ascending=True)`(304 → 1,258 → 1,831 → 5,551달러) → `enumerate(sorted_cluster.index, start=1)`로 `label_map` 자동 생성 → `replace(label_map)` `cluster_label` 열 → (추가) `KMeans(4, random_state=42).fit_predict(X_pca)` → `X['PCA_cluster']`·`head(10)` → 단계 6 `label_map.values()` 순서로 등급별 `scatter(PC1, PC2, marker='o', label=lbl)` + `legend()`
 
 ## 관련 노트
 
