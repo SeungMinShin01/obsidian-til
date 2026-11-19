@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day19 — KMeans·PCA 통신사 고객 등급화 연습문제 풀이
 
 > 실습 파일: `ML_practice/practice7.py`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · 다음: [[AI day20 Kiwi 형태소 분석과 TF-IDF로 네이버 쇼핑 리뷰 감성 분류]]
 
 `s-13.py`에서 학생 성적으로 밟은 "표준화 → 엘보우·실루엣 → KMeans → PCA → 그룹별 평균으로 등급 라벨링 → PCA 산점도"를 **통신사 고객 자료**로 처음부터 다시 쓰는 연습이다. 지시문은 여섯 단계이고, 자료가 바뀌면서 달라지는 것은 세 가지뿐이다 — 열이 다섯이 아니라 **셋**(`tenure`·`MonthlyCharges`·`TotalCharges`), 자료가 395명이 아니라 **7,032명**, 그리고 군집 알고리즘이 HDBSCAN이 아니라 **KMeans 하나**라 노이즈(−1)가 없다. 그 세 가지가 어디서 코드를 바꾸는지 따라가며 적고, 지시문에 없는 한 가지 — PCA 좌표에 다시 KMeans를 돌린 `PCA_cluster` — 도 3차원 군집과 맞대 본다. 숫자는 수업 주석의 값과 이 노트에서 다시 돌린 값(scikit-learn 1.9)을 같이 둔다 — `random_state`를 안 준 KMeans라 번호와 인원이 조금씩 다른데, 그 차이 자체가 이 노트의 한 주제다.
 
@@ -282,4 +282,4 @@ KMeans는 K를 사람이 고르지만, `GaussianMixture`는 K마다 **BIC/AIC**�
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day13 StandardScaler 표준화와 릿지·라쏘 규제]] · [[AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이]] · [[AI day20 Kiwi 형태소 분석과 TF-IDF로 네이버 쇼핑 리뷰 감성 분류]] · [[KDT_2026 학습 지도]]
