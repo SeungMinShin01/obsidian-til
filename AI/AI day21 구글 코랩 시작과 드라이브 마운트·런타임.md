@@ -8,9 +8,9 @@ tags: [학습, ai, python]
 # AI day21 — 구글 코랩 시작과 드라이브 마운트·런타임
 
 > 실습 파일: `day21/dl-1.ipynb`
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day20 NSMC 영화 리뷰 감성 분석 연습문제 풀이]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day20 NSMC 영화 리뷰 감성 분석 연습문제 풀이]] · 다음: [[AI day21 파이토치 텐서 생성·차원 재구성과 시그모이드·ReLU]]
 
-day12부터 이어 온 사이킷런 머신러닝이 day20 텍스트 마이닝으로 한 바퀴를 돌았고, day21은 파일 이름이 `s-NN`에서 **`dl-1`**로 바뀐다 — 딥러닝(deep learning)의 첫 파일이라고 읽는다. 내용은 아직 두 셀뿐이다. 구글 드라이브를 마운트하는 셀 하나와 "코랩에서 파이썬 시작"을 찍으며 셀 실행·런타임을 주석으로 적어 둔 셀 하나. 코드는 짧지만 **작업 장소가 내 PC의 VS Code에서 구글 코랩(Google Colab)으로 옮겨 가는 날**이라서, 이 노트는 코드보다 "왜 옮기는가, 옮기면 무엇이 달라지는가"를 정리하는 데 쓴다. day14 `s-04.py` 끝에 "코랩/GPU 서버에서 학습하고 FastAPI 서버가 모델을 부른다"는 주석이 있었는데, 그 "코랩/GPU 서버" 쪽에 처음 발을 들이는 자리다.
+day12부터 이어 온 사이킷런 머신러닝이 day20 텍스트 마이닝으로 한 바퀴를 돌았고, day21은 파일 이름이 `s-NN`에서 **`dl-1`**로 바뀐다 — 딥러닝(deep learning)의 첫 파일이라고 읽는다. 이 노트가 다루는 것은 앞의 두 셀이다. 구글 드라이브를 마운트하는 셀 하나와 "코랩에서 파이썬 시작"을 찍으며 셀 실행·런타임을 주석으로 적어 둔 셀 하나. (같은 파일에 `## Example` 마크다운 셀 뒤로 파이토치 셀 다섯 개가 이어 붙었는데, 주제가 다르므로 [[AI day21 파이토치 텐서 생성·차원 재구성과 시그모이드·ReLU]]에 따로 정리했다.) 코드는 짧지만 **작업 장소가 내 PC의 VS Code에서 구글 코랩(Google Colab)으로 옮겨 가는 날**이라서, 이 노트는 코드보다 "왜 옮기는가, 옮기면 무엇이 달라지는가"를 정리하는 데 쓴다. day14 `s-04.py` 끝에 "코랩/GPU 서버에서 학습하고 FastAPI 서버가 모델을 부른다"는 주석이 있었는데, 그 "코랩/GPU 서버" 쪽에 처음 발을 들이는 자리다.
 
 ## 1. 배운 내용
 
@@ -167,8 +167,8 @@ uploaded = files.upload()      # 내 PC에서 파일 선택 → /content/ 에 �
 
 ## 실습 파일
 
-- `KDT_2026/2026_Python/day21/dl-1.ipynb` — 셀 1 `from google.colab import drive` → `drive.mount('/content/drive')`(출력 `Mounted at /content/drive`, 실행 번호 `[1]`) → 셀 2 `print('코랩에서 파이썬 시작')` + 주석(Ctrl+Enter 셀 단위 실행 · 노트 모두 실행 · 런타임 = 현재 노트가 실행하는 클라우드 PC 상태 · 런타임 유형 변경 CPU/T4 GPU, 미실행)
+- `KDT_2026/2026_Python/day21/dl-1.ipynb` — 셀 1 `from google.colab import drive` → `drive.mount('/content/drive')`(출력 `Mounted at /content/drive`, 실행 번호 `[1]`) → 셀 2 `print('코랩에서 파이썬 시작')` + 주석(Ctrl+Enter 셀 단위 실행 · 노트 모두 실행 · 런타임 = 현재 노트가 실행하는 클라우드 PC 상태 · 런타임 유형 변경 CPU/T4 GPU, 미실행). 이어지는 `## Example` 마크다운 셀과 파이토치 셀 다섯 개(`import torch`·텐서·`reshape`/`unsqueeze`·`sigmoid`/`relu`·`requires_grad`)는 [[AI day21 파이토치 텐서 생성·차원 재구성과 시그모이드·ReLU]] 참고
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day20 NSMC 영화 리뷰 감성 분석 연습문제 풀이]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day20 NSMC 영화 리뷰 감성 분석 연습문제 풀이]] · [[AI day14 KFold 교차 검증과 GridSearchCV 하이퍼파라미터 탐색]] · [[AI day18 LightGBM 매개변수 설정과 early_stopping 조기 종료]] · [[AI day21 파이토치 텐서 생성·차원 재구성과 시그모이드·ReLU]] · [[KDT_2026 학습 지도]]
