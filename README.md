@@ -140,7 +140,7 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 | `2026-11-18` | [뉴스 - 2026-11-17 믿고 들인 코드가 무너졌고, 통과는 검사가 아니었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-17%20%EB%AF%BF%EA%B3%A0%20%EB%93%A4%EC%9D%B8%20%EC%BD%94%EB%93%9C%EA%B0%80%20%EB%AC%B4%EB%84%88%EC%A1%8C%EA%B3%A0%2C%20%ED%86%B5%EA%B3%BC%EB%8A%94%20%EA%B2%80%EC%82%AC%EA%B0%80%20%EC%95%84%EB%8B%88%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
 | `2026-11-18` | [뉴스 - 2026-11-17 스프링부트에서 DbUnit 을 이용하여 DB 테스트해 보기](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-17%20%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8%EC%97%90%EC%84%9C%20DbUnit%20%EC%9D%84%20%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC%20DB%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%B4%20%EB%B3%B4%EA%B8%B0.md) | 기술 블로그 정리 |
 
-<sub>마지막 자동 갱신: 2026-11-25 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-26 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
