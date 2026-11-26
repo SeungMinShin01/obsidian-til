@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day22 — nn.Sequential 와인 이진 분류와 BCEWithLogitsLoss·AdamW 학습 루프
 
 > 실습 파일: `day22/dl-2.ipynb` (앞 세 셀 — 자료 준비·`nn.Sequential` 학습 루프·`model.eval()` 평가)
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day21 MSELoss 손실·backward 역전파와 경사하강법 한 걸음 갱신]] · 다음: [[AI day22 nn.Dropout 과적합 방지와 성적 회귀 신경망 뼈대]]
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day21 Hugging Face datasets로 LBox 판결문 데이터셋 불러오기]] · 다음: [[AI day22 nn.Dropout 과적합 방지와 성적 회귀 신경망 뼈대]]
 
 day21은 표본 하나·특성 하나·가중치 둘(`w`·`b`)로 학습 한 바퀴를 손으로 돌렸다. 오늘은 그 바퀴를 **진짜 자료**(와인 6,497병 × 특성 3개)에 **진짜 신경망**(`nn.Sequential`로 쌓은 층 두 개)으로 1만 번 돌린다. 코드의 뼈대는 day21 2-1에서 미리 적어 둔 `for epoch` 루프와 3-1의 `optimizer.step()` 5박자 그대로이고, 바뀐 것은 `w`·`b`가 `nn.Linear` 안으로 들어갔다는 점, 손실이 `MSELoss`에서 이진 분류용 `BCEWithLogitsLoss`로 바뀐 점, 갱신을 `optim.AdamW`가 대신하는 점 셋이다. 자료는 day17 결정 트리·랜덤 포레스트·부스팅에서 쓰던 혼공머신 `wine.csv` 그대로라, 같은 문제를 신경망으로 풀면 어디쯤 나오는지 비교할 수 있다.
 
@@ -386,4 +386,4 @@ model = WineNet()
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day21 MSELoss 손실·backward 역전파와 경사하강법 한 걸음 갱신]] · [[AI day22 nn.Dropout 과적합 방지와 성적 회귀 신경망 뼈대]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day21 Hugging Face datasets로 LBox 판결문 데이터셋 불러오기]] · [[AI day21 MSELoss 손실·backward 역전파와 경사하강법 한 걸음 갱신]] · [[AI day22 nn.Dropout 과적합 방지와 성적 회귀 신경망 뼈대]] · [[AI day17 결정 트리로 와인 레드·화이트 분류와 plot_tree]] · [[KDT_2026 학습 지도]]

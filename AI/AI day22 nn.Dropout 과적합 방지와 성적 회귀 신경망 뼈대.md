@@ -8,7 +8,7 @@ tags: [학습, ai, python]
 # AI day22 — nn.Dropout 과적합 방지와 성적 회귀 신경망 뼈대
 
 > 실습 파일: `day22/dl-2.ipynb` (마지막 셀 — `student-mat.csv` 회귀, 1) 텐서 변환 → 2) DNN 컨테이너 → 3) `MSELoss` → 4) `AdamW` → 5) 7,000 에포크 학습까지 작성, 6)~7) 평가·추론은 주석 계획)
-> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day22 nn.Sequential 와인 이진 분류와 BCEWithLogitsLoss·AdamW 학습 루프]] · 다음: (아직 없음)
+> 허브: [[AI 정리본 인덱스]] · 이전: [[AI day22 nn.Sequential 와인 이진 분류와 BCEWithLogitsLoss·AdamW 학습 루프]] · 다음: [[AI day23 Conv2d·MaxPool2d CNN으로 SVHN 숫자 이미지 분류]]
 
 와인 이진 분류를 끝까지 돌린 뒤, 같은 파일 마지막 셀에서 **두 번째 문제**가 시작된다. 자료는 day19 군집에서 쓴 UCI 학생 성적 `student-mat.csv`이고, 이번엔 공부 시간·결석·1차·2차 성적 네 열로 **기말 성적 `G3`를 맞히는 회귀**다. 처음엔 1) 텐서 변환과 2) 신경망의 앞 세 층까지만 쓰고 3)~7)은 번호와 한 줄 설명만 주석으로 남긴 뼈대였는데, 수업이 이어지면서 2) 컨테이너가 은닉층 셋 + 출력층으로 완성되고 3) `MSELoss` · 4) `AdamW` · 5) 7,000 에포크 학습 루프까지 실제 코드로 채워졌다. 6) 평가와 7) 추론은 아직 주석 한 줄씩이다. 이 셀에서 새로 등장한 것은 셋이다. **`nn.Dropout(p=0.2)`** 층, 분류가 아니라 **회귀를 신경망으로** 푸는 설정, 그리고 드롭아웃이 켜진 채 찍히는 **요동치는 손실 곡선**. 앞 노트와 무엇이 같고 무엇이 달라지는지를 중심으로 정리하고, 비어 있는 6)~7)은 앞 노트의 틀로 어떻게 채워질지 2단에 적어 둔다.
 
@@ -254,4 +254,4 @@ with torch.no_grad():
 
 ## 관련 노트
 
-[[AI 정리본 인덱스]] · [[AI day22 nn.Sequential 와인 이진 분류와 BCEWithLogitsLoss·AdamW 학습 루프]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day21 MSELoss 손실·backward 역전파와 경사하강법 한 걸음 갱신]] · [[KDT_2026 학습 지도]]
+[[AI 정리본 인덱스]] · [[AI day22 nn.Sequential 와인 이진 분류와 BCEWithLogitsLoss·AdamW 학습 루프]] · [[AI day23 Conv2d·MaxPool2d CNN으로 SVHN 숫자 이미지 분류]] · [[AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN]] · [[AI day21 MSELoss 손실·backward 역전파와 경사하강법 한 걸음 갱신]] · [[KDT_2026 학습 지도]]
