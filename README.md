@@ -36,12 +36,12 @@
 <!-- SHELVES:START -->
 | 서가 | 노트 | 들어가기 |
 | --- | ---: | --- |
-| **KDT 수업 노트** | 191 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
-| **기술 블로그 정리** | 207 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
-| **프로젝트 결정 로그** | 142 | [프로젝트 노트 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8%20MOC.md) |
+| **KDT 수업 노트** | 202 | [KDT_2026 학습 지도](https://github.com/SeungMinShin01/obsidian-til/blob/main/KDT_2026%20%ED%95%99%EC%8A%B5%20%EC%A7%80%EB%8F%84.md) |
+| **기술 블로그 정리** | 226 | [기술정리 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC%20MOC.md) |
+| **프로젝트 결정 로그** | 143 | [프로젝트 노트 MOC](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EB%85%B8%ED%8A%B8%20MOC.md) |
 | **프로젝트 코드 분석** | 25 | [프로젝트 코드 분석 안내](https://github.com/SeungMinShin01/obsidian-til/blob/main/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%BD%94%EB%93%9C%20%EB%B6%84%EC%84%9D%20%EC%95%88%EB%82%B4.md) |
 | **코드 레퍼런스** | 107 | [코드정리](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC/%EC%BD%94%EB%93%9C%EC%A0%95%EB%A6%AC.md) |
-| **운영 규칙** | 34 | [Vault 홈](https://github.com/SeungMinShin01/obsidian-til/blob/main/Vault%20%ED%99%88.md) |
+| **운영 규칙** | 35 | [Vault 홈](https://github.com/SeungMinShin01/obsidian-til/blob/main/Vault%20%ED%99%88.md) |
 <!-- SHELVES:END -->
 
 <br/>
@@ -131,16 +131,16 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 <!-- RECENT:START -->
 | 날짜 | 노트 | 서가 |
 | --- | --- | --- |
-| `2026-11-18` | [AI day19 KMeans·PCA 통신사 고객 등급화 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day19%20KMeans%C2%B7PCA%20%ED%86%B5%EC%8B%A0%EC%82%AC%20%EA%B3%A0%EA%B0%9D%20%EB%93%B1%EA%B8%89%ED%99%94%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
-| `2026-11-18` | [AI day19 PCA 주성분 분석으로 차원 축소와 주성분 가중치 읽기](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day19%20PCA%20%EC%A3%BC%EC%84%B1%EB%B6%84%20%EB%B6%84%EC%84%9D%EC%9C%BC%EB%A1%9C%20%EC%B0%A8%EC%9B%90%20%EC%B6%95%EC%86%8C%EC%99%80%20%EC%A3%BC%EC%84%B1%EB%B6%84%20%EA%B0%80%EC%A4%91%EC%B9%98%20%EC%9D%BD%EA%B8%B0.md) | KDT 수업 노트 |
-| `2026-11-18` | [AI day19 KMeans 군집으로 학생 그룹 나누기와 엘보우·HDBSCAN](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day19%20KMeans%20%EA%B5%B0%EC%A7%91%EC%9C%BC%EB%A1%9C%20%ED%95%99%EC%83%9D%20%EA%B7%B8%EB%A3%B9%20%EB%82%98%EB%88%84%EA%B8%B0%EC%99%80%20%EC%97%98%EB%B3%B4%EC%9A%B0%C2%B7HDBSCAN.md) | KDT 수업 노트 |
-| `2026-11-18` | [AI day18 LightGBM·Optuna 의료비 회귀 연습문제 풀이](https://github.com/SeungMinShin01/obsidian-til/blob/main/AI/AI%20day18%20LightGBM%C2%B7Optuna%20%EC%9D%98%EB%A3%8C%EB%B9%84%20%ED%9A%8C%EA%B7%80%20%EC%97%B0%EC%8A%B5%EB%AC%B8%EC%A0%9C%20%ED%92%80%EC%9D%B4.md) | KDT 수업 노트 |
-| `2026-11-18` | [AI - 같은 점수 뒤의 다른 작업 습관](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EA%B0%99%EC%9D%80%20%EC%A0%90%EC%88%98%20%EB%92%A4%EC%9D%98%20%EB%8B%A4%EB%A5%B8%20%EC%9E%91%EC%97%85%20%EC%8A%B5%EA%B4%80.md) | 기술 블로그 정리 |
-| `2026-11-18` | [뉴스 - 2026-11-16 쓴 사람이 없는 코드와 받는 사람이 없는 경보](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-16%20%EC%93%B4%20%EC%82%AC%EB%9E%8C%EC%9D%B4%20%EC%97%86%EB%8A%94%20%EC%BD%94%EB%93%9C%EC%99%80%20%EB%B0%9B%EB%8A%94%20%EC%82%AC%EB%9E%8C%EC%9D%B4%20%EC%97%86%EB%8A%94%20%EA%B2%BD%EB%B3%B4.md) | 기술 블로그 정리 |
-| `2026-11-18` | [뉴스 - 2026-11-17 믿고 들인 코드가 무너졌고, 통과는 검사가 아니었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-17%20%EB%AF%BF%EA%B3%A0%20%EB%93%A4%EC%9D%B8%20%EC%BD%94%EB%93%9C%EA%B0%80%20%EB%AC%B4%EB%84%88%EC%A1%8C%EA%B3%A0%2C%20%ED%86%B5%EA%B3%BC%EB%8A%94%20%EA%B2%80%EC%82%AC%EA%B0%80%20%EC%95%84%EB%8B%88%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
-| `2026-11-18` | [뉴스 - 2026-11-17 스프링부트에서 DbUnit 을 이용하여 DB 테스트해 보기](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-17%20%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8%EC%97%90%EC%84%9C%20DbUnit%20%EC%9D%84%20%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC%20DB%20%ED%85%8C%EC%8A%A4%ED%8A%B8%ED%95%B4%20%EB%B3%B4%EA%B8%B0.md) | 기술 블로그 정리 |
+| `2026-11-26` | [AI - 강화학습 보상 라벨 감사](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5%20%EB%B3%B4%EC%83%81%20%EB%9D%BC%EB%B2%A8%20%EA%B0%90%EC%82%AC.md) | 기술 블로그 정리 |
+| `2026-11-26` | [AI - 동적 블록 희소 어텐션](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EB%8F%99%EC%A0%81%20%EB%B8%94%EB%A1%9D%20%ED%9D%AC%EC%86%8C%20%EC%96%B4%ED%85%90%EC%85%98.md) | 기술 블로그 정리 |
+| `2026-11-26` | [AI - 블록 디퓨전 언어 모델](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EB%B8%94%EB%A1%9D%20%EB%94%94%ED%93%A8%EC%A0%84%20%EC%96%B8%EC%96%B4%20%EB%AA%A8%EB%8D%B8.md) | 기술 블로그 정리 |
+| `2026-11-26` | [AI - 에너지 기반 반복 추론](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EC%97%90%EB%84%88%EC%A7%80%20%EA%B8%B0%EB%B0%98%20%EB%B0%98%EB%B3%B5%20%EC%B6%94%EB%A1%A0.md) | 기술 블로그 정리 |
+| `2026-11-26` | [AI - 중간 층을 반복하는 루프 트랜스포머](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/AI%20%EC%8B%AC%EC%B8%B5/AI%20-%20%EC%A4%91%EA%B0%84%20%EC%B8%B5%EC%9D%84%20%EB%B0%98%EB%B3%B5%ED%95%98%EB%8A%94%20%EB%A3%A8%ED%94%84%20%ED%8A%B8%EB%9E%9C%EC%8A%A4%ED%8F%AC%EB%A8%B8.md) | 기술 블로그 정리 |
+| `2026-11-26` | [뉴스 - 2026-11-18 아무도 안 쓰던 최적화가 뚫렸고, 비용은 멈추지 못한 단계에 있었다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-18%20%EC%95%84%EB%AC%B4%EB%8F%84%20%EC%95%88%20%EC%93%B0%EB%8D%98%20%EC%B5%9C%EC%A0%81%ED%99%94%EA%B0%80%20%EB%9A%AB%EB%A0%B8%EA%B3%A0%2C%20%EB%B9%84%EC%9A%A9%EC%9D%80%20%EB%A9%88%EC%B6%94%EC%A7%80%20%EB%AA%BB%ED%95%9C%20%EB%8B%A8%EA%B3%84%EC%97%90%20%EC%9E%88%EC%97%88%EB%8B%A4.md) | 기술 블로그 정리 |
+| `2026-11-26` | [뉴스 - 2026-11-19 누군가에게는 빼빼로데이. 누군가에게는](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-19%20%EB%88%84%EA%B5%B0%EA%B0%80%EC%97%90%EA%B2%8C%EB%8A%94%20%EB%B9%BC%EB%B9%BC%EB%A1%9C%EB%8D%B0%EC%9D%B4.%20%EB%88%84%EA%B5%B0%EA%B0%80%EC%97%90%EA%B2%8C%EB%8A%94.md) | 기술 블로그 정리 |
+| `2026-11-26` | [뉴스 - 2026-11-19 문지기에 11년 묵은 구멍이 있었고, 멈추는 법은 따로 배워야 했다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-19%20%EB%AC%B8%EC%A7%80%EA%B8%B0%EC%97%90%2011%EB%85%84%20%EB%AC%B5%EC%9D%80%20%EA%B5%AC%EB%A9%8D%EC%9D%B4%20%EC%9E%88%EC%97%88%EA%B3%A0%2C%20%EB%A9%88%EC%B6%94%EB%8A%94%20%EB%B2%95%EC%9D%80%20%EB%94%B0%EB%A1%9C%20%EB%B0%B0%EC%9B%8C%EC%95%BC%20%ED%96%88%EB%8B%A4.md) | 기술 블로그 정리 |
 
-<sub>마지막 자동 갱신: 2026-11-26 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-27 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
