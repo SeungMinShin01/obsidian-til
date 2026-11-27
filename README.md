@@ -140,7 +140,7 @@ GitHub Actions로 무인 구동하는 수집 파이프라인. 워크플로우 �
 | `2026-11-26` | [뉴스 - 2026-11-19 누군가에게는 빼빼로데이. 누군가에게는](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-19%20%EB%88%84%EA%B5%B0%EA%B0%80%EC%97%90%EA%B2%8C%EB%8A%94%20%EB%B9%BC%EB%B9%BC%EB%A1%9C%EB%8D%B0%EC%9D%B4.%20%EB%88%84%EA%B5%B0%EA%B0%80%EC%97%90%EA%B2%8C%EB%8A%94.md) | 기술 블로그 정리 |
 | `2026-11-26` | [뉴스 - 2026-11-19 문지기에 11년 묵은 구멍이 있었고, 멈추는 법은 따로 배워야 했다](https://github.com/SeungMinShin01/obsidian-til/blob/main/%EA%B8%B0%EC%88%A0%EC%A0%95%EB%A6%AC/%EB%89%B4%EC%8A%A4/%EB%89%B4%EC%8A%A4%20-%202026-11-19%20%EB%AC%B8%EC%A7%80%EA%B8%B0%EC%97%90%2011%EB%85%84%20%EB%AC%B5%EC%9D%80%20%EA%B5%AC%EB%A9%8D%EC%9D%B4%20%EC%9E%88%EC%97%88%EA%B3%A0%2C%20%EB%A9%88%EC%B6%94%EB%8A%94%20%EB%B2%95%EC%9D%80%20%EB%94%B0%EB%A1%9C%20%EB%B0%B0%EC%9B%8C%EC%95%BC%20%ED%96%88%EB%8B%A4.md) | 기술 블로그 정리 |
 
-<sub>마지막 자동 갱신: 2026-11-27 (KST)</sub>
+<sub>마지막 자동 갱신: 2026-11-28 (KST)</sub>
 <!-- RECENT:END -->
 
 <br/>
